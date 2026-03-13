@@ -5,378 +5,213 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LA PALIFICUP — Classement Officiel</title>
 <style>
-  :root {
-    --navy:       #071423;
-    --navy-hdr:   #0d2037;
-    --navy-row:   #0c1d30;
-    --navy-alt:   #0a1826;
-    --navy-card:  #112040;
-    --blue-lt:    #88b0d8;
-    --blue-med:   #4a78a8;
-    --blue-bright:#3a8bd4;
-    --accent:     #2a7fc0;
-    --gold:       #ffd040;
-    --silver:     #c8c8d0;
-    --bronze:     #cc7a3a;
-    --white:      #ffffff;
-    --text-dim:   #567090;
-    --green:      #22c55e;
-    --red:        #ef4444;
-    --separator:  #122a44;
-  }
+:root {
+  --navy:       #071423;
+  --navy-hdr:   #0d2037;
+  --navy-alt:   #0a1826;
+  --navy-card:  #112040;
+  --blue-lt:    #88b0d8;
+  --blue-med:   #4a78a8;
+  --blue-bright:#3a8bd4;
+  --accent:     #2a7fc0;
+  --gold:       #ffd040;
+  --silver:     #c8c8d0;
+  --bronze:     #cc7a3a;
+  --white:      #ffffff;
+  --text-dim:   #567090;
+  --green:      #22c55e;
+  --red:        #ef4444;
+  --separator:  #122a44;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--navy); color: var(--white); font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; min-height: 100vh; }
 
-  body {
-    background: var(--navy);
-    color: var(--white);
-    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    min-height: 100vh;
-  }
+/* ── HEADER ── */
+.site-header {
+  background: var(--navy-hdr); border-bottom: 3px solid var(--accent);
+  padding: 0 24px; position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between; height: 64px;
+}
+.logo { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+.logo-img { height: 44px; object-fit: contain; }
+.logo-fallback {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--gold), #e8a000);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 900; color: var(--navy);
+}
+.logo-text { line-height: 1.1; }
+.logo-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--white); }
+.logo-sub   { font-size: 10px; color: var(--blue-lt); letter-spacing: 3px; text-transform: uppercase; }
 
-  /* ── HEADER ─────────────────────────────────────────── */
-  .site-header {
-    background: var(--navy-hdr);
-    border-bottom: 3px solid var(--accent);
-    padding: 0 24px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-  }
-  .logo { display: flex; align-items: center; gap: 12px; }
-  .logo-icon {
-    width: 38px; height: 38px;
-    background: linear-gradient(135deg, var(--gold), #e8a000);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; font-weight: 900; color: var(--navy);
-    letter-spacing: -1px;
-  }
-  .logo-text { line-height: 1.1; }
-  .logo-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--white); }
-  .logo-sub   { font-size: 10px; color: var(--blue-lt); letter-spacing: 3px; text-transform: uppercase; }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+.admin-badge { font-size: 11px; background: var(--gold); color: var(--navy); border-radius: 4px; padding: 2px 8px; font-weight: 700; display: none; }
 
-  .header-actions { display: flex; gap: 10px; align-items: center; }
-  .btn {
-    padding: 7px 16px; border-radius: 6px; font-size: 13px;
-    font-weight: 600; cursor: pointer; border: none;
-    transition: all .18s; letter-spacing: .3px;
-  }
-  .btn-ghost {
-    background: transparent; color: var(--blue-lt);
-    border: 1px solid var(--separator);
-  }
-  .btn-ghost:hover { background: var(--navy-card); color: var(--white); }
-  .btn-primary { background: var(--accent); color: var(--white); }
-  .btn-primary:hover { background: #2070b0; }
-  .btn-gold { background: var(--gold); color: var(--navy); }
-  .btn-gold:hover { background: #e8c030; }
-  .btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
-  .btn-danger:hover { background: #991b1b; }
-  .btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn { padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .18s; letter-spacing: .3px; }
+.btn-ghost { background: transparent; color: var(--blue-lt); border: 1px solid var(--separator); }
+.btn-ghost:hover { background: var(--navy-card); color: var(--white); }
+.btn-primary { background: var(--accent); color: var(--white); }
+.btn-primary:hover { background: #2070b0; }
+.btn-gold { background: var(--gold); color: var(--navy); }
+.btn-gold:hover { background: #e8c030; }
+.btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+.btn-danger:hover { background: #991b1b; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
 
-  /* ── STATS BAND ──────────────────────────────────────── */
-  .stats-band {
-    background: var(--navy-card);
-    border-bottom: 1px solid var(--separator);
-    padding: 12px 24px;
-    display: flex; gap: 32px; align-items: center; flex-wrap: wrap;
-  }
-  .stat-item { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-  .stat-val { font-size: 22px; font-weight: 800; color: var(--white); line-height: 1; }
-  .stat-val.gold   { color: var(--gold); }
-  .stat-val.silver { color: var(--silver); }
-  .stat-val.bronze { color: var(--bronze); }
-  .stat-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1.5px; text-transform: uppercase; }
+/* ── STATS BAND ── */
+.stats-band {
+  background: var(--navy-card); border-bottom: 1px solid var(--separator);
+  padding: 12px 24px; display: flex; gap: 32px; align-items: center; flex-wrap: wrap;
+}
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.stat-val { font-size: 22px; font-weight: 800; color: var(--white); line-height: 1; }
+.stat-val.gold   { color: var(--gold); }
+.stat-val.silver { color: var(--silver); }
+.stat-val.bronze { color: var(--bronze); }
+.stat-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1.5px; text-transform: uppercase; }
+.stats-divider { width: 1px; height: 36px; background: var(--separator); }
 
-  .stats-divider { width: 1px; height: 36px; background: var(--separator); }
+/* ── CHART ── */
+.chart-section { padding: 20px 24px 0; display: none; }
+.chart-section.visible { display: block; }
+.chart-title { font-size: 13px; font-weight: 700; color: var(--blue-lt); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+.chart-wrap { background: var(--navy-card); border: 1px solid var(--separator); border-radius: 10px; padding: 18px; margin-bottom: 20px; }
+.chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 160px; }
+.chart-bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.chart-bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .3s; cursor: pointer; position: relative; }
+.chart-bar:hover { filter: brightness(1.3); }
+.chart-bar-val { font-size: 10px; font-weight: 700; color: var(--white); position: absolute; top: -18px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+.chart-bar-name { font-size: 9px; color: var(--blue-lt); text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* ── CHART SECTION ───────────────────────────────────── */
-  .chart-section {
-    padding: 20px 24px 0;
-    display: none;
-  }
-  .chart-section.visible { display: block; }
-  .chart-title {
-    font-size: 13px; font-weight: 700; color: var(--blue-lt);
-    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px;
-  }
-  .chart-wrap {
-    background: var(--navy-card);
-    border: 1px solid var(--separator);
-    border-radius: 10px;
-    padding: 18px;
-    margin-bottom: 20px;
-  }
-  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 160px; }
-  .chart-bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
-  .chart-bar {
-    width: 100%; border-radius: 4px 4px 0 0;
-    transition: height .3s;
-    cursor: pointer;
-    position: relative;
-  }
-  .chart-bar:hover { filter: brightness(1.3); }
-  .chart-bar-val {
-    font-size: 10px; font-weight: 700; color: var(--white);
-    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-    white-space: nowrap;
-  }
-  .chart-bar-name {
-    font-size: 9px; color: var(--blue-lt); text-align: center;
-    max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
+/* ── TOOLBAR ── */
+.toolbar { padding: 16px 24px 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.search-wrap { flex: 1; min-width: 200px; max-width: 380px; position: relative; }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
+.search-input { width: 100%; padding: 9px 12px 9px 34px; background: var(--navy-card); border: 1px solid var(--separator); border-radius: 8px; color: var(--white); font-size: 14px; outline: none; transition: border .18s; }
+.search-input::placeholder { color: var(--text-dim); }
+.search-input:focus { border-color: var(--accent); }
+.results-count { font-size: 12px; color: var(--text-dim); margin-left: auto; }
 
-  /* ── TOOLBAR ─────────────────────────────────────────── */
-  .toolbar {
-    padding: 16px 24px 12px;
-    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
-  }
-  .search-wrap {
-    flex: 1; min-width: 200px; max-width: 380px;
-    position: relative;
-  }
-  .search-wrap svg {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    color: var(--text-dim);
-  }
-  .search-input {
-    width: 100%; padding: 9px 12px 9px 34px;
-    background: var(--navy-card); border: 1px solid var(--separator);
-    border-radius: 8px; color: var(--white); font-size: 14px;
-    outline: none; transition: border .18s;
-  }
-  .search-input::placeholder { color: var(--text-dim); }
-  .search-input:focus { border-color: var(--accent); }
+/* ── TABLE ── */
+.table-wrap { padding: 0 24px 32px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead tr { background: var(--navy-hdr); border-bottom: 2px solid var(--accent); }
+thead th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue-lt); cursor: pointer; user-select: none; white-space: nowrap; }
+thead th:hover { color: var(--white); }
+thead th .sort-arrow { margin-left: 4px; opacity: .4; }
+thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
 
-  .filter-pts {
-    display: flex; gap: 6px;
-  }
-  .filter-btn {
-    padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
-    cursor: pointer; border: 1px solid var(--separator);
-    background: var(--navy-card); color: var(--blue-lt);
-    transition: all .18s;
-  }
-  .filter-btn:hover, .filter-btn.active {
-    background: var(--accent); color: var(--white); border-color: var(--accent);
-  }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+tbody tr { border-bottom: 1px solid var(--separator); transition: background .12s; cursor: pointer; animation: fadeIn .15s ease forwards; }
+tbody tr:nth-child(odd)  { background: var(--navy); }
+tbody tr:nth-child(even) { background: var(--navy-alt); }
+tbody tr:hover { background: var(--navy-card) !important; }
+tbody tr.top1 { background: rgba(255,208,64,.05) !important; }
+tbody tr.top2 { background: rgba(200,200,208,.04) !important; }
+tbody tr.top3 { background: rgba(204,122,58,.04) !important; }
+td { padding: 9px 12px; vertical-align: middle; }
 
-  .sort-label { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+.td-rank { width: 60px; text-align: center; }
+.rank-num { font-size: 18px; font-weight: 900; font-family: 'Arial Black', Arial, sans-serif; line-height: 1; }
+.rank-1 { color: var(--gold); } .rank-2 { color: var(--silver); } .rank-3 { color: var(--bronze); } .rank-other { color: var(--blue-med); }
 
-  .results-count {
-    font-size: 12px; color: var(--text-dim); margin-left: auto;
-  }
+.td-player { min-width: 200px; }
+.player-cell { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.player-names { line-height: 1.2; }
+.player-first { font-size: 12px; color: var(--blue-lt); }
+.player-last  { font-size: 14px; font-weight: 700; color: var(--white); }
+.history-indicator { font-size: 10px; color: var(--accent); margin-left: 6px; }
 
-  /* ── TABLE ───────────────────────────────────────────── */
-  .table-wrap { padding: 0 24px 32px; }
+.td-t { width: 110px; text-align: center; }
+.tourn-pill { background: var(--separator); color: var(--blue-lt); font-size: 11px; font-weight: 700; border-radius: 12px; padding: 2px 10px; display: inline-block; }
 
-  table {
-    width: 100%; border-collapse: collapse;
-    font-size: 14px;
-  }
-  thead tr {
-    background: var(--navy-hdr);
-    border-bottom: 2px solid var(--accent);
-  }
-  thead th {
-    padding: 10px 12px; text-align: left;
-    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-    text-transform: uppercase; color: var(--blue-lt);
-    cursor: pointer; user-select: none; white-space: nowrap;
-  }
-  thead th:hover { color: var(--white); }
-  thead th .sort-arrow { margin-left: 4px; opacity: .4; }
-  thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
+.td-pts { width: 130px; }
+.pts-badge { display: inline-flex; align-items: center; gap: 6px; background: #0d2037; border: 1px solid var(--separator); border-radius: 6px; padding: 4px 10px; }
+.pts-num { font-size: 15px; font-weight: 800; color: var(--white); }
+.pts-lbl { font-size: 10px; color: var(--text-dim); font-weight: 600; }
+.pts-bar-wrap { height: 3px; background: var(--separator); border-radius: 2px; margin-top: 3px; width: 100%; max-width: 90px; }
+.pts-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--blue-bright)); }
 
-  tbody tr {
-    border-bottom: 1px solid var(--separator);
-    transition: background .12s;
-  }
-  tbody tr:nth-child(odd)  { background: var(--navy); }
-  tbody tr:nth-child(even) { background: var(--navy-alt); }
-  tbody tr:hover { background: var(--navy-card) !important; }
-  tbody tr.top1 { background: rgba(255,208,64,.05) !important; }
-  tbody tr.top2 { background: rgba(200,200,208,.04) !important; }
-  tbody tr.top3 { background: rgba(204,122,58,.04) !important; }
+.td-actions { width: 90px; text-align: right; }
 
-  td { padding: 9px 12px; vertical-align: middle; }
+/* ── ADD SECTION (admin) ── */
+.add-section { padding: 0 24px 20px; display: none; }
+.add-section.visible { display: block; }
+.add-card { background: var(--navy-card); border: 1px dashed var(--accent); border-radius: 10px; padding: 20px 24px; }
+.add-card-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--blue-lt); margin-bottom: 16px; text-transform: uppercase; }
+.add-form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.add-form-row .form-row { flex: 1; min-width: 140px; margin-bottom: 0; }
 
-  /* rank cell */
-  .td-rank { width: 60px; text-align: center; }
-  .rank-num {
-    font-size: 18px; font-weight: 900;
-    font-family: 'Arial Black', Arial, sans-serif;
-    line-height: 1;
-  }
-  .rank-1 { color: var(--gold); }
-  .rank-2 { color: var(--silver); }
-  .rank-3 { color: var(--bronze); }
-  .rank-other { color: var(--blue-med); }
+/* ── MODALS ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--navy-hdr); border: 1px solid var(--accent);
+  border-radius: 12px; padding: 28px 32px; width: min(540px, 95vw);
+  position: relative; max-height: 85vh; overflow-y: auto;
+}
+.modal-title { font-size: 16px; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; color: var(--gold); }
+.modal-subtitle { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; }
+.modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; cursor: pointer; color: var(--text-dim); font-size: 20px; line-height: 1; }
+.modal-close:hover { color: var(--white); }
 
-  /* change cell */
-  .td-change { width: 40px; text-align: center; }
-  .change-badge {
-    display: inline-flex; align-items: center; gap: 2px;
-    font-size: 11px; font-weight: 700;
-    padding: 2px 5px; border-radius: 4px;
-  }
-  .change-up   { background: rgba(34,197,94,.15); color: var(--green); }
-  .change-dn   { background: rgba(239,68,68,.15); color: var(--red); }
-  .change-same { color: var(--text-dim); font-size: 14px; }
+/* ── HISTORY TABLE ── */
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue-lt); padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--separator); }
+.history-table td { padding: 12px 10px; font-size: 13px; border-bottom: 1px solid var(--separator); }
+.history-table tr:last-child td { border-bottom: none; }
+.history-rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; font-weight: 900; font-size: 13px; background: var(--navy-card); color: var(--blue-med); }
+.history-rank-badge.r1 { background: rgba(255,208,64,.2); color: var(--gold); }
+.history-rank-badge.r2 { background: rgba(200,200,208,.15); color: var(--silver); }
+.history-rank-badge.r3 { background: rgba(204,122,58,.2); color: var(--bronze); }
+.history-pts { font-weight: 800; color: var(--white); font-size: 15px; }
+.modal-total { margin-top: 16px; display: flex; justify-content: space-between; padding: 12px 16px; background: var(--navy-card); border-radius: 8px; }
+.modal-total-label { color: var(--text-dim); font-weight: 600; font-size: 13px; }
+.modal-total-val { font-weight: 800; color: var(--gold); font-size: 16px; }
+.history-empty { text-align: center; padding: 32px; color: var(--text-dim); font-size: 14px; }
 
-  /* avatar cell */
-  .td-player { min-width: 220px; }
-  .player-cell { display: flex; align-items: center; gap: 12px; }
-  .avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800; color: #fff;
-    flex-shrink: 0;
-  }
-  .player-names { line-height: 1.2; }
-  .player-first { font-size: 12px; color: var(--blue-lt); }
-  .player-last  { font-size: 14px; font-weight: 700; color: var(--white); }
+/* ── EDIT MODAL FORM ── */
+.form-row { margin-bottom: 16px; }
+.form-label { display: block; font-size: 11px; font-weight: 700; color: var(--blue-lt); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.form-input { width: 100%; padding: 10px 14px; background: var(--navy); border: 1px solid var(--separator); border-radius: 8px; color: var(--white); font-size: 14px; outline: none; transition: border .18s; }
+.form-input:focus { border-color: var(--accent); }
+.form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
 
-  /* points cell */
-  .td-pts { width: 120px; }
-  .pts-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #0d2037; border: 1px solid var(--separator);
-    border-radius: 6px; padding: 4px 10px;
-  }
-  .pts-num { font-size: 15px; font-weight: 800; color: var(--white); }
-  .pts-lbl { font-size: 10px; color: var(--text-dim); font-weight: 600; }
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--navy-card); border: 1px solid var(--accent); border-radius: 8px; padding: 12px 20px; font-size: 13px; color: var(--white); z-index: 999; transform: translateY(80px); opacity: 0; transition: all .3s; max-width: 320px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.empty-row td { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--separator); border-radius: 3px; }
 
-  /* tournament cell */
-  .td-t { width: 60px; text-align: center; }
-  .tourn-pill {
-    background: var(--separator); color: var(--blue-lt);
-    font-size: 11px; font-weight: 700;
-    border-radius: 12px; padding: 2px 8px;
-    display: inline-block;
-  }
-
-  /* actions cell */
-  .td-actions { width: 90px; text-align: right; }
-
-  /* ── MODAL / EDIT PANEL ──────────────────────────────── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.7); z-index: 200;
-    align-items: center; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--navy-hdr);
-    border: 1px solid var(--accent);
-    border-radius: 12px; padding: 28px 32px;
-    width: min(480px, 95vw);
-    position: relative;
-  }
-  .modal-title {
-    font-size: 16px; font-weight: 800; letter-spacing: 1px;
-    margin-bottom: 20px; color: var(--gold);
-  }
-  .form-row { margin-bottom: 16px; }
-  .form-label {
-    display: block; font-size: 11px; font-weight: 700;
-    color: var(--blue-lt); letter-spacing: 1px; text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .form-input {
-    width: 100%; padding: 10px 14px;
-    background: var(--navy); border: 1px solid var(--separator);
-    border-radius: 8px; color: var(--white); font-size: 14px;
-    outline: none; transition: border .18s;
-  }
-  .form-input:focus { border-color: var(--accent); }
-  .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
-  .modal-close {
-    position: absolute; top: 14px; right: 16px;
-    background: none; border: none; cursor: pointer;
-    color: var(--text-dim); font-size: 20px; line-height: 1;
-  }
-  .modal-close:hover { color: var(--white); }
-
-  /* ── ADD PLAYER FORM ─────────────────────────────────── */
-  .add-section {
-    padding: 0 24px 20px;
-    display: none;
-  }
-  .add-section.visible {
-    display: block;
-  }
-  .add-card {
-    background: var(--navy-card);
-    border: 1px dashed var(--accent);
-    border-radius: 10px;
-    padding: 20px 24px;
-  }
-  .add-card-title {
-    font-size: 13px; font-weight: 700; letter-spacing: 1px;
-    color: var(--blue-lt); margin-bottom: 16px; text-transform: uppercase;
-  }
-  .add-form-row {
-    display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
-  }
-  .add-form-row .form-row { flex: 1; min-width: 140px; margin-bottom: 0; }
-
-  /* ── PROGRESS BAR (bar below points) ────────────────── */
-  .pts-bar-wrap { height: 3px; background: var(--separator); border-radius: 2px; margin-top: 3px; width: 100%; max-width: 90px; }
-  .pts-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--blue-bright)); }
-
-  /* ── NOTIFICATION ────────────────────────────────────── */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--navy-card); border: 1px solid var(--accent);
-    border-radius: 8px; padding: 12px 20px;
-    font-size: 13px; color: var(--white);
-    z-index: 999; transform: translateY(80px); opacity: 0;
-    transition: all .3s;
-    max-width: 320px;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  /* ── EMPTY STATE ─────────────────────────────────────── */
-  .empty-row td {
-    text-align: center; padding: 40px;
-    color: var(--text-dim); font-size: 14px;
-  }
-
-  /* ── SCROLLBAR ───────────────────────────────────────── */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--navy); }
-  ::-webkit-scrollbar-thumb { background: var(--separator); border-radius: 3px; }
-
-  @media (max-width: 640px) {
-    .stats-band { gap: 16px; }
-    .td-change, .td-t { display: none; }
-    td, th { padding: 8px 8px; }
-    .toolbar { padding: 12px 12px 8px; }
-    .table-wrap { padding: 0 8px 24px; }
-    .site-header { padding: 0 12px; }
-  }
+@media (max-width: 640px) {
+  .stats-band { gap: 16px; }
+  td, th { padding: 8px 8px; }
+  .toolbar { padding: 12px 12px 8px; }
+  .table-wrap { padding: 0 8px 24px; }
+  .site-header { padding: 0 12px; }
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <header class="site-header">
-  <div class="logo">
-    <div class="logo-icon">P</div>
+  <div class="logo" id="logoBtn" title="Classement">
+    <img src="palif png.png" class="logo-img" alt="Palificup" onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
+    <div class="logo-fallback" id="logoFallback" style="display:none">P</div>
     <div class="logo-text">
       <div class="logo-title">LA PALIFICUP</div>
       <div class="logo-sub">Classement Officiel · Saison 2024-2025</div>
     </div>
   </div>
   <div class="header-actions">
+    <span class="admin-badge" id="adminBadge">🔐 Admin</span>
     <button class="btn btn-ghost" id="toggleChart">📊 Graphique</button>
-    <button class="btn btn-ghost" id="toggleAdd">+ Joueur</button>
+    <button class="btn btn-ghost" id="toggleAdd" style="display:none">+ Joueur</button>
     <button class="btn btn-gold" id="exportBtn">⬇ Export CSV</button>
   </div>
 </header>
@@ -384,35 +219,21 @@
 <!-- STATS BAND -->
 <div class="stats-band" id="statsBand"></div>
 
-<!-- CHART SECTION -->
+<!-- CHART -->
 <div class="chart-section" id="chartSection">
   <div class="chart-title">Top 10 — Points</div>
-  <div class="chart-wrap">
-    <div class="chart-bars" id="chartBars"></div>
-  </div>
+  <div class="chart-wrap"><div class="chart-bars" id="chartBars"></div></div>
 </div>
 
-<!-- ADD PLAYER SECTION -->
+<!-- ADD SECTION (admin only) -->
 <div class="add-section" id="addSection">
   <div class="add-card">
     <div class="add-card-title">Ajouter un joueur</div>
     <div class="add-form-row">
-      <div class="form-row">
-        <label class="form-label">Nom complet</label>
-        <input class="form-input" id="addName" placeholder="ex: Prénom Nom" />
-      </div>
-      <div class="form-row">
-        <label class="form-label">Points</label>
-        <input class="form-input" id="addPoints" type="number" placeholder="ex: 90" min="0" />
-      </div>
-      <div class="form-row">
-        <label class="form-label">Tournois</label>
-        <input class="form-input" id="addTournaments" type="number" placeholder="ex: 2" min="0" />
-      </div>
-      <div class="form-row" style="min-width:auto">
-        <label class="form-label">&nbsp;</label>
-        <button class="btn btn-primary" id="addConfirm">Ajouter</button>
-      </div>
+      <div class="form-row"><label class="form-label">Nom complet</label><input class="form-input" id="addName" placeholder="ex: Prénom Nom" /></div>
+      <div class="form-row"><label class="form-label">Points</label><input class="form-input" id="addPoints" type="number" placeholder="ex: 90" min="0" /></div>
+      <div class="form-row"><label class="form-label">Tournois</label><input class="form-input" id="addTournaments" type="number" placeholder="ex: 2" min="0" /></div>
+      <div class="form-row" style="min-width:auto"><label class="form-label">&nbsp;</label><button class="btn btn-primary" id="addConfirm">Ajouter</button></div>
     </div>
   </div>
 </div>
@@ -420,17 +241,8 @@
 <!-- TOOLBAR -->
 <div class="toolbar">
   <div class="search-wrap">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input class="search-input" id="searchInput" placeholder="Rechercher un joueur…" />
-  </div>
-  <div class="filter-pts">
-    <span class="sort-label">Points :</span>
-    <button class="filter-btn active" data-min="0"   data-max="99999">Tous</button>
-    <button class="filter-btn"        data-min="100" data-max="99999">≥ 100</button>
-    <button class="filter-btn"        data-min="50"  data-max="99">50–99</button>
-    <button class="filter-btn"        data-min="0"   data-max="49">&lt; 50</button>
   </div>
   <span class="results-count" id="resultsCount"></span>
 </div>
@@ -441,34 +253,34 @@
     <thead>
       <tr>
         <th class="td-rank" data-col="rank">RANG <span class="sort-arrow">▼</span></th>
-        <th class="td-change"></th>
         <th class="td-player" data-col="name">JOUEUR <span class="sort-arrow">↕</span></th>
+        <th class="td-t" data-col="tournaments">TOURNOIS <span class="sort-arrow">↕</span></th>
         <th class="td-pts" data-col="points">POINTS <span class="sort-arrow">↕</span></th>
-        <th class="td-t" data-col="tournaments">T. <span class="sort-arrow">↕</span></th>
-        <th class="td-actions"></th>
+        <th class="td-actions" id="adminColHeader" style="display:none"></th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
 </div>
 
-<!-- EDIT MODAL -->
-<div class="modal-overlay" id="editModal">
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
   <div class="modal">
-    <button class="modal-close" id="closeModal">×</button>
-    <div class="modal-title" id="modalTitle">Modifier le joueur</div>
-    <div class="form-row">
-      <label class="form-label">Nom complet</label>
-      <input class="form-input" id="editName" />
-    </div>
-    <div class="form-row">
-      <label class="form-label">Points</label>
-      <input class="form-input" id="editPoints" type="number" min="0" />
-    </div>
-    <div class="form-row">
-      <label class="form-label">Tournois joués</label>
-      <input class="form-input" id="editTournaments" type="number" min="0" />
-    </div>
+    <button class="modal-close" id="closeHistory" aria-label="Fermer">×</button>
+    <div class="modal-title" id="historyTitle"></div>
+    <div class="modal-subtitle" id="historySubtitle"></div>
+    <div id="historyContent"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL (admin only) -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" id="closeModal" aria-label="Fermer">×</button>
+    <div class="modal-title" id="modalTitle" style="margin-bottom:20px">Modifier le joueur</div>
+    <div class="form-row"><label class="form-label">Nom complet</label><input class="form-input" id="editName" /></div>
+    <div class="form-row"><label class="form-label">Points</label><input class="form-input" id="editPoints" type="number" min="0" /></div>
+    <div class="form-row"><label class="form-label">Tournois joués</label><input class="form-input" id="editTournaments" type="number" min="0" /></div>
     <div class="form-actions">
       <button class="btn btn-ghost" id="cancelEdit">Annuler</button>
       <button class="btn btn-primary" id="confirmEdit">Enregistrer</button>
@@ -480,90 +292,360 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── DATA ────────────────────────────────────────────────────────────────────
-const INITIAL_DATA = [{"rank":1,"name":"Mathilde Beaugrand","points":240,"tournaments":3},{"rank":2,"name":"Léna Garcia","points":210,"tournaments":2},{"rank":3,"name":"Oscar Chemla","points":200,"tournaments":2},{"rank":4,"name":"Balthazar Albaric","points":190,"tournaments":3},{"rank":5,"name":"Renan Mukerjee","points":150,"tournaments":3},{"rank":5,"name":"Nicolas Poirier","points":150,"tournaments":1},{"rank":7,"name":"Adam Cohen","points":140,"tournaments":4},{"rank":8,"name":"Jean de Gourcuff","points":130,"tournaments":3},{"rank":9,"name":"Henry Lachapelle","points":120,"tournaments":2},{"rank":9,"name":"Louis Ducurtil","points":120,"tournaments":3},{"rank":9,"name":"Nicolas Soulignac","points":120,"tournaments":2},{"rank":12,"name":"Théo Benichou","points":110,"tournaments":4},{"rank":12,"name":"Céleste Challier","points":110,"tournaments":3},{"rank":12,"name":"Jeanne Chausselat","points":110,"tournaments":3},{"rank":15,"name":"Nathan Toussaint","points":100,"tournaments":2},{"rank":15,"name":"Baudouin Gabalda","points":100,"tournaments":2},{"rank":15,"name":"Marie Audeoud","points":100,"tournaments":2},{"rank":15,"name":"Rafael de Oliveira","points":100,"tournaments":2},{"rank":15,"name":"Isabelle Carles","points":100,"tournaments":2},{"rank":15,"name":"Maxime Khaski","points":100,"tournaments":4},{"rank":15,"name":"Paul Chausselat","points":100,"tournaments":2},{"rank":22,"name":"Augustin Voruz","points":90,"tournaments":1},{"rank":22,"name":"Jules Goupil","points":90,"tournaments":2},{"rank":22,"name":"Laura Assedou","points":90,"tournaments":2},{"rank":22,"name":"Nicolas Morillot","points":90,"tournaments":1},{"rank":26,"name":"Amélie Noyelle","points":80,"tournaments":2},{"rank":26,"name":"Blandine de Marsac","points":80,"tournaments":3},{"rank":26,"name":"Louise David","points":80,"tournaments":2},{"rank":26,"name":"Paula Jimenez","points":80,"tournaments":2},{"rank":26,"name":"Grégoire Aubineau","points":80,"tournaments":2},{"rank":26,"name":"Inaki Dugas","points":80,"tournaments":2},{"rank":26,"name":"Alexandre Cohen","points":80,"tournaments":2},{"rank":26,"name":"Jules de Meaux","points":80,"tournaments":2},{"rank":26,"name":"Wilson Faure","points":80,"tournaments":2},{"rank":35,"name":"Guillaume Despouys","points":70,"tournaments":2},{"rank":35,"name":"Paul Santamaria","points":70,"tournaments":1},{"rank":35,"name":"Raphaël Levy","points":70,"tournaments":1},{"rank":35,"name":"Benjamin Presberg","points":70,"tournaments":4},{"rank":35,"name":"Gaspard Baret","points":70,"tournaments":1},{"rank":35,"name":"Laure Lafabure","points":70,"tournaments":1},{"rank":35,"name":"Victor Le Boulanger","points":70,"tournaments":3},{"rank":42,"name":"Alix Balay","points":60,"tournaments":2},{"rank":42,"name":"Emile Simondin","points":60,"tournaments":2},{"rank":42,"name":"Baptiste Despouys","points":60,"tournaments":2},{"rank":42,"name":"Héloïse Goossens","points":60,"tournaments":2},{"rank":42,"name":"Venceslas Toubiana","points":60,"tournaments":2},{"rank":42,"name":"Violette de Poix","points":60,"tournaments":2},{"rank":48,"name":"Antoine Thirot","points":50,"tournaments":1},{"rank":48,"name":"Malo Dupuy","points":50,"tournaments":1},{"rank":48,"name":"Arthur Dupont","points":50,"tournaments":1},{"rank":48,"name":"Benoît Barbare","points":50,"tournaments":1},{"rank":48,"name":"Maïwen Gautier","points":50,"tournaments":1},{"rank":48,"name":"Aymeric Bourguignat","points":50,"tournaments":1},{"rank":48,"name":"Elenore Michelot","points":50,"tournaments":1},{"rank":48,"name":"Augustin Gervaise","points":50,"tournaments":1},{"rank":48,"name":"Jon Erviti","points":50,"tournaments":1},{"rank":48,"name":"Antoine de Vogue","points":50,"tournaments":1},{"rank":48,"name":"Simoes Alexandre","points":50,"tournaments":1},{"rank":48,"name":"Timothée Seurret","points":50,"tournaments":2},{"rank":48,"name":"Amanda Da Silva","points":50,"tournaments":1},{"rank":48,"name":"Dan Douenias","points":50,"tournaments":1},{"rank":48,"name":"Elisabeth Feller","points":50,"tournaments":1},{"rank":48,"name":"Lucie Challier","points":50,"tournaments":2},{"rank":48,"name":"Raphael Penicaut","points":50,"tournaments":1},{"rank":48,"name":"Romain Breton","points":50,"tournaments":1},{"rank":48,"name":"Romane Auger","points":50,"tournaments":1},{"rank":48,"name":"Laure Chaslin","points":50,"tournaments":1},{"rank":48,"name":"Florian Viard","points":50,"tournaments":1},{"rank":48,"name":"Jean Etienne Coudert","points":50,"tournaments":2},{"rank":48,"name":"Jeanne Esmerian","points":50,"tournaments":1},{"rank":48,"name":"Jérémie Sebbane","points":50,"tournaments":1},{"rank":48,"name":"Joséphine Nusse","points":50,"tournaments":1},{"rank":48,"name":"Louise Siwertz","points":50,"tournaments":1},{"rank":48,"name":"Louison Palatre","points":50,"tournaments":1},{"rank":48,"name":"Max Milhaileanu","points":50,"tournaments":1},{"rank":48,"name":"Sixtine Blanc","points":50,"tournaments":3},{"rank":48,"name":"Ulysee Fournier","points":50,"tournaments":1},{"rank":48,"name":"Valentin Billy","points":50,"tournaments":1},{"rank":48,"name":"Victor Conte","points":50,"tournaments":1},{"rank":80,"name":"Mathilde Carles","points":40,"tournaments":2},{"rank":80,"name":"Alexis Bombard","points":40,"tournaments":1},{"rank":80,"name":"Apolline Loire","points":40,"tournaments":1},{"rank":80,"name":"Charlotte Carles","points":40,"tournaments":2},{"rank":80,"name":"Eliott Hayatt","points":40,"tournaments":2},{"rank":80,"name":"Justine Kerdal","points":40,"tournaments":1},{"rank":80,"name":"Flavia Servant","points":40,"tournaments":1},{"rank":80,"name":"Pierre Henri Sanesi","points":40,"tournaments":1},{"rank":80,"name":"Léo Mart","points":40,"tournaments":1},{"rank":80,"name":"Antoine Troccaz","points":40,"tournaments":1},{"rank":80,"name":"Lucie Héliez","points":40,"tournaments":1},{"rank":80,"name":"Martin Dalmasso","points":40,"tournaments":1},{"rank":80,"name":"Paul L'Hote","points":40,"tournaments":1},{"rank":80,"name":"Pierre Leoz","points":40,"tournaments":1},{"rank":80,"name":"Roy Cohen Solal","points":40,"tournaments":2},{"rank":80,"name":"Guillaume Nicaud","points":40,"tournaments":1},{"rank":80,"name":"Hippolyte Malgrain","points":40,"tournaments":1},{"rank":80,"name":"Juliette Rouhier","points":40,"tournaments":1},{"rank":80,"name":"Neil Mokaddem","points":40,"tournaments":1},{"rank":80,"name":"Shanie Azoulay","points":40,"tournaments":1},{"rank":80,"name":"Thomas Fouvry","points":40,"tournaments":1},{"rank":80,"name":"Titouan Pelletier","points":40,"tournaments":1},{"rank":102,"name":"Claire Lamarene","points":30,"tournaments":1},{"rank":102,"name":"Ariane Lezzoni","points":30,"tournaments":1},{"rank":102,"name":"Anna Seynave","points":30,"tournaments":1},{"rank":102,"name":"Anastasia Espona","points":30,"tournaments":1},{"rank":102,"name":"Mathieu Houette","points":30,"tournaments":1},{"rank":102,"name":"Thomas Huet","points":30,"tournaments":1},{"rank":102,"name":"Anna Accarin","points":30,"tournaments":1},{"rank":102,"name":"Arthur d'Hausen","points":30,"tournaments":1},{"rank":102,"name":"Julie Frohly","points":30,"tournaments":1},{"rank":102,"name":"Clément Priault","points":30,"tournaments":1},{"rank":102,"name":"Etienne Spor","points":30,"tournaments":1},{"rank":102,"name":"Ju Parja","points":30,"tournaments":1},{"rank":102,"name":"Margot Cintrat","points":30,"tournaments":1},{"rank":102,"name":"Marthe Semin","points":30,"tournaments":1},{"rank":102,"name":"Marty Roselmack","points":30,"tournaments":1},{"rank":102,"name":"Quentin Laroche","points":30,"tournaments":1},{"rank":102,"name":"Roy Cohen Solal","points":30,"tournaments":1},{"rank":102,"name":"Gabrielle Lessard","points":30,"tournaments":1},{"rank":102,"name":"Mattéo Fontaine","points":30,"tournaments":1},{"rank":102,"name":"Blaise Tricaud","points":30,"tournaments":1},{"rank":102,"name":"Thomas Wainblum","points":30,"tournaments":1},{"rank":102,"name":"Adrien de Noirmont","points":30,"tournaments":1},{"rank":102,"name":"Augustin Grellier","points":30,"tournaments":1},{"rank":102,"name":"Benjamin Fortin","points":30,"tournaments":1},{"rank":102,"name":"Dorothée Boucher","points":30,"tournaments":1},{"rank":102,"name":"Elsa Elkaim","points":30,"tournaments":1},{"rank":102,"name":"Emmanuel Gere","points":30,"tournaments":1},{"rank":102,"name":"Maïlys Duplantier","points":30,"tournaments":1},{"rank":102,"name":"Malo Doutey","points":30,"tournaments":1},{"rank":102,"name":"Manon Trimaglio","points":30,"tournaments":1},{"rank":102,"name":"Mathieu Poulat","points":30,"tournaments":1},{"rank":102,"name":"Nicolas Guillaume","points":30,"tournaments":1},{"rank":102,"name":"Paul Moreau","points":30,"tournaments":1},{"rank":102,"name":"Pétronille Bouhallier Chauvin","points":30,"tournaments":1},{"rank":102,"name":"Pierre Clermont","points":30,"tournaments":1},{"rank":102,"name":"Raphaëlle Sassi","points":30,"tournaments":1},{"rank":102,"name":"Félicien Savary","points":30,"tournaments":1},{"rank":102,"name":"Hamza Lahlou","points":30,"tournaments":1},{"rank":102,"name":"Isaure Costet","points":30,"tournaments":1},{"rank":102,"name":"Jacques Gauzentes","points":30,"tournaments":1},{"rank":102,"name":"Jean Gautier","points":30,"tournaments":1},{"rank":102,"name":"Joachim Bourgeais","points":30,"tournaments":1},{"rank":102,"name":"Jon Borromée","points":30,"tournaments":1},{"rank":102,"name":"Joseph Boucheron","points":30,"tournaments":1},{"rank":102,"name":"Justine Flour","points":30,"tournaments":1},{"rank":102,"name":"Léo Martinelli","points":30,"tournaments":1},{"rank":102,"name":"Mathis Ouali","points":30,"tournaments":1},{"rank":102,"name":"Morgane Follezou","points":30,"tournaments":1},{"rank":102,"name":"Nathanael Checkroun","points":30,"tournaments":1},{"rank":102,"name":"Ocatve de Bryas","points":30,"tournaments":1},{"rank":102,"name":"Oscar Robert","points":30,"tournaments":1},{"rank":102,"name":"Sébastien Langé","points":30,"tournaments":1},{"rank":102,"name":"Serhane Ben","points":30,"tournaments":1},{"rank":102,"name":"Théo Mallez","points":30,"tournaments":1},{"rank":102,"name":"Tom Chabeau","points":30,"tournaments":1},{"rank":157,"name":"Armand Camphuis","points":20,"tournaments":2},{"rank":157,"name":"Adrien Weill","points":20,"tournaments":2},{"rank":157,"name":"PAGI","points":20,"tournaments":2},{"rank":160,"name":"Alice Formery","points":10,"tournaments":1},{"rank":160,"name":"Alessia Rigonat","points":10,"tournaments":1},{"rank":160,"name":"Raphael Glennison","points":10,"tournaments":1},{"rank":160,"name":"Adèle de Crepy","points":10,"tournaments":1},{"rank":160,"name":"Emilie Jardin","points":10,"tournaments":1},{"rank":160,"name":"Alecandre Cor","points":10,"tournaments":1},{"rank":160,"name":"Antoine Luciano","points":10,"tournaments":1},{"rank":160,"name":"Bianca Grossi","points":10,"tournaments":1},{"rank":160,"name":"Marie Le Goff","points":10,"tournaments":1},{"rank":160,"name":"Claire Margotteau","points":10,"tournaments":1},{"rank":160,"name":"Andréas Lebihan","points":10,"tournaments":1},{"rank":160,"name":"Elohan Beil","points":10,"tournaments":1},{"rank":160,"name":"Luc de Smedt","points":10,"tournaments":1},{"rank":160,"name":"Diane Haccoun Fontant","points":10,"tournaments":1},{"rank":160,"name":"Dior Beye","points":10,"tournaments":1},{"rank":160,"name":"Elie Douenias","points":10,"tournaments":1},{"rank":160,"name":"Line Lavenant","points":10,"tournaments":1},{"rank":160,"name":"Capucine Albisetti","points":10,"tournaments":1},{"rank":160,"name":"Marine Despouys","points":10,"tournaments":1},{"rank":160,"name":"Abraham Domepar","points":10,"tournaments":1},{"rank":160,"name":"Arthur Destremau","points":10,"tournaments":1},{"rank":160,"name":"Aymeric ID","points":10,"tournaments":1},{"rank":160,"name":"Eleonore de Rodellec","points":10,"tournaments":1},{"rank":160,"name":"Fanny Lang","points":10,"tournaments":1},{"rank":160,"name":"Julie Sagaut","points":10,"tournaments":1},{"rank":160,"name":"Marie Mulliez","points":10,"tournaments":1},{"rank":160,"name":"Martin Bonello","points":10,"tournaments":1},{"rank":160,"name":"Noah Malan","points":10,"tournaments":1},{"rank":160,"name":"Hector Balaÿ","points":10,"tournaments":1},{"rank":160,"name":"Raphael Dutemple","points":10,"tournaments":1},{"rank":160,"name":"Rébecca Sebahoun","points":10,"tournaments":1},{"rank":160,"name":"Yona Chicheportiche","points":10,"tournaments":1},{"rank":160,"name":"Helène BO","points":10,"tournaments":1},{"rank":160,"name":"Jade Bienséant","points":10,"tournaments":1},{"rank":160,"name":"Alexandre Goarin","points":10,"tournaments":1},{"rank":160,"name":"Arnaud Lefebvre","points":10,"tournaments":1},{"rank":160,"name":"Miléna Prigent","points":10,"tournaments":1},{"rank":160,"name":"Théo Déchipre","points":10,"tournaments":1},{"rank":160,"name":"Thimothée Poissoneau","points":10,"tournaments":1},{"rank":160,"name":"Valentine Pichon","points":10,"tournaments":1},{"rank":160,"name":"Victor Estrangin","points":10,"tournaments":1},{"rank":160,"name":"Anne-Charlotte Dutilleul","points":10,"tournaments":1},{"rank":160,"name":"Barbara Wainblum","points":10,"tournaments":1},{"rank":160,"name":"Charles Axel Rhéa","points":10,"tournaments":1},{"rank":160,"name":"Claa Thomas","points":10,"tournaments":1},{"rank":160,"name":"Cloé Maire","points":10,"tournaments":1},{"rank":160,"name":"Edouard Mounier","points":10,"tournaments":1},{"rank":160,"name":"Eliot Tokarski","points":10,"tournaments":1},{"rank":160,"name":"Eloa Michalon","points":10,"tournaments":1},{"rank":160,"name":"Erwan Wuileme","points":10,"tournaments":1},{"rank":160,"name":"Ludovic Lienhard","points":10,"tournaments":1},{"rank":160,"name":"Malak Mihoubi","points":10,"tournaments":1},{"rank":160,"name":"Marie Colonna Renucci","points":10,"tournaments":1},{"rank":160,"name":"Mathéo Crémoux","points":10,"tournaments":1},{"rank":160,"name":"Paulin Robert","points":10,"tournaments":1},{"rank":160,"name":"Quantin Dommage","points":10,"tournaments":1},{"rank":160,"name":"Salomé Teboul","points":10,"tournaments":1},{"rank":160,"name":"Sarah Serezo","points":10,"tournaments":1},{"rank":160,"name":"Jeanne Bianchi","points":10,"tournaments":1},{"rank":160,"name":"Orso Stefani","points":10,"tournaments":1},{"rank":160,"name":"Ferréol Amigues","points":10,"tournaments":1},{"rank":160,"name":"Geoffroy Picaud","points":10,"tournaments":1},{"rank":160,"name":"Jonas Hauben","points":10,"tournaments":1},{"rank":160,"name":"Justine Ferrand","points":10,"tournaments":1},{"rank":160,"name":"Lea Meimoun","points":10,"tournaments":1},{"rank":160,"name":"Léo Soguet","points":10,"tournaments":1},{"rank":160,"name":"Lior Siber","points":10,"tournaments":1},{"rank":160,"name":"Louis Pierre Geffray","points":10,"tournaments":1},{"rank":160,"name":"Louise Gagnepin","points":10,"tournaments":1},{"rank":160,"name":"Maxime Icard","points":10,"tournaments":1},{"rank":160,"name":"Mohamed Ba","points":10,"tournaments":1},{"rank":160,"name":"Najib Mezrara","points":10,"tournaments":1},{"rank":160,"name":"Octave Journois","points":10,"tournaments":1},{"rank":160,"name":"Paul Joffre","points":10,"tournaments":1},{"rank":160,"name":"Sasha Vilain","points":10,"tournaments":1},{"rank":160,"name":"Sixtine Clair","points":10,"tournaments":1},{"rank":160,"name":"Thibault Blanquet du Chayla","points":10,"tournaments":1},{"rank":160,"name":"Thomas Gimazane","points":10,"tournaments":1},{"rank":160,"name":"Thomas Vial","points":10,"tournaments":1},{"rank":160,"name":"Tom Benabou","points":10,"tournaments":1},{"rank":160,"name":"Vctoire Dupont","points":10,"tournaments":1},{"rank":160,"name":"William Delonglée","points":10,"tournaments":1}];
+// ── TOURNAMENTS ──────────────────────────────────────────────────────────────
+// Modifie ici les noms et dates de tes tournois
+const TOURNAMENTS = [
+  { id: 'T1', name: 'Tournoi 1', date: '' },
+  { id: 'T2', name: 'Tournoi 2', date: '' },
+  { id: 'T3', name: 'Tournoi 3', date: '' },
+  { id: 'T4', name: 'Tournoi 4', date: '' },
+];
 
-// ── AVATAR COLORS ────────────────────────────────────────────────────────────
+// ── DATA ─────────────────────────────────────────────────────────────────────
+// Pour chaque joueur, tu peux renseigner l'historique par tournoi :
+// history: [{ tournamentId: 'T1', rank: 1, points: 90 }, ...]
+// Laisse history: [] si tu n'as pas encore saisi l'historique.
+const INITIAL_DATA = [
+  {"name":"Mathilde Beaugrand","points":240,"tournaments":3,"history":[]},
+  {"name":"Léna Garcia","points":210,"tournaments":2,"history":[]},
+  {"name":"Oscar Chemla","points":200,"tournaments":2,"history":[]},
+  {"name":"Balthazar Albaric","points":190,"tournaments":3,"history":[]},
+  {"name":"Renan Mukerjee","points":150,"tournaments":3,"history":[]},
+  {"name":"Nicolas Poirier","points":150,"tournaments":1,"history":[]},
+  {"name":"Adam Cohen","points":140,"tournaments":4,"history":[]},
+  {"name":"Jean de Gourcuff","points":130,"tournaments":3,"history":[]},
+  {"name":"Henry Lachapelle","points":120,"tournaments":2,"history":[]},
+  {"name":"Louis Ducurtil","points":120,"tournaments":3,"history":[]},
+  {"name":"Nicolas Soulignac","points":120,"tournaments":2,"history":[]},
+  {"name":"Théo Benichou","points":110,"tournaments":4,"history":[]},
+  {"name":"Céleste Challier","points":110,"tournaments":3,"history":[]},
+  {"name":"Jeanne Chausselat","points":110,"tournaments":3,"history":[]},
+  {"name":"Nathan Toussaint","points":100,"tournaments":2,"history":[]},
+  {"name":"Baudouin Gabalda","points":100,"tournaments":2,"history":[]},
+  {"name":"Marie Audeoud","points":100,"tournaments":2,"history":[]},
+  {"name":"Rafael de Oliveira","points":100,"tournaments":2,"history":[]},
+  {"name":"Isabelle Carles","points":100,"tournaments":2,"history":[]},
+  {"name":"Maxime Khaski","points":100,"tournaments":4,"history":[]},
+  {"name":"Paul Chausselat","points":100,"tournaments":2,"history":[]},
+  {"name":"Augustin Voruz","points":90,"tournaments":1,"history":[]},
+  {"name":"Jules Goupil","points":90,"tournaments":2,"history":[]},
+  {"name":"Laura Assedou","points":90,"tournaments":2,"history":[]},
+  {"name":"Nicolas Morillot","points":90,"tournaments":1,"history":[]},
+  {"name":"Amélie Noyelle","points":80,"tournaments":2,"history":[]},
+  {"name":"Blandine de Marsac","points":80,"tournaments":3,"history":[]},
+  {"name":"Louise David","points":80,"tournaments":2,"history":[]},
+  {"name":"Paula Jimenez","points":80,"tournaments":2,"history":[]},
+  {"name":"Grégoire Aubineau","points":80,"tournaments":2,"history":[]},
+  {"name":"Inaki Dugas","points":80,"tournaments":2,"history":[]},
+  {"name":"Alexandre Cohen","points":80,"tournaments":2,"history":[]},
+  {"name":"Jules de Meaux","points":80,"tournaments":2,"history":[]},
+  {"name":"Wilson Faure","points":80,"tournaments":2,"history":[]},
+  {"name":"Guillaume Despouys","points":70,"tournaments":2,"history":[]},
+  {"name":"Paul Santamaria","points":70,"tournaments":1,"history":[]},
+  {"name":"Raphaël Levy","points":70,"tournaments":1,"history":[]},
+  {"name":"Benjamin Presberg","points":70,"tournaments":4,"history":[]},
+  {"name":"Gaspard Baret","points":70,"tournaments":1,"history":[]},
+  {"name":"Laure Lafabure","points":70,"tournaments":1,"history":[]},
+  {"name":"Victor Le Boulanger","points":70,"tournaments":3,"history":[]},
+  {"name":"Alix Balay","points":60,"tournaments":2,"history":[]},
+  {"name":"Emile Simondin","points":60,"tournaments":2,"history":[]},
+  {"name":"Baptiste Despouys","points":60,"tournaments":2,"history":[]},
+  {"name":"Héloïse Goossens","points":60,"tournaments":2,"history":[]},
+  {"name":"Venceslas Toubiana","points":60,"tournaments":2,"history":[]},
+  {"name":"Violette de Poix","points":60,"tournaments":2,"history":[]},
+  {"name":"Antoine Thirot","points":50,"tournaments":1,"history":[]},
+  {"name":"Malo Dupuy","points":50,"tournaments":1,"history":[]},
+  {"name":"Arthur Dupont","points":50,"tournaments":1,"history":[]},
+  {"name":"Benoît Barbare","points":50,"tournaments":1,"history":[]},
+  {"name":"Maïwen Gautier","points":50,"tournaments":1,"history":[]},
+  {"name":"Aymeric Bourguignat","points":50,"tournaments":1,"history":[]},
+  {"name":"Elenore Michelot","points":50,"tournaments":1,"history":[]},
+  {"name":"Augustin Gervaise","points":50,"tournaments":1,"history":[]},
+  {"name":"Jon Erviti","points":50,"tournaments":1,"history":[]},
+  {"name":"Antoine de Vogue","points":50,"tournaments":1,"history":[]},
+  {"name":"Simoes Alexandre","points":50,"tournaments":1,"history":[]},
+  {"name":"Timothée Seurret","points":50,"tournaments":2,"history":[]},
+  {"name":"Amanda Da Silva","points":50,"tournaments":1,"history":[]},
+  {"name":"Dan Douenias","points":50,"tournaments":1,"history":[]},
+  {"name":"Elisabeth Feller","points":50,"tournaments":1,"history":[]},
+  {"name":"Lucie Challier","points":50,"tournaments":2,"history":[]},
+  {"name":"Raphael Penicaut","points":50,"tournaments":1,"history":[]},
+  {"name":"Romain Breton","points":50,"tournaments":1,"history":[]},
+  {"name":"Romane Auger","points":50,"tournaments":1,"history":[]},
+  {"name":"Laure Chaslin","points":50,"tournaments":1,"history":[]},
+  {"name":"Florian Viard","points":50,"tournaments":1,"history":[]},
+  {"name":"Jean Etienne Coudert","points":50,"tournaments":2,"history":[]},
+  {"name":"Jeanne Esmerian","points":50,"tournaments":1,"history":[]},
+  {"name":"Jérémie Sebbane","points":50,"tournaments":1,"history":[]},
+  {"name":"Joséphine Nusse","points":50,"tournaments":1,"history":[]},
+  {"name":"Louise Siwertz","points":50,"tournaments":1,"history":[]},
+  {"name":"Louison Palatre","points":50,"tournaments":1,"history":[]},
+  {"name":"Max Milhaileanu","points":50,"tournaments":1,"history":[]},
+  {"name":"Sixtine Blanc","points":50,"tournaments":3,"history":[]},
+  {"name":"Ulysee Fournier","points":50,"tournaments":1,"history":[]},
+  {"name":"Valentin Billy","points":50,"tournaments":1,"history":[]},
+  {"name":"Victor Conte","points":50,"tournaments":1,"history":[]},
+  {"name":"Mathilde Carles","points":40,"tournaments":2,"history":[]},
+  {"name":"Alexis Bombard","points":40,"tournaments":1,"history":[]},
+  {"name":"Apolline Loire","points":40,"tournaments":1,"history":[]},
+  {"name":"Charlotte Carles","points":40,"tournaments":2,"history":[]},
+  {"name":"Eliott Hayatt","points":40,"tournaments":2,"history":[]},
+  {"name":"Justine Kerdal","points":40,"tournaments":1,"history":[]},
+  {"name":"Flavia Servant","points":40,"tournaments":1,"history":[]},
+  {"name":"Pierre Henri Sanesi","points":40,"tournaments":1,"history":[]},
+  {"name":"Léo Mart","points":40,"tournaments":1,"history":[]},
+  {"name":"Antoine Troccaz","points":40,"tournaments":1,"history":[]},
+  {"name":"Lucie Héliez","points":40,"tournaments":1,"history":[]},
+  {"name":"Martin Dalmasso","points":40,"tournaments":1,"history":[]},
+  {"name":"Paul L'Hote","points":40,"tournaments":1,"history":[]},
+  {"name":"Pierre Leoz","points":40,"tournaments":1,"history":[]},
+  {"name":"Roy Cohen Solal","points":40,"tournaments":2,"history":[]},
+  {"name":"Guillaume Nicaud","points":40,"tournaments":1,"history":[]},
+  {"name":"Hippolyte Malgrain","points":40,"tournaments":1,"history":[]},
+  {"name":"Juliette Rouhier","points":40,"tournaments":1,"history":[]},
+  {"name":"Neil Mokaddem","points":40,"tournaments":1,"history":[]},
+  {"name":"Shanie Azoulay","points":40,"tournaments":1,"history":[]},
+  {"name":"Thomas Fouvry","points":40,"tournaments":1,"history":[]},
+  {"name":"Titouan Pelletier","points":40,"tournaments":1,"history":[]},
+  {"name":"Claire Lamarene","points":30,"tournaments":1,"history":[]},
+  {"name":"Ariane Lezzoni","points":30,"tournaments":1,"history":[]},
+  {"name":"Anna Seynave","points":30,"tournaments":1,"history":[]},
+  {"name":"Anastasia Espona","points":30,"tournaments":1,"history":[]},
+  {"name":"Mathieu Houette","points":30,"tournaments":1,"history":[]},
+  {"name":"Thomas Huet","points":30,"tournaments":1,"history":[]},
+  {"name":"Anna Accarin","points":30,"tournaments":1,"history":[]},
+  {"name":"Arthur d'Hausen","points":30,"tournaments":1,"history":[]},
+  {"name":"Julie Frohly","points":30,"tournaments":1,"history":[]},
+  {"name":"Clément Priault","points":30,"tournaments":1,"history":[]},
+  {"name":"Etienne Spor","points":30,"tournaments":1,"history":[]},
+  {"name":"Ju Parja","points":30,"tournaments":1,"history":[]},
+  {"name":"Margot Cintrat","points":30,"tournaments":1,"history":[]},
+  {"name":"Marthe Semin","points":30,"tournaments":1,"history":[]},
+  {"name":"Marty Roselmack","points":30,"tournaments":1,"history":[]},
+  {"name":"Quentin Laroche","points":30,"tournaments":1,"history":[]},
+  {"name":"Roy Cohen Solal","points":30,"tournaments":1,"history":[]},
+  {"name":"Gabrielle Lessard","points":30,"tournaments":1,"history":[]},
+  {"name":"Mattéo Fontaine","points":30,"tournaments":1,"history":[]},
+  {"name":"Blaise Tricaud","points":30,"tournaments":1,"history":[]},
+  {"name":"Thomas Wainblum","points":30,"tournaments":1,"history":[]},
+  {"name":"Adrien de Noirmont","points":30,"tournaments":1,"history":[]},
+  {"name":"Augustin Grellier","points":30,"tournaments":1,"history":[]},
+  {"name":"Benjamin Fortin","points":30,"tournaments":1,"history":[]},
+  {"name":"Dorothée Boucher","points":30,"tournaments":1,"history":[]},
+  {"name":"Elsa Elkaim","points":30,"tournaments":1,"history":[]},
+  {"name":"Emmanuel Gere","points":30,"tournaments":1,"history":[]},
+  {"name":"Maïlys Duplantier","points":30,"tournaments":1,"history":[]},
+  {"name":"Malo Doutey","points":30,"tournaments":1,"history":[]},
+  {"name":"Manon Trimaglio","points":30,"tournaments":1,"history":[]},
+  {"name":"Mathieu Poulat","points":30,"tournaments":1,"history":[]},
+  {"name":"Nicolas Guillaume","points":30,"tournaments":1,"history":[]},
+  {"name":"Paul Moreau","points":30,"tournaments":1,"history":[]},
+  {"name":"Pétronille Bouhallier Chauvin","points":30,"tournaments":1,"history":[]},
+  {"name":"Pierre Clermont","points":30,"tournaments":1,"history":[]},
+  {"name":"Raphaëlle Sassi","points":30,"tournaments":1,"history":[]},
+  {"name":"Félicien Savary","points":30,"tournaments":1,"history":[]},
+  {"name":"Hamza Lahlou","points":30,"tournaments":1,"history":[]},
+  {"name":"Isaure Costet","points":30,"tournaments":1,"history":[]},
+  {"name":"Jacques Gauzentes","points":30,"tournaments":1,"history":[]},
+  {"name":"Jean Gautier","points":30,"tournaments":1,"history":[]},
+  {"name":"Joachim Bourgeais","points":30,"tournaments":1,"history":[]},
+  {"name":"Jon Borromée","points":30,"tournaments":1,"history":[]},
+  {"name":"Joseph Boucheron","points":30,"tournaments":1,"history":[]},
+  {"name":"Justine Flour","points":30,"tournaments":1,"history":[]},
+  {"name":"Léo Martinelli","points":30,"tournaments":1,"history":[]},
+  {"name":"Mathis Ouali","points":30,"tournaments":1,"history":[]},
+  {"name":"Morgane Follezou","points":30,"tournaments":1,"history":[]},
+  {"name":"Nathanael Checkroun","points":30,"tournaments":1,"history":[]},
+  {"name":"Ocatve de Bryas","points":30,"tournaments":1,"history":[]},
+  {"name":"Oscar Robert","points":30,"tournaments":1,"history":[]},
+  {"name":"Sébastien Langé","points":30,"tournaments":1,"history":[]},
+  {"name":"Serhane Ben","points":30,"tournaments":1,"history":[]},
+  {"name":"Théo Mallez","points":30,"tournaments":1,"history":[]},
+  {"name":"Tom Chabeau","points":30,"tournaments":1,"history":[]},
+  {"name":"Armand Camphuis","points":20,"tournaments":2,"history":[]},
+  {"name":"Adrien Weill","points":20,"tournaments":2,"history":[]},
+  {"name":"PAGI","points":20,"tournaments":2,"history":[]},
+  {"name":"Alice Formery","points":10,"tournaments":1,"history":[]},
+  {"name":"Alessia Rigonat","points":10,"tournaments":1,"history":[]},
+  {"name":"Raphael Glennison","points":10,"tournaments":1,"history":[]},
+  {"name":"Adèle de Crepy","points":10,"tournaments":1,"history":[]},
+  {"name":"Emilie Jardin","points":10,"tournaments":1,"history":[]},
+  {"name":"Alecandre Cor","points":10,"tournaments":1,"history":[]},
+  {"name":"Antoine Luciano","points":10,"tournaments":1,"history":[]},
+  {"name":"Bianca Grossi","points":10,"tournaments":1,"history":[]},
+  {"name":"Marie Le Goff","points":10,"tournaments":1,"history":[]},
+  {"name":"Claire Margotteau","points":10,"tournaments":1,"history":[]},
+  {"name":"Andréas Lebihan","points":10,"tournaments":1,"history":[]},
+  {"name":"Elohan Beil","points":10,"tournaments":1,"history":[]},
+  {"name":"Luc de Smedt","points":10,"tournaments":1,"history":[]},
+  {"name":"Diane Haccoun Fontant","points":10,"tournaments":1,"history":[]},
+  {"name":"Dior Beye","points":10,"tournaments":1,"history":[]},
+  {"name":"Elie Douenias","points":10,"tournaments":1,"history":[]},
+  {"name":"Line Lavenant","points":10,"tournaments":1,"history":[]},
+  {"name":"Capucine Albisetti","points":10,"tournaments":1,"history":[]},
+  {"name":"Marine Despouys","points":10,"tournaments":1,"history":[]},
+  {"name":"Abraham Domepar","points":10,"tournaments":1,"history":[]},
+  {"name":"Arthur Destremau","points":10,"tournaments":1,"history":[]},
+  {"name":"Aymeric ID","points":10,"tournaments":1,"history":[]},
+  {"name":"Eleonore de Rodellec","points":10,"tournaments":1,"history":[]},
+  {"name":"Fanny Lang","points":10,"tournaments":1,"history":[]},
+  {"name":"Julie Sagaut","points":10,"tournaments":1,"history":[]},
+  {"name":"Marie Mulliez","points":10,"tournaments":1,"history":[]},
+  {"name":"Martin Bonello","points":10,"tournaments":1,"history":[]},
+  {"name":"Noah Malan","points":10,"tournaments":1,"history":[]},
+  {"name":"Hector Balaÿ","points":10,"tournaments":1,"history":[]},
+  {"name":"Raphael Dutemple","points":10,"tournaments":1,"history":[]},
+  {"name":"Rébecca Sebahoun","points":10,"tournaments":1,"history":[]},
+  {"name":"Yona Chicheportiche","points":10,"tournaments":1,"history":[]},
+  {"name":"Helène BO","points":10,"tournaments":1,"history":[]},
+  {"name":"Jade Bienséant","points":10,"tournaments":1,"history":[]},
+  {"name":"Alexandre Goarin","points":10,"tournaments":1,"history":[]},
+  {"name":"Arnaud Lefebvre","points":10,"tournaments":1,"history":[]},
+  {"name":"Miléna Prigent","points":10,"tournaments":1,"history":[]},
+  {"name":"Théo Déchipre","points":10,"tournaments":1,"history":[]},
+  {"name":"Thimothée Poissoneau","points":10,"tournaments":1,"history":[]},
+  {"name":"Valentine Pichon","points":10,"tournaments":1,"history":[]},
+  {"name":"Victor Estrangin","points":10,"tournaments":1,"history":[]},
+  {"name":"Anne-Charlotte Dutilleul","points":10,"tournaments":1,"history":[]},
+  {"name":"Barbara Wainblum","points":10,"tournaments":1,"history":[]},
+  {"name":"Charles Axel Rhéa","points":10,"tournaments":1,"history":[]},
+  {"name":"Claa Thomas","points":10,"tournaments":1,"history":[]},
+  {"name":"Cloé Maire","points":10,"tournaments":1,"history":[]},
+  {"name":"Edouard Mounier","points":10,"tournaments":1,"history":[]},
+  {"name":"Eliot Tokarski","points":10,"tournaments":1,"history":[]},
+  {"name":"Eloa Michalon","points":10,"tournaments":1,"history":[]},
+  {"name":"Erwan Wuileme","points":10,"tournaments":1,"history":[]},
+  {"name":"Ludovic Lienhard","points":10,"tournaments":1,"history":[]},
+  {"name":"Malak Mihoubi","points":10,"tournaments":1,"history":[]},
+  {"name":"Marie Colonna Renucci","points":10,"tournaments":1,"history":[]},
+  {"name":"Mathéo Crémoux","points":10,"tournaments":1,"history":[]},
+  {"name":"Paulin Robert","points":10,"tournaments":1,"history":[]},
+  {"name":"Quantin Dommage","points":10,"tournaments":1,"history":[]},
+  {"name":"Salomé Teboul","points":10,"tournaments":1,"history":[]},
+  {"name":"Sarah Serezo","points":10,"tournaments":1,"history":[]},
+  {"name":"Jeanne Bianchi","points":10,"tournaments":1,"history":[]},
+  {"name":"Orso Stefani","points":10,"tournaments":1,"history":[]},
+  {"name":"Ferréol Amigues","points":10,"tournaments":1,"history":[]},
+  {"name":"Geoffroy Picaud","points":10,"tournaments":1,"history":[]},
+  {"name":"Jonas Hauben","points":10,"tournaments":1,"history":[]},
+  {"name":"Justine Ferrand","points":10,"tournaments":1,"history":[]},
+  {"name":"Lea Meimoun","points":10,"tournaments":1,"history":[]},
+  {"name":"Léo Soguet","points":10,"tournaments":1,"history":[]},
+  {"name":"Lior Siber","points":10,"tournaments":1,"history":[]},
+  {"name":"Louis Pierre Geffray","points":10,"tournaments":1,"history":[]},
+  {"name":"Louise Gagnepin","points":10,"tournaments":1,"history":[]},
+  {"name":"Maxime Icard","points":10,"tournaments":1,"history":[]},
+  {"name":"Mohamed Ba","points":10,"tournaments":1,"history":[]},
+  {"name":"Najib Mezrara","points":10,"tournaments":1,"history":[]},
+  {"name":"Octave Journois","points":10,"tournaments":1,"history":[]},
+  {"name":"Paul Joffre","points":10,"tournaments":1,"history":[]},
+  {"name":"Sasha Vilain","points":10,"tournaments":1,"history":[]},
+  {"name":"Sixtine Clair","points":10,"tournaments":1,"history":[]},
+  {"name":"Thibault Blanquet du Chayla","points":10,"tournaments":1,"history":[]},
+  {"name":"Thomas Gimazane","points":10,"tournaments":1,"history":[]},
+  {"name":"Thomas Vial","points":10,"tournaments":1,"history":[]},
+  {"name":"Tom Benabou","points":10,"tournaments":1,"history":[]},
+  {"name":"Vctoire Dupont","points":10,"tournaments":1,"history":[]},
+  {"name":"William Delonglée","points":10,"tournaments":1,"history":[]}
+];
+
+// ── AVATAR COLORS ─────────────────────────────────────────────────────────────
 const AVATAR_COLORS = ['#E91E63','#FFB300','#00BCD4','#4CAF50','#FF5722','#9C27B0','#2196F3','#009688','#FF9800','#607D8B'];
 const getInitials = name => { const p = name.trim().split(' '); return p.length >= 2 ? (p[0][0]+(p[p.length-1][0])).toUpperCase() : name.slice(0,2).toUpperCase(); };
 const getAvatarColor = idx => AVATAR_COLORS[idx % AVATAR_COLORS.length];
 
-// ── STATE ────────────────────────────────────────────────────────────────────
-let players = INITIAL_DATA.map((p, i) => ({ ...p, _id: i, _origRank: p.rank }));
-let sortCol = 'rank', sortDir = 1;
-let searchQuery = '', filterMin = 0, filterMax = 99999;
-let editingId = null;
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+// Mot de passe : modifie-le ici
+const ADMIN_PASSWORD = 'palif2025';
+let isAdmin = false;
+let logoClickCount = 0, logoClickTimer = null;
+
+document.getElementById('logoBtn').addEventListener('click', () => {
+  logoClickCount++;
+  clearTimeout(logoClickTimer);
+  logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1200);
+  if (logoClickCount >= 5) {
+    logoClickCount = 0;
+    if (isAdmin) {
+      isAdmin = false;
+      applyAdminUI();
+      toast('🔓 Mode admin désactivé');
+    } else {
+      const pwd = prompt('Mot de passe admin :');
+      if (pwd === ADMIN_PASSWORD) {
+        isAdmin = true;
+        applyAdminUI();
+        toast('🔐 Mode admin activé');
+      } else if (pwd !== null) {
+        toast('❌ Mot de passe incorrect');
+      }
+    }
+  }
+});
+
+function applyAdminUI() {
+  document.getElementById('adminBadge').style.display = isAdmin ? 'inline' : 'none';
+  document.getElementById('toggleAdd').style.display = isAdmin ? 'inline-flex' : 'none';
+  if (!isAdmin) document.getElementById('addSection').classList.remove('visible');
+  renderTable();
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const saved = localStorage.getItem('palificup_v2');
+let players = saved
+  ? JSON.parse(saved)
+  : INITIAL_DATA.map((p, i) => ({ ...p, _id: i }));
+let sortCol = 'rank', sortDir = 1, searchQuery = '', editingId = null;
+
+function saveData() { localStorage.setItem('palificup_v2', JSON.stringify(players)); }
 
 // ── RANK RECALCULATION ────────────────────────────────────────────────────────
 function recalcRanks() {
-  // Sort by points desc, then name asc
   const sorted = [...players].sort((a,b) => b.points - a.points || a.name.localeCompare(b.name));
   let rank = 1;
   for (let i = 0; i < sorted.length; i++) {
     if (i > 0 && sorted[i].points < sorted[i-1].points) rank = i + 1;
     sorted[i].rank = rank;
   }
-  // Apply back to players
   const rankMap = new Map(sorted.map(p => [p._id, p.rank]));
   players = players.map(p => ({ ...p, rank: rankMap.get(p._id) }));
 }
 
-// ── STATS ────────────────────────────────────────────────────────────────────
+// ── STATS ─────────────────────────────────────────────────────────────────────
 function updateStats() {
   const sorted = [...players].sort((a,b) => a.rank - b.rank || a.name.localeCompare(b.name));
   const top3 = sorted.slice(0,3);
   const totalPts = players.reduce((s,p) => s+p.points, 0);
   const totalT   = players.reduce((s,p) => s+p.tournaments, 0);
-  const band = document.getElementById('statsBand');
   const medal = ['gold','silver','bronze'];
-  band.innerHTML = `
+  document.getElementById('statsBand').innerHTML = `
     ${top3.map((p,i) => `
       <div class="stat-item">
         <div class="stat-val ${medal[i]}">${p.name.split(' ').pop().toUpperCase()}</div>
         <div class="stat-lbl">${['🥇 1er','🥈 2e','🥉 3e'][i]} · ${p.points} pts</div>
-      </div>
-      <div class="stats-divider"></div>
-    `).join('')}
-    <div class="stat-item">
-      <div class="stat-val">${players.length}</div>
-      <div class="stat-lbl">Joueurs</div>
-    </div>
+      </div><div class="stats-divider"></div>`).join('')}
+    <div class="stat-item"><div class="stat-val">${players.length}</div><div class="stat-lbl">Joueurs</div></div>
     <div class="stats-divider"></div>
-    <div class="stat-item">
-      <div class="stat-val">${totalPts.toLocaleString()}</div>
-      <div class="stat-lbl">Points total</div>
-    </div>
+    <div class="stat-item"><div class="stat-val">${totalPts.toLocaleString()}</div><div class="stat-lbl">Points total</div></div>
     <div class="stats-divider"></div>
-    <div class="stat-item">
-      <div class="stat-val">${totalT}</div>
-      <div class="stat-lbl">Participations</div>
-    </div>
+    <div class="stat-item"><div class="stat-val">${totalT}</div><div class="stat-lbl">Participations</div></div>
     <div class="stats-divider"></div>
-    <div class="stat-item">
-      <div class="stat-val">${Math.round(totalPts/players.length)}</div>
-      <div class="stat-lbl">Moy. pts</div>
-    </div>
-  `;
+    <div class="stat-item"><div class="stat-val">${Math.round(totalPts/players.length)}</div><div class="stat-lbl">Moy. pts</div></div>`;
 }
 
-// ── CHART ────────────────────────────────────────────────────────────────────
+// ── CHART ─────────────────────────────────────────────────────────────────────
 function updateChart() {
   const top10 = [...players].sort((a,b) => b.points - a.points).slice(0,10);
   const maxPts = top10[0]?.points || 1;
-  const wrap = document.getElementById('chartBars');
-  wrap.innerHTML = top10.map((p, i) => {
+  document.getElementById('chartBars').innerHTML = top10.map((p, i) => {
     const h = Math.max(8, (p.points / maxPts) * 130);
     const col = AVATAR_COLORS[i % AVATAR_COLORS.length];
-    const nameParts = p.name.trim().split(' ');
-    const shortName = nameParts[nameParts.length-1];
-    return `
-      <div class="chart-bar-col">
-        <div class="chart-bar" style="height:${h}px;background:${col};opacity:0.85" title="${p.name}: ${p.points} pts">
-          <span class="chart-bar-val">${p.points}</span>
-        </div>
-        <div class="chart-bar-name" title="${p.name}">${shortName}</div>
+    return `<div class="chart-bar-col">
+      <div class="chart-bar" style="height:${h}px;background:${col};opacity:0.85" title="${p.name}: ${p.points} pts">
+        <span class="chart-bar-val">${p.points}</span>
       </div>
-    `;
+      <div class="chart-bar-name" title="${p.name}">${p.name.trim().split(' ').pop()}</div>
+    </div>`;
   }).join('');
 }
 
@@ -574,7 +656,6 @@ function getFiltered() {
     const q = searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     list = list.filter(p => p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(q));
   }
-  list = list.filter(p => p.points >= filterMin && p.points <= filterMax);
   list.sort((a,b) => {
     let va = a[sortCol], vb = b[sortCol];
     if (typeof va === 'string') va = va.toLowerCase();
@@ -588,64 +669,46 @@ function renderTable() {
   const list = getFiltered();
   const tbody = document.getElementById('tableBody');
   document.getElementById('resultsCount').textContent = `${list.length} joueur${list.length>1?'s':''} affiché${list.length>1?'s':''}`;
+  document.getElementById('adminColHeader').style.display = isAdmin ? '' : 'none';
 
-  if (!list.length) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Aucun joueur trouvé</td></tr>`;
-    return;
-  }
+  if (!list.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Aucun joueur trouvé</td></tr>`; return; }
 
-  const maxPts = Math.max(...players.map(p=>p.points));
-
+  const maxPts = players.reduce((max, p) => p.points > max ? p.points : max, 0);
   tbody.innerHTML = list.map((p, idx) => {
-    const rankDiff = p._origRank - p.rank;
-    const change = rankDiff > 0 ? `<span class="change-badge change-up">▲ ${rankDiff}</span>`
-                 : rankDiff < 0 ? `<span class="change-badge change-dn">▼ ${Math.abs(rankDiff)}</span>`
-                 : `<span class="change-same">—</span>`;
-
-    const rankClass = p.rank === 1 ? 'rank-1' : p.rank === 2 ? 'rank-2' : p.rank === 3 ? 'rank-3' : 'rank-other';
-    const rowClass  = p.rank === 1 ? 'top1' : p.rank === 2 ? 'top2' : p.rank === 3 ? 'top3' : '';
-    const avgColor  = getAvatarColor(idx);
-    const initials  = getInitials(p.name);
+    const rankClass = p.rank===1?'rank-1':p.rank===2?'rank-2':p.rank===3?'rank-3':'rank-other';
+    const rowClass  = p.rank===1?'top1':p.rank===2?'top2':p.rank===3?'top3':'';
+    const color     = getAvatarColor(idx);
     const nameParts = p.name.trim().split(' ');
-    const firstName = nameParts[0];
-    const lastName  = nameParts.slice(1).join(' ').toUpperCase();
     const barW      = Math.round((p.points / maxPts) * 100);
+    const hasHistory = p.history && p.history.length > 0;
+    const adminCells = isAdmin ? `<td class="td-actions" style="text-align:right">
+      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openEdit(${p._id})" aria-label="Modifier ${p.name}">✏️</button>
+      <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deletePlayer(${p._id})" style="margin-left:4px" aria-label="Supprimer ${p.name}">✕</button>
+    </td>` : '';
 
-    return `<tr class="${rowClass}" data-id="${p._id}">
+    return `<tr class="${rowClass}" onclick="openHistory(${p._id})" title="Voir l'historique de ${p.name}">
       <td class="td-rank"><span class="rank-num ${rankClass}">${p.rank}</span></td>
-      <td class="td-change">${change}</td>
       <td class="td-player">
         <div class="player-cell">
-          <div class="avatar" style="background:${avgColor}">${initials}</div>
+          <div class="avatar" style="background:${color}">${getInitials(p.name)}</div>
           <div class="player-names">
-            <div class="player-first">${firstName}</div>
-            <div class="player-last">${lastName || firstName.toUpperCase()}</div>
+            <div class="player-first">${nameParts[0]}</div>
+            <div class="player-last">${nameParts.slice(1).join(' ').toUpperCase() || nameParts[0].toUpperCase()}</div>
           </div>
+          ${hasHistory ? '<span class="history-indicator">📋</span>' : ''}
         </div>
       </td>
+      <td class="td-t"><span class="tourn-pill">${p.tournaments} tournoi${p.tournaments>1?'s':''}</span></td>
       <td class="td-pts">
-        <div class="pts-badge">
-          <span class="pts-num">${p.points}</span>
-          <span class="pts-lbl">PTS</span>
-        </div>
+        <div class="pts-badge"><span class="pts-num">${p.points}</span><span class="pts-lbl">PTS</span></div>
         <div class="pts-bar-wrap"><div class="pts-bar" style="width:${barW}%"></div></div>
       </td>
-      <td class="td-t"><span class="tourn-pill">${p.tournaments}T</span></td>
-      <td class="td-actions">
-        <button class="btn btn-ghost btn-sm" onclick="openEdit(${p._id})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deletePlayer(${p._id})" style="margin-left:4px">✕</button>
-      </td>
+      ${adminCells}
     </tr>`;
   }).join('');
 }
 
-function refresh() {
-  recalcRanks();
-  updateStats();
-  updateChart();
-  renderTable();
-  updateSortHeaders();
-}
+function refresh() { recalcRanks(); saveData(); updateStats(); updateChart(); renderTable(); updateSortHeaders(); }
 
 // ── SORT ──────────────────────────────────────────────────────────────────────
 function updateSortHeaders() {
@@ -653,44 +716,63 @@ function updateSortHeaders() {
     const col = th.dataset.col;
     th.classList.toggle('sorted', col === sortCol);
     const arrow = th.querySelector('.sort-arrow');
-    if (arrow) {
-      if (col === sortCol) {
-        arrow.textContent = sortDir === 1 ? '▲' : '▼';
-      } else {
-        arrow.textContent = '↕';
-      }
-    }
+    if (arrow) arrow.textContent = col === sortCol ? (sortDir===1?'▲':'▼') : '↕';
   });
 }
-
 document.querySelectorAll('thead th[data-col]').forEach(th => {
   th.addEventListener('click', () => {
     const col = th.dataset.col;
     if (sortCol === col) sortDir *= -1;
-    else { sortCol = col; sortDir = col === 'rank' || col === 'points' ? 1 : 1; }
+    else { sortCol = col; sortDir = 1; }
     renderTable(); updateSortHeaders();
   });
 });
 
-// ── SEARCH & FILTER ───────────────────────────────────────────────────────────
+// ── SEARCH ────────────────────────────────────────────────────────────────────
 document.getElementById('searchInput').addEventListener('input', e => {
-  searchQuery = e.target.value.trim();
-  renderTable();
-  document.getElementById('resultsCount');
+  searchQuery = e.target.value.trim(); renderTable();
 });
 
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    filterMin = +btn.dataset.min;
-    filterMax = +btn.dataset.max;
-    renderTable();
-  });
-});
+// ── HISTORY MODAL ─────────────────────────────────────────────────────────────
+function openHistory(id) {
+  const p = players.find(x => x._id === id);
+  if (!p) return;
+  const medal = p.rank===1?'🥇':p.rank===2?'🥈':p.rank===3?'🥉':'🎯';
+  document.getElementById('historyTitle').textContent = p.name;
+  document.getElementById('historySubtitle').textContent = `${medal} Rang #${p.rank} · ${p.points} pts au total · ${p.tournaments} tournoi${p.tournaments>1?'s':''}`;
 
-// ── EDIT ──────────────────────────────────────────────────────────────────────
+  const content = document.getElementById('historyContent');
+  if (!p.history || p.history.length === 0) {
+    content.innerHTML = `<div class="history-empty">📭 Aucun historique détaillé disponible pour ce joueur.<br><span style="font-size:12px">Active le mode admin pour saisir les résultats par tournoi.</span></div>`;
+  } else {
+    const rows = p.history.map(h => {
+      const t = TOURNAMENTS.find(x => x.id === h.tournamentId) || { name: h.tournamentId, date: '' };
+      const rc = h.rank===1?'r1':h.rank===2?'r2':h.rank===3?'r3':'';
+      return `<tr>
+        <td><strong>${t.name}</strong>${t.date?`<br><span style="font-size:11px;color:var(--text-dim)">${t.date}</span>`:''}></td>
+        <td><span class="history-rank-badge ${rc}">${h.rank}</span></td>
+        <td><span class="history-pts">${h.points}</span> <span style="font-size:11px;color:var(--text-dim)">pts</span></td>
+      </tr>`;
+    }).join('');
+    content.innerHTML = `
+      <table class="history-table">
+        <thead><tr><th>Tournoi</th><th>Classement</th><th>Points</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="modal-total">
+        <span class="modal-total-label">Total cumulé</span>
+        <span class="modal-total-val">${p.points} pts</span>
+      </div>`;
+  }
+  document.getElementById('historyModal').classList.add('open');
+}
+function closeHistory() { document.getElementById('historyModal').classList.remove('open'); }
+document.getElementById('closeHistory').onclick = closeHistory;
+document.getElementById('historyModal').addEventListener('click', e => { if (e.target === document.getElementById('historyModal')) closeHistory(); });
+
+// ── EDIT (admin) ──────────────────────────────────────────────────────────────
 function openEdit(id) {
+  if (!isAdmin) return;
   const p = players.find(x => x._id === id);
   if (!p) return;
   editingId = id;
@@ -699,88 +781,68 @@ function openEdit(id) {
   document.getElementById('editPoints').value = p.points;
   document.getElementById('editTournaments').value = p.tournaments;
   document.getElementById('editModal').classList.add('open');
+  setTimeout(() => document.getElementById('editName').focus(), 50);
 }
-function closeEdit() {
-  editingId = null;
-  document.getElementById('editModal').classList.remove('open');
-}
+function closeEdit() { editingId = null; document.getElementById('editModal').classList.remove('open'); }
 document.getElementById('closeModal').onclick = closeEdit;
 document.getElementById('cancelEdit').onclick = closeEdit;
-document.getElementById('editModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('editModal')) closeEdit();
-});
+document.getElementById('editModal').addEventListener('click', e => { if (e.target === document.getElementById('editModal')) closeEdit(); });
 document.getElementById('confirmEdit').onclick = () => {
-  const name   = document.getElementById('editName').value.trim();
-  const pts    = parseInt(document.getElementById('editPoints').value) || 0;
-  const tourns = parseInt(document.getElementById('editTournaments').value) || 0;
+  const name = document.getElementById('editName').value.trim();
+  const pts  = parseInt(document.getElementById('editPoints').value) || 0;
+  const t    = parseInt(document.getElementById('editTournaments').value) || 0;
   if (!name) { toast('⚠️ Le nom ne peut pas être vide'); return; }
-  players = players.map(p => p._id === editingId ? { ...p, name, points: pts, tournaments: tourns } : p);
-  closeEdit();
-  refresh();
-  toast('✅ Joueur modifié avec succès');
+  players = players.map(p => p._id === editingId ? { ...p, name, points: pts, tournaments: t } : p);
+  closeEdit(); refresh(); toast('✅ Joueur modifié avec succès');
 };
 
-// ── DELETE ────────────────────────────────────────────────────────────────────
+// ── DELETE (admin) ────────────────────────────────────────────────────────────
 function deletePlayer(id) {
+  if (!isAdmin) return;
   const p = players.find(x => x._id === id);
-  if (!p) return;
-  if (!confirm(`Supprimer "${p.name}" du classement ?`)) return;
+  if (!p || !confirm(`Supprimer "${p.name}" du classement ?`)) return;
   players = players.filter(x => x._id !== id);
-  refresh();
-  toast(`🗑️ ${p.name} supprimé`);
+  refresh(); toast(`🗑️ ${p.name} supprimé`);
 }
 
-// ── ADD PLAYER ────────────────────────────────────────────────────────────────
-document.getElementById('toggleAdd').addEventListener('click', () => {
-  const sec = document.getElementById('addSection');
-  sec.classList.toggle('visible');
-});
-
+// ── ADD (admin) ────────────────────────────────────────────────────────────────
+document.getElementById('toggleAdd').addEventListener('click', () => document.getElementById('addSection').classList.toggle('visible'));
 document.getElementById('addConfirm').addEventListener('click', () => {
-  const name   = document.getElementById('addName').value.trim();
-  const pts    = parseInt(document.getElementById('addPoints').value) || 0;
-  const tourns = parseInt(document.getElementById('addTournaments').value) || 1;
+  const name = document.getElementById('addName').value.trim();
+  const pts  = parseInt(document.getElementById('addPoints').value) || 0;
+  const t    = parseInt(document.getElementById('addTournaments').value) || 1;
   if (!name) { toast('⚠️ Entrez un nom'); return; }
-  const newId = Math.max(...players.map(p=>p._id), 0) + 1;
-  players.push({ _id: newId, name, points: pts, tournaments: tourns, rank: 999, _origRank: 999 });
+  const newId = players.reduce((max, p) => p._id > max ? p._id : max, 0) + 1;
+  players.push({ _id: newId, name, points: pts, tournaments: t, rank: 999, history: [] });
   document.getElementById('addName').value = '';
   document.getElementById('addPoints').value = '';
   document.getElementById('addTournaments').value = '';
-  refresh();
-  toast(`✅ ${name} ajouté au classement`);
+  refresh(); toast(`✅ ${name} ajouté`);
   document.getElementById('addSection').classList.remove('visible');
 });
 
 // ── CHART TOGGLE ──────────────────────────────────────────────────────────────
-document.getElementById('toggleChart').addEventListener('click', () => {
-  document.getElementById('chartSection').classList.toggle('visible');
-});
+document.getElementById('toggleChart').addEventListener('click', () => document.getElementById('chartSection').classList.toggle('visible'));
 
 // ── EXPORT CSV ────────────────────────────────────────────────────────────────
 document.getElementById('exportBtn').addEventListener('click', () => {
   const sorted = [...players].sort((a,b) => a.rank - b.rank || a.name.localeCompare(b.name));
-  const header = 'Rang,Joueur,Points,Tournois\n';
-  const rows   = sorted.map(p => `${p.rank},"${p.name}",${p.points},${p.tournaments}`).join('\n');
-  const blob   = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
-  const url    = URL.createObjectURL(blob);
-  const a      = document.createElement('a');
-  a.href = url; a.download = 'palificup_classement.csv';
-  a.click(); URL.revokeObjectURL(url);
-  toast('⬇️ Export CSV téléchargé');
+  const csv = 'Rang,Joueur,Points,Tournois\n' + sorted.map(p => `${p.rank},"${p.name}",${p.points},${p.tournaments}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = 'palificup_classement.csv';
+  a.click(); toast('⬇️ Export CSV téléchargé');
 });
 
 // ── TOAST ─────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
+  el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2800);
 }
 
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeEdit();
-});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEdit(); closeHistory(); } });
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 refresh();
