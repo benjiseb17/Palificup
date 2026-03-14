@@ -155,18 +155,13 @@
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   thead tr {
     background: var(--navy-hdr);
+    border-bottom: 2px solid var(--accent);
   }
   thead th {
     padding: 10px 12px; text-align: left;
     font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
     text-transform: uppercase; color: var(--blue-lt);
     cursor: pointer; user-select: none; white-space: nowrap;
-    /* Entête du tableau toujours visible lors du défilement */
-    position: sticky;
-    top: 192px;        /* header (70px) + stats (56px) + toolbar (~66px) */
-    background: var(--navy-hdr);  /* fond opaque pour masquer les lignes derrière */
-    z-index: 70;
-    border-bottom: 2px solid var(--accent);  /* ligne orange sous l'entête */
   }
   thead th:hover { color: var(--white); }
   thead th .sort-arrow { margin-left: 4px; opacity: .4; }
