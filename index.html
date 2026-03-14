@@ -111,11 +111,11 @@
     display: flex; gap: 32px; align-items: center; flex-wrap: wrap;
   }
   .stat-item { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-  .stat-val { font-size: 22px; font-weight: 800; color: var(--blue-lt); line-height: 1; }
+  .stat-val { font-size: 22px; font-weight: 800; color: var(--white); line-height: 1; }
   .stat-val.gold   { color: var(--gold); }
   .stat-val.silver { color: var(--silver); }
   .stat-val.bronze { color: var(--bronze); }
-  .stat-lbl { font-size: 10px; color: var(--blue-lt); letter-spacing: 1.5px; text-transform: uppercase; }
+  .stat-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1.5px; text-transform: uppercase; }
   .stats-divider { width: 1px; height: 36px; background: var(--separator); }
 
   /* ── TOOLBAR ─────────────────────────────────────────── */
@@ -828,20 +828,40 @@ document.getElementById('historyModal').addEventListener('click', e => {
   if (e.target === document.getElementById('historyModal')) closeHistory();
 });
 
-// Add result
+// Add result — met aussi à jour les points et le nb de tournois du joueur
 document.getElementById('confirmAddResult').onclick = () => {
   if (!adminMode || historyPlayerId === null) return;
   const tournament = document.getElementById('resTournament').value.trim();
   const resultat   = document.getElementById('resPosition').value.trim();
   const points     = parseInt(document.getElementById('resPoints').value) || 0;
   if (!tournament) { toast('⚠️ Entrez le nom du tournoi'); return; }
+
+  // 1. Ajoute le résultat à l'historique
   if (!extraHistory[historyPlayerId]) extraHistory[historyPlayerId] = [];
   extraHistory[historyPlayerId].push({ t: tournament, r: resultat, p: points, isExtra: true });
+
+  // 2. Met à jour les points et le nombre de tournois du joueur
+  players = players.map(p => {
+    if (p._id !== historyPlayerId) return p;
+    return { ...p, points: p.points + points, tournaments: p.tournaments + 1 };
+  });
+
+  // 3. Vide le formulaire
   document.getElementById('resTournament').value = '';
   document.getElementById('resPosition').value = '';
   document.getElementById('resPoints').value = '';
+
+  // 4. Met à jour le sous-titre de la modale avec les nouvelles stats
+  const p = players.find(x => x._id === historyPlayerId);
+  if (p) {
+    const subEl = document.querySelector('#historyHeader .history-player-sub');
+    if (subEl) subEl.textContent = `${p.points} pts · ${p.tournaments} tournoi${p.tournaments>1?'s':''}`;
+  }
+
+  // 5. Rafraîchit l'historique ET le classement global
   renderHistoryTable(historyPlayerId);
-  toast('✅ Résultat ajouté');
+  refresh();
+  toast('✅ Résultat ajouté — classement mis à jour');
 };
 
 // ── EDIT MODAL ────────────────────────────────────────────────────────────────
