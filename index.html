@@ -353,7 +353,7 @@
     <div class="logo-fallback" id="logoFallback" style="display:none">🎲</div>
     <div class="logo-text">
       <div class="logo-title">LA PALIFICUP</div>
-      <div class="logo-sub">Classement Officiel · Saison 2024-2025</div>
+      <div class="logo-sub">Classement Officiel</div>
     </div>
   </div>
   <div class="header-actions">
@@ -583,18 +583,8 @@ function updateStats() {
     </div>
     <div class="stats-divider"></div>
     <div class="stat-item">
-      <div class="stat-val">${totalPts.toLocaleString()}</div>
-      <div class="stat-lbl">Points total</div>
-    </div>
-    <div class="stats-divider"></div>
-    <div class="stat-item">
       <div class="stat-val">${totalT}</div>
       <div class="stat-lbl">Participations</div>
-    </div>
-    <div class="stats-divider"></div>
-    <div class="stat-item">
-      <div class="stat-val">${Math.round(totalPts/players.length)}</div>
-      <div class="stat-lbl">Moy. pts</div>
     </div>
   `;
 }
