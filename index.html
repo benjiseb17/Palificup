@@ -205,12 +205,13 @@
 
   .td-pts { width: 120px; }
   .pts-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #0d2037; border: 1px solid var(--separator);
-    border-radius: 6px; padding: 4px 10px;
-  }
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--separator); color: var(--blue-lt);
+  font-size: 12px; font-weight: 700;
+  border-radius: 12px; padding: 4px 10px;
+}
   .pts-num { font-size: 15px; font-weight: 800; color: var(--white); }
-  .pts-lbl { font-size: 10px; color: var(--text-dim); font-weight: 600; }
+  ..pts-lbl { font-size: 10px; color: var(--blue-lt); font-weight: 600; }
   .pts-bar-wrap { height: 3px; background: var(--separator); border-radius: 2px; margin-top: 3px; width: 100%; max-width: 90px; }
   .pts-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--blue-bright)); }
 
