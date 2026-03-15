@@ -155,7 +155,7 @@
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   thead tr {
     background: var(--navy-hdr);
-    border-bottom: 2px solid var(--accent);
+    border-bottom: 2px solid rgba(232,85,0,.25);
   }
   thead th {
     padding: 10px 12px; text-align: left;
@@ -175,9 +175,9 @@
   tbody tr:nth-child(odd)  { background: var(--navy); }
   tbody tr:nth-child(even) { background: var(--navy-alt); }
   tbody tr:hover { background: var(--navy-card) !important; }
-  tbody tr.top1 { background: rgba(255,208,64,.05) !important; }
-  tbody tr.top2 { background: rgba(200,200,208,.04) !important; }
-  tbody tr.top3 { background: rgba(204,122,58,.04) !important; }
+  tbody tr.top1 { background: rgba(230,172,0,.18) !important; border-left: 4px solid var(--gold); }
+  tbody tr.top2 { background: rgba(144,144,144,.14) !important; border-left: 4px solid var(--silver); }
+  tbody tr.top3 { background: rgba(160,98,42,.14) !important; border-left: 4px solid var(--bronze); }
 
   td { padding: 9px 12px; vertical-align: middle; }
 
@@ -213,6 +213,12 @@
   .tourn-pill span { font-size: 14px; color: var(--white); }
 
   .td-pts { width: 120px; }
+  .td-wins { width: 60px; text-align: left; white-space: nowrap; vertical-align: middle; }
+  .win-stars {
+    display: inline-block;
+    font-size: 13px;
+    line-height: 1;
+  }
   .pts-badge {
   display: inline-flex; align-items: center; gap: 5px;
   background: var(--separator); color: var(--blue-lt);
@@ -392,6 +398,7 @@
         <th class="td-player"  data-col="name">JOUEUR <span class="sort-arrow">↕</span></th>
         <th class="td-t"       data-col="tournaments">TOURNOIS <span class="sort-arrow">↕</span></th>
         <th class="td-pts"     data-col="points">POINTS <span class="sort-arrow">↕</span></th>
+        <th class="td-wins"></th>
         <th class="td-actions" id="thActions"></th>
       </tr>
     </thead>
@@ -636,6 +643,8 @@ function renderTable() {
     const lastName  = parts.slice(1).join(' ').toUpperCase();
     const barW      = Math.round((p.points / maxPts) * 100);
     const histCount = getPlayerHistory(p._id).length;
+    const wins = getPlayerHistory(p._id).filter(r => (r.r || r.resultat || '').toLowerCase().includes('vainqueur')).length;
+    const starsHtml = wins > 0 ? `<span class="win-stars" title="${wins} victoire${wins>1?'s':''}">${'🏆'.repeat(wins)}</span>` : '';
 
     const adminActions = adminMode ? `
       <td class="td-actions" onclick="event.stopPropagation()">
@@ -665,6 +674,7 @@ function renderTable() {
           <span class="pts-lbl">PTS</span>
         </div>
       </td>
+      <td class="td-wins">${starsHtml}</td>
       ${adminActions}
     </tr>`;
   }).join('');
