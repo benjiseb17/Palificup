@@ -152,7 +152,7 @@
 
   /* ── TABLE ───────────────────────────────────────────── */
   .table-wrap { padding: 0 24px 32px; }
-  table { width: 100%; max-width: 900px; border-collapse: collapse; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
   thead tr {
     background: var(--navy-hdr);
     border-bottom: 2px solid rgba(232,85,0,.25);
@@ -191,7 +191,7 @@
   .rank-3 { color: var(--bronze); }
   .rank-other { color: var(--blue-med); }
 
-  .td-player { width: 260px; max-width: 260px; }
+  .td-player { min-width: 200px; }
   .player-cell { display: flex; align-items: center; gap: 12px; }
   .avatar {
     width: 36px; height: 36px; border-radius: 50%;
@@ -203,27 +203,27 @@
   .player-last  { font-size: 14px; font-weight: 700; color: var(--white); }
 
   /* tournois column */
-  .td-t { width: 100px; text-align: center; }
+  .td-t { width: 110px; text-align: center; }
   .tourn-pill {
-    display: inline-flex; align-items: center; gap: 4px;
+    display: inline-flex; align-items: center; gap: 5px;
     background: var(--separator); color: var(--blue-lt);
-    font-size: 11px; font-weight: 700;
-    border-radius: 12px; padding: 4px 8px;
+    font-size: 12px; font-weight: 700;
+    border-radius: 12px; padding: 4px 10px;
   }
-  .tourn-pill span { font-size: 13px; color: var(--white); }
+  .tourn-pill span { font-size: 14px; color: var(--white); }
 
-  .td-pts { width: 100px; }
-  .td-wins { width: 40px; text-align: center; white-space: nowrap; vertical-align: middle; padding-left: 0; }
+  .td-pts { width: 120px; }
+  .td-wins { width: 60px; text-align: left; white-space: nowrap; vertical-align: middle; }
   .win-stars {
     display: inline-block;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1;
   }
   .pts-badge {
-    display: inline-flex; align-items: center; gap: 4px;
+    display: inline-flex; align-items: center; gap: 5px;
     background: var(--separator); color: var(--blue-lt);
-    font-size: 11px; font-weight: 700;
-    border-radius: 12px; padding: 4px 8px;
+    font-size: 12px; font-weight: 700;
+    border-radius: 12px; padding: 4px 10px;
   }
   .pts-num { font-size: 15px; font-weight: 800; color: var(--white); }
   ..pts-lbl { font-size: 10px; color: var(--blue-lt); font-weight: 600; }
