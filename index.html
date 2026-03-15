@@ -563,12 +563,12 @@ function promptAdmin() {
 
 // ── RANK RECALCULATION ────────────────────────────────────────────────────────
 // Recalcule les rangs après une modification : trie par points décroissants,
-// attribue le même rang aux joueurs à égalité de points.
+// en cas d'égalité, celui qui a le moins de tournois est devant.
 function recalcRanks() {
-  const sorted = [...players].sort((a,b) => b.points - a.points || a.name.localeCompare(b.name));
+  const sorted = [...players].sort((a,b) => b.points - a.points || a.tournaments - b.tournaments || a.name.localeCompare(b.name));
   let rank = 1;
   for (let i = 0; i < sorted.length; i++) {
-    if (i > 0 && sorted[i].points < sorted[i-1].points) rank = i + 1;
+    if (i > 0 && (sorted[i].points < sorted[i-1].points || sorted[i].tournaments > sorted[i-1].tournaments)) rank = i + 1;
     sorted[i].rank = rank;
   }
   const rankMap = new Map(sorted.map(p => [p._id, p.rank]));
