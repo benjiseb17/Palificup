@@ -346,14 +346,133 @@
   ::-webkit-scrollbar-track { background: var(--navy); }
   ::-webkit-scrollbar-thumb { background: var(--separator); border-radius: 3px; }
 
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Tablette  (≤ 900px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    /* Header */
+    .site-header { padding: 0 16px; height: 62px; }
+    .logo-img, .logo-fallback { height: 44px; width: 44px; }
+    .logo-title { font-size: 16px; }
+    .logo-sub   { font-size: 9px; }
+
+    /* Stats band */
+    .stats-band { padding: 10px 16px; gap: 20px; top: 62px; }
+    .stat-val   { font-size: 18px; }
+
+    /* Toolbar */
+    .toolbar { padding: 12px 16px 10px; top: 108px; }
+    .search-wrap { max-width: 100%; }
+
+    /* Table */
+    .table-wrap { padding: 0 16px 28px; }
+    table { font-size: 13px; }
+    td, th { padding: 8px 10px; }
+
+    /* Masquer la colonne Tournois */
+    .td-t, th.td-t { display: none; }
+
+    /* Points */
+    .td-pts { width: 100px; }
+    .pts-num { font-size: 13px; }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Mobile  (≤ 640px)
+     ══════════════════════════════════════════════════════ */
   @media (max-width: 640px) {
-    .stats-band { gap: 16px; }
-    .td-t { display: none; }
-    td, th { padding: 8px 8px; }
-    .toolbar { padding: 12px 12px 8px; }
-    .table-wrap { padding: 0 8px 24px; }
-    .site-header { padding: 0 12px; }
-    .logo-title { font-size: 15px; }
+
+    /* ── Header ────────────────────────────────────────── */
+    .site-header {
+      padding: 0 10px;
+      height: 56px;
+    }
+    .logo { gap: 8px; }
+    .logo-img, .logo-fallback { height: 38px; width: 38px; }
+    .logo-title { font-size: 14px; letter-spacing: 1px; }
+    .logo-sub   { display: none; }
+    .btn { padding: 6px 12px; font-size: 12px; }
+
+    /* ── Stats band ────────────────────────────────────── */
+    .stats-band {
+      top: 56px;
+      padding: 8px 10px;
+      gap: 0;
+      justify-content: space-around;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .stats-divider { height: 28px; }
+    .stat-val { font-size: 16px; }
+    .stat-lbl { font-size: 9px; letter-spacing: 1px; }
+
+    /* ── Toolbar ───────────────────────────────────────── */
+    .toolbar {
+      top: 104px;
+      padding: 8px 10px 6px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .search-wrap {
+      flex: 1 1 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .results-count {
+      margin-left: 0;
+      font-size: 11px;
+    }
+
+    /* ── Table ─────────────────────────────────────────── */
+    .table-wrap { padding: 0 6px 20px; }
+    table { font-size: 13px; }
+    thead th, tbody td { padding: 8px 6px; }
+
+    /* Colonnes cachées sur mobile */
+    .td-t, th.td-t       { display: none; } /* Tournois */
+    .td-wins, th.td-wins { display: none; } /* Victoires */
+
+    /* Colonne Rang — plus compacte */
+    .td-rank { width: 44px; }
+    .rank-num { font-size: 15px; }
+
+    /* Colonne Joueur — adapte l'avatar */
+    .td-player { min-width: 0; }
+    .player-cell { gap: 8px; }
+    .avatar { width: 30px; height: 30px; font-size: 11px; }
+    .player-first { font-size: 11px; }
+    .player-last  { font-size: 13px; }
+
+    /* Colonne Points */
+    .td-pts { width: auto; }
+    .pts-badge { padding: 3px 7px; font-size: 11px; }
+    .pts-num   { font-size: 13px; }
+
+    /* Colonne Actions */
+    .td-actions { width: 64px; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+    /* Modal */
+    .modal { padding: 20px 16px; border-radius: 10px; }
+    .add-result-grid { grid-template-columns: 1fr; }
+
+    /* Toast */
+    .toast {
+      bottom: 12px; right: 10px; left: 10px;
+      max-width: 100%;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Très petit mobile  (≤ 380px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 380px) {
+    .logo-title  { font-size: 12px; }
+    .stat-val    { font-size: 14px; }
+    .rank-num    { font-size: 13px; }
+    .player-last { font-size: 12px; }
+    .pts-num     { font-size: 12px; }
+    thead th, tbody td { padding: 6px 4px; }
   }
 </style>
 </head>
