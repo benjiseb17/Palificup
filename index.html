@@ -429,8 +429,11 @@
     thead th, tbody td { padding: 8px 6px; }
 
     /* Colonnes cachées sur mobile */
-    .td-t, th.td-t       { display: none; } /* Tournois */
-    .td-wins, th.td-wins { display: none; } /* Victoires */
+    .td-t, th.td-t { display: none; } /* Tournois */
+
+    /* Victoires (trophées) — reste visible, juste plus compact */
+    .td-wins { width: 44px; text-align: center; }
+    .win-stars { font-size: 11px; }
 
     /* Colonne Rang — plus compacte */
     .td-rank { width: 44px; }
