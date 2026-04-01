@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA PALIFICUP — Classement Officiel</title>
+
+<!-- SEO -->
+<meta name="description" content="Le premier tournoi de Perudo de France. Découvrez le classement officiel — points, victoires et résultats de tous les joueurs.">
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph (partage WhatsApp, Instagram, Facebook) -->
+<meta property="og:title" content="LA PALIFICUP — Classement Officiel">
+<meta property="og:description" content="Le premier tournoi de Perudo de France. Découvrez le classement officiel.">
+<meta property="og:url" content="https://www.palificup.fr">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.palificup.fr/logo.png">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+  /* =====================================================================
+     COULEURS — modifie ces valeurs pour changer tout le thème du site.
+     Utilise https://htmlcolorcodes.com/fr/ pour trouver un code couleur.
+     ===================================================================== */
+  :root {
+   /* -- Fonds -------------------------------------------------- */
+--navy:       #FDF5EC;   /* fond principal — blanc crème chaud       */
+--navy-hdr:   #FFF8F0;   /* header — blanc très légèrement orangé    */
+--navy-row:   #FFF1E0;   /* lignes impaires — crème doux             */
+--navy-alt:   #FFFFFF;   /* lignes paires — blanc pur                */
+--navy-card:  #FDE8D0;   /* cartes — pêche très clair                */
+
+/* -- Textes secondaires ------------------------------------- */
+--blue-lt:    #C05A00;   /* labels, sous-titres — orange foncé       */
+--blue-med:   #A04500;   /* rang 4+ — brun orangé                    */
+--blue-bright:#FF7A00;   /* barre progression — orange vif           */
+--accent:     #E85500;   /* accent principal — orange Perudo         */
+
+/* -- Médailles ---------------------------------------------- */
+--gold:       #E6AC00;   /* or — légèrement assombri pour le clair   */
+--silver:     #909090;   /* argent — gris moyen lisible              */
+--bronze:     #A0622A;   /* bronze cuivré                            */
+
+/* -- Textes ------------------------------------------------- */
+--white:      #1A0800;   /* texte principal — brun très foncé        */
+--text-dim:   #9A6A40;   /* texte discret — caramel moyen            */
+
+/* -- Actions ------------------------------------------------ */
+--green:      #1A9E4A;   /* hausse — vert foncé lisible sur clair    */
+--red:        #CC2020;   /* baisse / supprimer — rouge foncé         */
+--separator:  #F0D0B0;   /* bordures — beige orangé discret          */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  .site-header {
+    background: var(--navy-hdr);
+    border-bottom: 3px solid var(--accent);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-img {
+    height: 54px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+  .logo-fallback {
+    width: 54px; height: 54px;
+    background: linear-gradient(135deg, var(--gold), #e8a000);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .logo-text { line-height: 1.2; }
+  .logo-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--blue-lt); }
+  .logo-sub   { font-size: 10px; color: var(--blue-lt); letter-spacing: 3px; text-transform: uppercase; }
+
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  /* ── RESULT BADGE COLORS ─────────────────────────────── */
+  .btn {
+    padding: 7px 16px; border-radius: 6px; font-size: 13px;
+    font-weight: 600; cursor: pointer; border: none;
+    transition: all .18s; letter-spacing: .3px;
+  }
+  .btn-ghost {
+    background: transparent; color: var(--blue-lt);
+    border: 1px solid var(--separator);
+  }
+  .btn-ghost:hover { background: var(--navy-card); color: var(--white); }
+  .btn-primary { background: var(--accent); color: var(--white); }
+  .btn-primary:hover { background: #2070b0; }
+  .btn-gold { background: var(--gold); color: var(--navy); }
+  .btn-gold:hover { background: #e8c030; }
+  .btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+  .btn-danger:hover { background: #991b1b; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-admin-active {
+    background: rgba(255,208,64,.15); color: var(--gold);
+    border: 1px solid rgba(255,208,64,.4);
+  }
+  .btn-admin-active:hover { background: rgba(255,208,64,.25); }
+
+  /* ── STATS BAND ──────────────────────────────────────── */
+  /* Reste visible en haut lors du défilement, juste sous le header (70px) */
+  .stats-band {
+    background: var(--navy-card);
+    border-bottom: 1px solid var(--separator);
+    padding: 12px 24px;
+    display: flex; gap: 32px; align-items: center; flex-wrap: wrap;
+    position: sticky;
+    top: 70px;          /* hauteur du header */
+    z-index: 90;
+  }
+  .stat-item { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .stat-val { font-size: 22px; font-weight: 800; color: var(--blue-lt); line-height: 1; }
+  .stat-val.gold   { color: var(--gold); }
+  .stat-val.silver { color: var(--silver); }
+  .stat-val.bronze { color: var(--bronze); }
+  .stat-lbl { font-size: 10px; color: var(--blue-lt); letter-spacing: 1.5px; text-transform: uppercase; }
+  .stats-divider { width: 1px; height: 36px; background: var(--separator); }
+
+  /* ── TOOLBAR ─────────────────────────────────────────── */
+  /* Reste visible juste sous la bande de stats lors du défilement */
+  .toolbar {
+    padding: 16px 24px 12px;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    background: var(--navy);  /* fond opaque pour masquer le contenu derrière */
+    position: sticky;
+    top: 126px;        /* header (70px) + stats-band (~56px) */
+    z-index: 80;
+  }
+  .search-wrap {
+    flex: 1; min-width: 200px; max-width: 440px;
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim);
+  }
+  .search-input {
+    width: 100%; padding: 9px 12px 9px 34px;
+    background: var(--navy-card); border: 1px solid var(--separator);
+    border-radius: 8px; color: var(--white); font-size: 14px;
+    outline: none; transition: border .18s;
+  }
+  .search-input::placeholder { color: var(--text-dim); }
+  .search-input:focus { border-color: var(--accent); }
+  .results-count { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+
+  /* ── TABLE ───────────────────────────────────────────── */
+  .table-wrap { padding: 0 24px 32px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead tr {
+    background: var(--navy-hdr);
+    border-bottom: 2px solid rgba(232,85,0,.25);
+  }
+  thead th {
+    padding: 10px 12px; text-align: left;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--blue-lt);
+    cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  thead th:hover { color: var(--white); }
+  thead th .sort-arrow { margin-left: 4px; opacity: .4; }
+  thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--separator);
+    transition: background .12s;
+    cursor: pointer;
+  }
+  tbody tr:nth-child(odd)  { background: var(--navy); }
+  tbody tr:nth-child(even) { background: var(--navy-alt); }
+  tbody tr:hover { background: var(--navy-card) !important; }
+  tbody tr.top1 { background: rgba(230,172,0,.18) !important; border-left: 4px solid var(--gold); }
+  tbody tr.top2 { background: rgba(144,144,144,.14) !important; border-left: 4px solid var(--silver); }
+  tbody tr.top3 { background: rgba(160,98,42,.14) !important; border-left: 4px solid var(--bronze); }
+
+  td { padding: 9px 12px; vertical-align: middle; }
+
+  .td-rank { width: 60px; text-align: center; }
+  .rank-num {
+    font-size: 18px; font-weight: 900;
+    font-family: 'Arial Black', Arial, sans-serif; line-height: 1;
+  }
+  .rank-1 { color: var(--gold); }
+  .rank-2 { color: var(--silver); }
+  .rank-3 { color: var(--bronze); }
+  .rank-other { color: var(--blue-med); }
+
+  .td-player { min-width: 200px; }
+  .player-cell { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .player-names { line-height: 1.2; }
+  .player-first { font-size: 12px; color: var(--blue-lt); }
+  .player-last  { font-size: 14px; font-weight: 700; color: var(--white); }
+
+  /* tournois column */
+  .td-t { width: 110px; text-align: center; }
+  .tourn-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--separator); color: var(--blue-lt);
+    font-size: 12px; font-weight: 700;
+    border-radius: 12px; padding: 4px 10px;
+  }
+  .tourn-pill span { font-size: 14px; color: var(--white); }
+
+  .td-pts { width: 120px; }
+  .td-wins { width: 60px; text-align: left; white-space: nowrap; vertical-align: middle; }
+  .win-stars {
+    display: inline-block;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .pts-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--separator); color: var(--blue-lt);
+    font-size: 12px; font-weight: 700;
+    border-radius: 12px; padding: 4px 10px;
+  }
+  .pts-num { font-size: 15px; font-weight: 800; color: var(--white); }
+  ..pts-lbl { font-size: 10px; color: var(--blue-lt); font-weight: 600; }
+
+  .td-actions { width: 90px; text-align: right; }
+
+  /* ── MODAL BASE ──────────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.75); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--navy-hdr); border: 1px solid var(--accent);
+    border-radius: 14px; padding: 28px 32px;
+    width: min(520px, 95vw); position: relative;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-title {
+    font-size: 16px; font-weight: 800; letter-spacing: 1px;
+    margin-bottom: 20px; color: var(--gold);
+  }
+  .form-row { margin-bottom: 16px; }
+  .form-label {
+    display: block; font-size: 11px; font-weight: 700;
+    color: var(--blue-lt); letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%; padding: 10px 14px;
+    background: var(--navy); border: 1px solid var(--separator);
+    border-radius: 8px; color: var(--white); font-size: 14px;
+    outline: none; transition: border .18s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-dim); font-size: 20px; line-height: 1;
+  }
+  .modal-close:hover { color: var(--white); }
+
+  /* ── HISTORY MODAL ───────────────────────────────────── */
+  .history-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+  }
+  .history-avatar {
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .history-player-info { flex: 1; }
+  .history-player-name { font-size: 18px; font-weight: 800; color: var(--white); }
+  .history-player-sub  { font-size: 12px; color: var(--blue-lt); margin-top: 2px; }
+  .history-rank-badge {
+    font-size: 28px; font-weight: 900; font-family: 'Arial Black', Arial, sans-serif;
+    line-height: 1;
+  }
+
+  .history-table {
+    width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 13px;
+  }
+  .history-table thead tr { background: var(--navy); border-bottom: 2px solid var(--accent); }
+  .history-table thead th {
+    padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue-lt);
+  }
+  .history-table tbody tr { border-bottom: 1px solid var(--separator); }
+  .history-table tbody tr:hover { background: var(--navy-card); }
+  .history-table td { padding: 9px 10px; }
+  .pos-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 12px; font-weight: 700;
+  }
+  .pos-1 { background: rgba(255,208,64,.2); color: var(--gold); }
+  .pos-2 { background: rgba(200,200,208,.15); color: var(--silver); }
+  .pos-3 { background: rgba(204,122,58,.2); color: var(--bronze); }
+  .pos-other { background: var(--separator); color: var(--blue-lt); }
+
+  .history-empty {
+    text-align: center; padding: 32px 0;
+    color: var(--text-dim); font-size: 13px;
+  }
+  .history-empty .icon { font-size: 32px; margin-bottom: 8px; }
+
+  .history-divider {
+    height: 1px; background: var(--separator); margin: 18px 0;
+  }
+
+  /* ── ADD RESULT FORM (admin) ─────────────────────────── */
+  .add-result-section { margin-top: 4px; }
+  .add-result-title {
+    font-size: 11px; font-weight: 700; color: var(--blue-lt);
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .add-result-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .add-result-grid .form-row { margin-bottom: 0; }
+
+  /* ── NOTIFICATION ─────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--navy-card); border: 1px solid var(--accent);
+    border-radius: 8px; padding: 12px 20px;
+    font-size: 13px; color: var(--white);
+    z-index: 999; transform: translateY(80px); opacity: 0;
+    transition: all .3s; max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .empty-row td {
+    text-align: center; padding: 40px;
+    color: var(--text-dim); font-size: 14px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: var(--separator); border-radius: 3px; }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Tablette  (≤ 900px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    /* Header */
+    .site-header { padding: 0 16px; height: 62px; }
+    .logo-img, .logo-fallback { height: 44px; width: 44px; }
+    .logo-title { font-size: 16px; }
+    .logo-sub   { font-size: 9px; }
+
+    /* Stats band */
+    .stats-band { padding: 10px 16px; gap: 20px; top: 62px; }
+    .stat-val   { font-size: 18px; }
+
+    /* Toolbar */
+    .toolbar { padding: 12px 16px 10px; top: 108px; }
+    .search-wrap { max-width: 100%; }
+
+    /* Table */
+    .table-wrap { padding: 0 16px 28px; }
+    table { font-size: 13px; }
+    td, th { padding: 8px 10px; }
+
+    /* Masquer la colonne Tournois */
+    .td-t, th.td-t { display: none; }
+
+    /* Points */
+    .td-pts { width: 100px; }
+    .pts-num { font-size: 13px; }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Mobile  (≤ 640px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 640px) {
+    #mainNav  { display: none !important; }
+    #navBurger { display: block !important; }
+
+
+    /* ── Header ────────────────────────────────────────── */
+    .site-header {
+      padding: 0 10px;
+      height: 56px;
+    }
+    .logo { gap: 8px; }
+    .logo-img, .logo-fallback { height: 38px; width: 38px; }
+    .logo-title { font-size: 14px; letter-spacing: 1px; }
+    .logo-sub   { display: none; }
+    .btn { padding: 6px 12px; font-size: 12px; }
+
+    /* ── Stats band ────────────────────────────────────── */
+    .stats-band {
+      top: 56px;
+      padding: 8px 10px;
+      gap: 0;
+      justify-content: space-around;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .stats-divider { height: 28px; }
+    .stat-val { font-size: 16px; }
+    .stat-lbl { font-size: 9px; letter-spacing: 1px; }
+
+    /* ── Toolbar ───────────────────────────────────────── */
+    .toolbar {
+      top: 104px;
+      padding: 8px 10px 6px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .search-wrap {
+      flex: 1 1 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .results-count {
+      margin-left: 0;
+      font-size: 11px;
+    }
+
+    /* ── Table ─────────────────────────────────────────── */
+    .table-wrap { padding: 0 6px 20px; }
+    table { font-size: 13px; }
+    thead th, tbody td { padding: 8px 6px; }
+
+    /* Colonnes cachées sur mobile */
+    .td-t, th.td-t { display: none; } /* Tournois */
+
+    /* Victoires (trophées) — reste visible, juste plus compact */
+    .td-wins { width: 44px; text-align: center; }
+    .win-stars { font-size: 11px; }
+
+    /* Colonne Rang — plus compacte */
+    .td-rank { width: 44px; }
+    .rank-num { font-size: 15px; }
+
+    /* Colonne Joueur — adapte l'avatar */
+    .td-player { min-width: 0; }
+    .player-cell { gap: 8px; }
+    .avatar { width: 30px; height: 30px; font-size: 11px; }
+    .player-first { font-size: 11px; }
+    .player-last  { font-size: 13px; }
+
+    /* Colonne Points */
+    .td-pts { width: auto; }
+    .pts-badge { padding: 3px 7px; font-size: 11px; }
+    .pts-num   { font-size: 13px; }
+
+    /* Colonne Actions */
+    .td-actions { width: 64px; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+    /* Modal */
+    .modal { padding: 20px 16px; border-radius: 10px; }
+    .add-result-grid { grid-template-columns: 1fr; }
+
+    /* Toast */
+    .toast {
+      bottom: 12px; right: 10px; left: 10px;
+      max-width: 100%;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Très petit mobile  (≤ 380px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 380px) {
+    .logo-title  { font-size: 12px; }
+    .stat-val    { font-size: 14px; }
+    .rank-num    { font-size: 13px; }
+    .player-last { font-size: 12px; }
+    .pts-num     { font-size: 12px; }
+    thead th, tbody td { padding: 6px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV MOBILE -->
+<div style="display:none;flex-direction:column;position:fixed;top:70px;left:0;right:0;background:var(--navy-hdr);border-bottom:2px solid var(--separator);padding:12px 16px;gap:4px;z-index:99;" id="navMobile">
+  <a href="index.html"      style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">🏠 Accueil</a>
+  <a href="classement.html" style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
+  <a href="editions.html"   style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">📅 Éditions</a>
+</div>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a href="index.html" style="display:flex;align-items:center;gap:14px;text-decoration:none;">
+    <img src="logo.png" class="logo-img" alt="Palificup" id="logoImg"
+         onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
+    <div class="logo-fallback" id="logoFallback" style="display:none">🎲</div>
+    <div class="logo-text">
+      <h1 class="logo-title">LA PALIFICUP</h1>
+      <div class="logo-sub">Classement Officiel</div>
+    </div>
+  </a>
+  <nav style="display:flex;gap:4px;align-items:center;" id="mainNav">
+    <a href="index.html"      style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">🏠 Accueil</a>
+    <a href="classement.html" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
+    <a href="editions.html"   style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">📅 Éditions</a>
+  </nav>
+  <button onclick="(function(){var n=document.getElementById('navMobile');n.style.display=n.style.display==='flex'?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--blue-lt);" id="navBurger">☰</button>
+  <div class="header-actions">
+    <button class="btn btn-ghost" id="adminBtn" onclick="promptAdmin()" title="Accès administrateur">🔒</button>
+  </div>
+</header>
+
+<!-- STATS BAND -->
+<div class="stats-band" id="statsBand"></div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input class="search-input" id="searchInput" placeholder="Rechercher un joueur…" />
+  </div>
+  <span class="results-count" id="resultsCount"></span>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table id="rankTable">
+    <thead>
+      <tr>
+        <th class="td-rank"    data-col="rank">RANG <span class="sort-arrow">▼</span></th>
+        <th class="td-player"  data-col="name">JOUEUR <span class="sort-arrow">↕</span></th>
+        <th class="td-t"       data-col="tournaments">TOURNOIS <span class="sort-arrow">↕</span></th>
+        <th class="td-pts"     data-col="points">POINTS <span class="sort-arrow">↕</span></th>
+        <th class="td-wins"></th>
+        <th class="td-actions" id="thActions"></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <button class="modal-close" id="closeModal">×</button>
+    <div class="modal-title" id="editModalTitle">Modifier le joueur</div>
+    <div class="form-row">
+      <label class="form-label">Nom complet</label>
+      <input class="form-input" id="editName" />
+    </div>
+    <div class="form-row">
+      <label class="form-label">Points</label>
+      <input class="form-input" id="editPoints" type="number" min="0" />
+    </div>
+    <div class="form-row">
+      <label class="form-label">Tournois joués</label>
+      <input class="form-input" id="editTournaments" type="number" min="0" />
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="cancelEdit">Annuler</button>
+      <button class="btn btn-primary" id="confirmEdit">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <button class="modal-close" id="closeHistory">×</button>
+    <div class="history-header" id="historyHeader"></div>
+    <div id="historyContent"></div>
+    <!-- Admin: add result form -->
+    <div id="addResultSection" style="display:none">
+      <div class="history-divider"></div>
+      <div class="add-result-section">
+        <div class="add-result-title">+ Ajouter un résultat</div>
+        <div class="add-result-grid">
+          <div class="form-row">
+            <label class="form-label">Tournoi</label>
+            <input class="form-input" id="resTournament" placeholder="ex: Tournoi #3" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Date</label>
+            <input class="form-input" id="resDate" type="date" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Résultat</label>
+            <input class="form-input" id="resPosition" placeholder="ex: Demi, Finaliste…" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Points gagnés</label>
+            <input class="form-input" id="resPoints" type="number" min="0" placeholder="ex: 90" />
+          </div>
+        </div>
+        <div style="margin-top:12px; text-align:right">
+          <button class="btn btn-primary" id="confirmAddResult">Ajouter le résultat</button>
+        </div>
+      </div>
+    </div>
+    <!-- Admin: add player form -->
+    <div id="addPlayerInHistory" style="display:none">
+      <div class="history-divider"></div>
+      <div class="add-result-section">
+        <div class="add-result-title">+ Ajouter un joueur</div>
+        <div class="add-result-grid">
+          <div class="form-row" style="grid-column:span 2">
+            <label class="form-label">Nom complet</label>
+            <input class="form-input" id="newPlayerName" placeholder="ex: Prénom NOM" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Points</label>
+            <input class="form-input" id="newPlayerPoints" type="number" min="0" placeholder="0" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Tournois</label>
+            <input class="form-input" id="newPlayerTournaments" type="number" min="0" placeholder="0" />
+          </div>
+        </div>
+        <div style="margin-top:12px; text-align:right">
+          <button class="btn btn-primary" id="confirmNewPlayer">Ajouter au classement</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// DONNÉES DU CLASSEMENT
+// Pour modifier un joueur manuellement : cherche son nom ci-dessous
+// et change "points" ou "tournaments".
+// Format de chaque joueur : {"rank":X, "name":"Prénom Nom", "points":X, "tournaments":X}
+// =====================================================================
+// =====================================================================
+// SOURCE DE DONNÉES — GOOGLE SHEETS
+// Pour modifier le classement, éditez directement le Google Sheet.
+// L'URL ci-dessous pointe vers la version CSV publiée du Sheet.
+// =====================================================================
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNZ9pWWaZTQF23bOyxPnOYk4v4HCoNzQtkcj-y4f-G4bJOyWmemG4Z58fKCqHzzg/pub?gid=385945859&single=true&output=csv';
+const HISTORY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNZ9pWWaZTQF23bOyxPnOYk4v4HCoNzQtkcj-y4f-G4bJOyWmemG4Z58fKCqHzzg/pub?gid=1603646691&single=true&output=csv';
+
+// =====================================================================
+// DONNÉES DE SECOURS (utilisées si Google Sheets est inaccessible,
+// par exemple en ouvrant le fichier en local avec file://)
+// =====================================================================
+const FALLBACK_DATA = [{"rank":1,"name":"Mathilde Beaugrand","points":240,"tournaments":3},{"rank":2,"name":"Léna Garcia","points":210,"tournaments":2},{"rank":3,"name":"Oscar Chemla","points":200,"tournaments":2},{"rank":4,"name":"Balthazar Albaric","points":190,"tournaments":3},{"rank":5,"name":"Renan Mukerjee","points":150,"tournaments":3},{"rank":5,"name":"Nicolas Poirier","points":150,"tournaments":1},{"rank":7,"name":"Adam Cohen","points":140,"tournaments":4},{"rank":8,"name":"Jean de Gourcuff","points":130,"tournaments":3},{"rank":9,"name":"Henry Lachapelle","points":120,"tournaments":2},{"rank":9,"name":"Louis Ducurtil","points":120,"tournaments":3},{"rank":9,"name":"Nicolas Soulignac","points":120,"tournaments":2},{"rank":12,"name":"Théo Benichou","points":110,"tournaments":4},{"rank":12,"name":"Céleste Challier","points":110,"tournaments":3},{"rank":12,"name":"Jeanne Chausselat","points":110,"tournaments":3},{"rank":15,"name":"Nathan Toussaint","points":100,"tournaments":2},{"rank":15,"name":"Baudouin Gabalda","points":100,"tournaments":2},{"rank":15,"name":"Marie Audeoud","points":100,"tournaments":2},{"rank":15,"name":"Rafael de Oliveira","points":100,"tournaments":2},{"rank":15,"name":"Isabelle Carles","points":100,"tournaments":2},{"rank":15,"name":"Maxime Khaski","points":100,"tournaments":4},{"rank":15,"name":"Paul Chausselat","points":100,"tournaments":2},{"rank":22,"name":"Augustin Voruz","points":90,"tournaments":1},{"rank":22,"name":"Jules Goupil","points":90,"tournaments":2},{"rank":22,"name":"Laura Assedou","points":90,"tournaments":2},{"rank":22,"name":"Nicolas Morillot","points":90,"tournaments":1},{"rank":22,"name":"Guillaume Despouys","points":90,"tournaments":2},{"rank":26,"name":"Amélie Noyelle","points":80,"tournaments":2},{"rank":26,"name":"Blandine de Marsac","points":80,"tournaments":3},{"rank":26,"name":"Louise David","points":80,"tournaments":2},{"rank":26,"name":"Paula Jimenez","points":80,"tournaments":2},{"rank":26,"name":"Grégoire Aubineau","points":80,"tournaments":2},{"rank":26,"name":"Inaki Dugas","points":80,"tournaments":2},{"rank":26,"name":"Alexandre Cohen","points":80,"tournaments":2},{"rank":26,"name":"Jules de Meaux","points":80,"tournaments":2},{"rank":26,"name":"Wilson Faure","points":80,"tournaments":2},{"rank":35,"name":"Paul Santamaria","points":70,"tournaments":1},{"rank":35,"name":"Raphaël Levy","points":70,"tournaments":1},{"rank":35,"name":"Benjamin Presberg","points":70,"tournaments":4},{"rank":35,"name":"Gaspard Baret","points":70,"tournaments":1},{"rank":35,"name":"Laure Lafabure","points":70,"tournaments":1},{"rank":35,"name":"Victor Le Boulanger","points":70,"tournaments":3},{"rank":35,"name":"Roy Cohen Solal","points":70,"tournaments":2},{"rank":42,"name":"Alix Balay","points":60,"tournaments":2},{"rank":42,"name":"Emile Simondin","points":60,"tournaments":2},{"rank":42,"name":"Baptiste Despouys","points":60,"tournaments":2},{"rank":42,"name":"Héloïse Goossens","points":60,"tournaments":2},{"rank":42,"name":"Venceslas Toubiana","points":60,"tournaments":2},{"rank":42,"name":"Violette de Poix","points":60,"tournaments":2},{"rank":42,"name":"Mathis Ouali","points":60,"tournaments":2}];
+
+
+async function fetchHistoryFromSheet() {
+  const res = await fetch(HISTORY_CSV_URL);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const csv = await res.text();
+  const rows = csv.split('\n');
+  const history = {};
+  // Colonnes : Joueur | Résultat T1 | Points T1 | Résultat T2 | Points T2 | ... T5
+  rows.slice(1).forEach(row => {
+    if (!row.trim()) return;
+    const cols = [];
+    let current = '', inQuotes = false;
+    for (const ch of row) {
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
+      else { current += ch; }
+    }
+    cols.push(current.trim());
+    const name = cols[0]?.replace(/"/g, '').trim();
+    if (!name) return;
+    const entries = [];
+    // 5 tournois : paires (Résultat, Points) aux colonnes 1-2, 3-4, 5-6, 7-8, 9-10
+    for (let t = 1; t <= 5; t++) {
+      const result = cols[(t-1)*2 + 1]?.replace(/"/g, '').trim();
+      const pts    = parseInt(cols[(t-1)*2 + 2]) || 0;
+      if (result && pts > 0) {
+        entries.push({ t: 'T' + t, r: result, p: pts });
+      }
+    }
+    if (entries.length > 0) history[name] = entries;
+  });
+  return history;
+}
+
+async function fetchPlayersFromSheet() {
+  const res = await fetch(SHEET_CSV_URL);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const csv = await res.text();
+  const rows = csv.split('\n').slice(1); // ignore la ligne d'en-tête
+  const parsed = rows
+    .filter(row => row.trim())
+    .map((row, i) => {
+      // Parser CSV robuste (gère les guillemets et virgules dans les noms)
+      const cols = [];
+      let current = '', inQuotes = false;
+      for (const ch of row) {
+        if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
+        else { current += ch; }
+      }
+      cols.push(current.trim());
+      // Colonnes : A=Rang, B=Joueur, C=Total Officiel (Top 3), D=Total tous, E=Tournois joués
+      return {
+        rank:        parseInt(cols[0]) || i + 1,
+        name:        cols[1]?.replace(/"/g, '').trim() || '',
+        points:      parseInt(cols[2]) || 0,
+        tournaments: parseInt(cols[4]) || 0,
+        _id:         i,
+        _origRank:   parseInt(cols[0]) || i + 1
+      };
+    })
+    .filter(p => p.name); // ignore les lignes vides
+  if (parsed.length === 0) throw new Error('Sheet vide ou mal formaté');
+  return parsed;
+}
+
+// =====================================================================
+// HISTORIQUE DES TOURNOIS (importé depuis l'Excel)
+// Chaque entrée : { t: "T1", r: "Résultat", p: pointsGagnés }
+// Pour ajouter un tournoi manuellement, utilise le mode admin sur le site.
+// =====================================================================
+let EXCEL_HISTORY = {"Abraham Domepar":[{"t":"T3","r":"Quart repechage","p":10}],"Adam Cohen":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Demi","p":50},{"t":"T3","r":"Demi repêchage","p":40},{"t":"T4","r":"Demi repêchage","p":40}],"Adèle de Crepy":[{"t":"T4","r":"Quart repechage","p":10}],"Adrien de Noirmont":[{"t":"T4","r":"Quart","p":30}],"Adrien Weill":[{"t":"T2","r":"Quart repechage","p":10},{"t":"T3","r":"Quart repechage","p":10}],"Alecandre Cor":[{"t":"T2","r":"Quart repechage","p":10}],"Alessia Rigonat":[{"t":"T4","r":"Quart repechage","p":10}],"Alexandre Cohen":[{"t":"T3","r":"Finale repêchage","p":50},{"t":"T4","r":"Quart","p":30}],"Alexandre Goarin":[{"t":"T4","r":"Quart repechage","p":10}],"Alexis Bombard":[{"t":"T4","r":"Demi repêchage","p":40}],"Alice Formery":[{"t":"T4","r":"Quart repechage","p":10}],"Alix Balay":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Quart","p":30}],"Amanda Da Silva":[{"t":"T4","r":"Demi","p":50}],"Amélie Noyelle":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Quart","p":30}],"Anastasia Espona":[{"t":"T4","r":"Quart","p":30}],"Andréas Lebihan":[{"t":"T4","r":"Quart repechage","p":10}],"Anna Accarin":[{"t":"T2","r":"Quart","p":30}],"Anna Seynave":[{"t":"T3","r":"Quart","p":30}],"Anne-Charlotte Dutilleul":[{"t":"T3","r":"Quart repechage","p":10}],"Antoine de Vogue":[{"t":"T1","r":"Demi","p":50}],"Antoine Luciano":[{"t":"T2","r":"Quart repechage","p":10}],"Antoine Thirot":[{"t":"T2","r":"Demi","p":50}],"Antoine Troccaz":[{"t":"T3","r":"Demi repêchage","p":40}],"Apolline Loire":[{"t":"T4","r":"Demi repêchage","p":40}],"Ariane Lezzoni":[{"t":"T2","r":"Quart","p":30}],"Armand Camphuis":[{"t":"T3","r":"Quart repechage","p":10},{"t":"T4","r":"Quart repechage","p":10}],"Arnaud Lefebvre":[{"t":"T4","r":"Quart repechage","p":10}],"Arthur d'Hausen":[{"t":"T4","r":"Quart","p":30}],"Arthur Destremau":[{"t":"T4","r":"Quart repechage","p":10}],"Arthur Dupont":[{"t":"T3","r":"Demi","p":50}],"Augustin Gervaise":[{"t":"T3","r":"Demi","p":50}],"Augustin Grellier":[{"t":"T1","r":"Quart","p":30}],"Augustin Voruz":[{"t":"T3","r":"Finaliste repêchage","p":90}],"Aymeric Bourguignat":[{"t":"T4","r":"Demi","p":50}],"Aymeric ID":[{"t":"T2","r":"Quart repechage","p":10}],"Balthazar Albaric":[{"t":"T2","r":"Finaliste","p":70},{"t":"T3","r":"Finaliste","p":70},{"t":"T4","r":"Demi","p":50}],"Baptiste Despouys":[{"t":"T3","r":"Quart","p":30},{"t":"T4","r":"Quart","p":30}],"Barbara Wainblum":[{"t":"T3","r":"Quart repechage","p":10}],"Baudouin Gabalda":[{"t":"T2","r":"Quart","p":30},{"t":"T3","r":"Finaliste","p":70}],"Benjamin Fortin":[{"t":"T3","r":"Quart","p":30}],"Benjamin Presberg":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Quart","p":30},{"t":"T3","r":"Quart repechage","p":10},{"t":"T4","r":"Quart repechage","p":10}],"Benoît Barbare":[{"t":"T4","r":"Demi","p":50}],"Bianca Grossi":[{"t":"T2","r":"Quart repechage","p":10}],"Blaise Tricaud":[{"t":"T4","r":"Quart","p":30}],"Blandine de Marsac":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Demi repêchage","p":40},{"t":"T4","r":"Quart repechage","p":10}],"Capucine Albisetti":[{"t":"T4","r":"Quart repechage","p":10}],"Céleste Challier":[{"t":"T2","r":"Demi","p":50},{"t":"T3","r":"Demi","p":50},{"t":"T4","r":"Quart repechage","p":10}],"Charles Axel Rhéa":[{"t":"T2","r":"Quart repechage","p":10}],"Charlotte Carles":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Quart repechage","p":10}],"Claa Thomas":[{"t":"T4","r":"Quart repechage","p":10}],"Claire Lamarene":[{"t":"T3","r":"Quart","p":30}],"Claire Margotteau":[{"t":"T2","r":"Quart repechage","p":10}],"Clément Priault":[{"t":"T4","r":"Quart","p":30}],"Cloé Maire":[{"t":"T4","r":"Quart repechage","p":10}],"Dan Douenias":[{"t":"T2","r":"Demi","p":50}],"Diane Haccoun Fontant":[{"t":"T4","r":"Quart repechage","p":10}],"Dior Beye":[{"t":"T3","r":"Quart repechage","p":10}],"Dorothée Boucher":[{"t":"T3","r":"Quart","p":30}],"Edouard Mounier":[{"t":"T4","r":"Quart repechage","p":10}],"Elenore Michelot":[{"t":"T2","r":"Demi","p":50}],"Eleonore de Rodellec":[{"t":"T4","r":"Quart repechage","p":10}],"Elie Douenias":[{"t":"T2","r":"Quart repechage","p":10}],"Eliot Tokarski":[{"t":"T3","r":"Quart repechage","p":10}],"Eliott Hayat":[{"t":"T3","r":"Quart repechage","p":10},{"t":"T4","r":"Quart","p":30}],"Elisabeth Feller":[{"t":"T4","r":"Demi","p":50}],"Eloa Michalon":[{"t":"T3","r":"Quart repechage","p":10}],"Elohan Beil":[{"t":"T4","r":"Quart repechage","p":10}],"Elsa Elkaim":[{"t":"T2","r":"Quart","p":30}],"Emile Simondin":[{"t":"T2","r":"Quart","p":30},{"t":"T3","r":"Quart","p":30}],"Emilie Jardin":[{"t":"T2","r":"Quart repechage","p":10}],"Emmanuel Gere":[{"t":"T2","r":"Quart","p":30}],"Erwan Wuileme":[{"t":"T4","r":"Quart repechage","p":10}],"Etienne Spor":[{"t":"T2","r":"Quart","p":30}],"Fanny Lang":[{"t":"T3","r":"Quart repechage","p":10}],"Félicien Savary":[{"t":"T3","r":"Quart","p":30}],"Ferréol Amigues":[{"t":"T2","r":"Quart repechage","p":10}],"Flavia Servant":[{"t":"T3","r":"Demi repêchage","p":40}],"Florian Viard":[{"t":"T4","r":"Demi","p":50}],"Gabrielle Lessard":[{"t":"T2","r":"Quart","p":30}],"Gaspard Baret":[{"t":"T2","r":"Finaliste","p":70}],"Geoffroy Picaud":[{"t":"T3","r":"Quart repechage","p":10}],"Grégoire Aubineau":[{"t":"T3","r":"Finale repêchage","p":50},{"t":"T4","r":"Quart","p":30}],"Guillaume Despouys":[{"t":"T3","r":"Demi finale","p":50},{"t":"T4","r":"Demi repêchage","p":40}],"Guillaume Nicaud":[{"t":"T2","r":"Demi repêchage","p":40}],"Hamza Lahlou":[{"t":"T2","r":"Quart","p":30}],"Hector Balaÿ":[{"t":"T2","r":"Quart repechage","p":10}],"Helène BO":[{"t":"T2","r":"Quart repechage","p":10}],"Héloïse Goossens":[{"t":"T3","r":"Quart","p":30},{"t":"T4","r":"Quart","p":30}],"Henry Lachapelle":[{"t":"T2","r":"Finaliste","p":70},{"t":"T4","r":"Demi","p":50}],"Hippolyte Malgrain":[{"t":"T3","r":"Demi repêchage","p":40}],"Inaki Dugas":[{"t":"T2","r":"Demi","p":50},{"t":"T4","r":"Quart","p":30}],"Isabelle Carles":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Demi","p":50}],"Isaure Costet":[{"t":"T3","r":"Quart","p":30}],"Jacques Gauzentes":[{"t":"T2","r":"Quart","p":30}],"Jade Bienséant":[{"t":"T3","r":"Quart repechage","p":10}],"Jean de Gourcuff":[{"t":"T1","r":"Finaliste","p":70},{"t":"T2","r":"Demi","p":50},{"t":"T3","r":"Quart repechage","p":10}],"Jean Etienne Coudert":[{"t":"T3","r":"Demi repêchage","p":40},{"t":"T4","r":"Quart repechage","p":10}],"Jean Gautier":[{"t":"T4","r":"Quart","p":30}],"Jeanne Bianchi":[{"t":"T3","r":"Quart repechage","p":10}],"Jeanne Chausselat":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Quart repechage","p":10},{"t":"T3","r":"Demi","p":50}],"Jeanne Esmerian":[{"t":"T2","r":"Demi","p":50}],"Jérémie Sebbane":[{"t":"T3","r":"Demi","p":50}],"Joachim Bourgeais":[{"t":"T3","r":"Quart","p":30}],"Jon Borromée":[{"t":"T3","r":"Quart","p":30}],"Jon Erviti":[{"t":"T2","r":"Finale repêchage","p":50}],"Jonas Hauben":[{"t":"T4","r":"Quart repechage","p":10}],"Joseph Boucheron":[{"t":"T1","r":"Quart","p":30}],"Joséphine Nusse":[{"t":"T3","r":"Demi","p":50}],"Ju Parja":[{"t":"T4","r":"Quart","p":30}],"Jules de Meaux":[{"t":"T2","r":"Finaliste","p":70},{"t":"T3","r":"Quart repechage","p":10}],"Jules Goupil":[{"t":"T3","r":"Demi repêchage","p":40},{"t":"T4","r":"Demi","p":50}],"Julie Frohly":[{"t":"T4","r":"Quart","p":30}],"Julie Sagaut":[{"t":"T3","r":"Quart repechage","p":10}],"Juliette Rouhier":[{"t":"T4","r":"Demi repêchage","p":40}],"Justine Ferrand":[{"t":"T3","r":"Quart repechage","p":10}],"Justine Flour":[{"t":"T3","r":"Quart","p":30}],"Justine Kerdal":[{"t":"T3","r":"Demi repêchage","p":40}],"Laura Assedou":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Demi repêchage","p":40}],"Laure Chaslin":[{"t":"T4","r":"Demi","p":50}],"Laure Lafabure":[{"t":"T4","r":"Finaliste","p":70}],"Lea Meimoun":[{"t":"T4","r":"Quart repechage","p":10}],"Léna Garcia":[{"t":"T2","r":"Vainqueur + Repêchage","p":170},{"t":"T3","r":"Demi repêchage","p":40}],"Léo Mart":[{"t":"T2","r":"Demi repêchage","p":40}],"Léo Martinelli":[{"t":"T3","r":"Quart","p":30}],"Léo Soguet":[{"t":"T4","r":"Quart repechage","p":10}],"Line Lavenant":[{"t":"T4","r":"Quart repechage","p":10}],"Lior Siber":[{"t":"T2","r":"Quart repechage","p":10}],"Louis Ducurtil":[{"t":"T2","r":"Quart","p":30},{"t":"T3","r":"Demi repêchage","p":40},{"t":"T4","r":"Demi","p":50}],"Louis Pierre Geffray":[{"t":"T4","r":"Quart repechage","p":10}],"Louise David":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Quart","p":30}],"Louise Gagnepin":[{"t":"T4","r":"Quart repechage","p":10}],"Louise Siwertz":[{"t":"T4","r":"Finale repêchage","p":50}],"Louison Palatre":[{"t":"T3","r":"Demi","p":50}],"Luc de Smedt":[{"t":"T4","r":"Quart repechage","p":10}],"Lucie Challier":[{"t":"T2","r":"Demi repêchage","p":40},{"t":"T3","r":"Quart repechage","p":10}],"Lucie Héliez":[{"t":"T4","r":"Demi repêchage","p":40}],"Ludovic Lienhard":[{"t":"T2","r":"Quart repechage","p":10}],"Maïlys Duplantier":[{"t":"T1","r":"Quart","p":30}],"Maïwen Gautier":[{"t":"T4","r":"Finale repêchage","p":50}],"Malak Mihoubi":[{"t":"T3","r":"Quart repechage","p":10}],"Malo Doutey":[{"t":"T3","r":"Quart","p":30}],"Malo Dupuy":[{"t":"T3","r":"Demi","p":50}],"Manon Trimaglio":[{"t":"T4","r":"Quart","p":30}],"Margot Cintrat":[{"t":"T4","r":"Quart","p":30}],"Marie Audeoud":[{"t":"T2","r":"Demi","p":50},{"t":"T3","r":"Demi","p":50}],"Marie Colonna Renucci":[{"t":"T4","r":"Quart repechage","p":10}],"Marie Le Goff":[{"t":"T4","r":"Quart repechage","p":10}],"Marie Mulliez":[{"t":"T2","r":"Quart repechage","p":10}],"Marine Despouys":[{"t":"T3","r":"Quart repechage","p":10}],"Marthe Semin":[{"t":"T4","r":"Quart","p":30}],"Martin Bonello":[{"t":"T4","r":"Quart repechage","p":10}],"Martin Dalmasso":[{"t":"T4","r":"Demi repêchage","p":40}],"Mathéo Crémoux":[{"t":"T4","r":"Quart repechage","p":10}],"Mathieu Houette":[{"t":"T2","r":"Quart","p":30}],"Mathieu Poulat":[{"t":"T4","r":"Quart","p":30}],"Mathilde Beaugrand":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Demi repêchage","p":40},{"t":"T4","r":"Vainqueur","p":150}],"Mathilde Carles":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Quart repechage","p":10}],"Mathis Ouali":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Quart","p":30}],"Mattéo Fontaine":[{"t":"T2","r":"Quart","p":30}],"Max Milhaileanu":[{"t":"T1","r":"Demi","p":50}],"Maxime Icard":[{"t":"T4","r":"Quart repechage","p":10}],"Maxime Khaski":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Demi repêchage","p":40},{"t":"T3","r":"Quart","p":30},{"t":"T4","r":"Quart repechage","p":10}],"Miléna Prigent":[{"t":"T4","r":"Quart repechage","p":10}],"Mohamed Ba":[{"t":"T3","r":"Quart repechage","p":10}],"Morgane Follezou":[{"t":"T1","r":"Quart","p":30}],"Najib Mezrara":[{"t":"T4","r":"Quart repechage","p":10}],"Nathan Toussaint":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Demi","p":50}],"Nathanael Checkroun":[{"t":"T2","r":"Quart","p":30}],"Neil Mokaddem":[{"t":"T3","r":"Demi repêchage","p":40}],"Nicolas Guillaume":[{"t":"T3","r":"Quart","p":30}],"Nicolas Morillot":[{"t":"T4","r":"Finaliste repêchage","p":90}],"Nicolas Poirier":[{"t":"T3","r":"Vainqueur","p":150}],"Nicolas Soulignac":[{"t":"T1","r":"Finaliste","p":70},{"t":"T2","r":"Demi","p":50}],"Noah Malan":[{"t":"T3","r":"Quart repechage","p":10}],"Ocatve de Bryas":[{"t":"T3","r":"Quart","p":30}],"Octave Journois":[{"t":"T2","r":"Quart repechage","p":10}],"Orso Stefani":[{"t":"T3","r":"Quart repechage","p":10}],"Oscar Chemla":[{"t":"T1","r":"Vainqueur","p":150},{"t":"T2","r":"Demi","p":50}],"Oscar Robert":[{"t":"T4","r":"Quart","p":30}],"PAGI":[{"t":"T2","r":"Quart repechage","p":10},{"t":"T4","r":"Quart repechage","p":10}],"Paul Chausselat":[{"t":"T2","r":"Demi","p":50},{"t":"T3","r":"Demi","p":50}],"Paul Joffre":[{"t":"T4","r":"Quart repechage","p":10}],"Paul L'Hote":[{"t":"T4","r":"Demi repêchage","p":40}],"Paul Moreau":[{"t":"T3","r":"Quart","p":30}],"Paul Santamaria":[{"t":"T3","r":"Finaliste","p":70}],"Paula Jimenez":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Demi","p":50}],"Paulin Robert":[{"t":"T4","r":"Quart repechage","p":10}],"Pétronille Bouhallier Chauvin":[{"t":"T4","r":"Quart","p":30}],"Pierre Clermont":[{"t":"T4","r":"Quart","p":30}],"Pierre Henri Sanesi":[{"t":"T3","r":"Demi repêchage","p":40}],"Pierre Leoz":[{"t":"T2","r":"Demi repêchage","p":40}],"Quantin Dommage":[{"t":"T4","r":"Quart repechage","p":10}],"Quentin Laroche":[{"t":"T2","r":"Quart","p":30}],"Rafael de Oliveira":[{"t":"T3","r":"Demi","p":50},{"t":"T4","r":"Demi","p":50}],"Raphael Dutemple":[{"t":"T4","r":"Quart repechage","p":10}],"Raphael Glennison":[{"t":"T4","r":"Quart repechage","p":10}],"Raphaël Levy":[{"t":"T1","r":"Finaliste","p":70}],"Raphael Penicaut":[{"t":"T4","r":"Finale repêchage","p":50}],"Raphaëlle Sassi":[{"t":"T4","r":"Quart","p":30}],"Rébecca Sebahoun":[{"t":"T3","r":"Quart repechage","p":10}],"Renan Mukerjee":[{"t":"T1","r":"Finaliste","p":70},{"t":"T2","r":"Quart repechage","p":10},{"t":"T4","r":"Finaliste","p":70}],"Romain Breton":[{"t":"T4","r":"Demi","p":50}],"Romane Auger":[{"t":"T3","r":"Demi","p":50}],"Roy Cohen Solal":[{"t":"T1","r":"Quart","p":30},{"t":"T3","r":"Quart repechage","p":10},{"t":"T4","r":"Quart","p":30}],"Salomé Teboul":[{"t":"T3","r":"Quart repechage","p":10}],"Sarah Serezo":[{"t":"T2","r":"Quart repechage","p":10}],"Sasha Vilain":[{"t":"T4","r":"Quart repechage","p":10}],"Sébastien Langé":[{"t":"T4","r":"Quart","p":30}],"Serhane Ben":[{"t":"T3","r":"Quart","p":30}],"Shanie Azoulay":[{"t":"T3","r":"Demi repêchage","p":40}],"Simoes Alexandre":[{"t":"T4","r":"Demi","p":50}],"Sixtine Blanc":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Quart repechage","p":10},{"t":"T3","r":"Quart repechage","p":10}],"Sixtine Clair":[{"t":"T3","r":"Quart repechage","p":10}],"Théo Benichou":[{"t":"T1","r":"Demi","p":50},{"t":"T2","r":"Quart repechage","p":10},{"t":"T3","r":"Quart repechage","p":10},{"t":"T4","r":"Demi","p":50}],"Théo Déchipre":[{"t":"T4","r":"Quart repechage","p":10}],"Théo Mallez":[{"t":"T2","r":"Quart","p":30}],"Thibault Blanquet du Chayla":[{"t":"T4","r":"Quart repechage","p":10}],"Thimothée Poissoneau":[{"t":"T4","r":"Quart repechage","p":10}],"Thomas Fouvry":[{"t":"T4","r":"Demi repêchage","p":40}],"Thomas Gimazane":[{"t":"T3","r":"Quart repechage","p":10}],"Thomas Huet":[{"t":"T1","r":"Quart","p":30}],"Thomas Vial":[{"t":"T4","r":"Quart repechage","p":10}],"Thomas Wainblum":[{"t":"T3","r":"Quart","p":30}],"Timothée Seurret":[{"t":"T3","r":"Demi repêchage","p":40},{"t":"T4","r":"Quart repechage","p":10}],"Titouan Pelletier":[{"t":"T3","r":"Demi repêchage","p":40}],"Tom Benabou":[{"t":"T2","r":"Quart repechage","p":10}],"Tom Chabeau":[{"t":"T4","r":"Quart","p":30}],"Ulysee Fournier":[{"t":"T2","r":"Demi","p":50}],"Valentin Billy":[{"t":"T4","r":"Demi","p":50}],"Valentine Pichon":[{"t":"T3","r":"Quart repechage","p":10}],"Vctoire Dupont":[{"t":"T2","r":"Quart repechage","p":10}],"Venceslas Toubiana":[{"t":"T3","r":"Quart repechage","p":10},{"t":"T4","r":"Demi","p":50}],"Victor Conte":[{"t":"T3","r":"Finale repêchage","p":50}],"Victor Estrangin":[{"t":"T4","r":"Quart repechage","p":10}],"Victor Le Boulanger":[{"t":"T1","r":"Quart","p":30},{"t":"T2","r":"Quart repechage","p":10},{"t":"T4","r":"Quart","p":30}],"Violette de Poix":[{"t":"T3","r":"Demi","p":50},{"t":"T4","r":"Quart repechage","p":10}],"William Delonglée":[{"t":"T4","r":"Quart repechage","p":10}],"Wilson Faure":[{"t":"T3","r":"Quart repechage","p":10},{"t":"T4","r":"Finaliste","p":70}],"Yona Chicheportiche":[{"t":"T3","r":"Quart repechage","p":10}]};
+// Extra history added by admin in session
+let extraHistory = {};
+
+// =====================================================================
+// COULEURS DES AVATARS (cercles colorés à côté des noms)
+// 6 couleurs Palificup : bleu, jaune, vert, rouge, orange, violet
+// =====================================================================
+const AVATAR_COLORS = ['#1565C0','#F9A825','#2E7D32','#D32F2F','#E65100','#6A1B9A'];
+const getInitials = name => { const p = name.trim().split(' '); return p.length >= 2 ? (p[0][0]+(p[p.length-1][0])).toUpperCase() : name.slice(0,2).toUpperCase(); };
+const getAvatarColor = idx => AVATAR_COLORS[idx % AVATAR_COLORS.length];
+
+// =====================================================================
+// VARIABLES INTERNES (ne pas modifier sauf ADMIN_PASSWORD)
+// =====================================================================
+let players = []; // chargé dynamiquement depuis Google Sheets
+let sortCol = 'rank', sortDir = 1; // colonne de tri par défaut : rang
+let searchQuery = '';              // texte de recherche en cours
+let editingId = null;              // id du joueur en cours d'édition
+let historyPlayerId = null;        // id du joueur dont on affiche l'historique
+let adminMode = false;             // true = mode admin activé
+
+// =====================================================================
+// MOT DE PASSE ADMIN
+// Change la valeur entre guillemets pour définir ton propre mot de passe.
+// =====================================================================
+const ADMIN_PASSWORD = 'palificup2025';
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+// Gère l'activation / désactivation du mode admin.
+// En mode admin : boutons ✏️ et ✕ visibles, ajout de résultats possible.
+function promptAdmin() {
+  if (adminMode) {
+    adminMode = false;
+    document.getElementById('adminBtn').textContent = '🔒';
+    document.getElementById('adminBtn').className = 'btn btn-ghost';
+    renderTable();
+    toast('Mode admin désactivé');
+    return;
+  }
+  const pwd = prompt('Mot de passe administrateur :');
+  if (pwd === null) return;
+  if (pwd === ADMIN_PASSWORD) {
+    adminMode = true;
+    document.getElementById('adminBtn').textContent = '🔓 Admin';
+    document.getElementById('adminBtn').className = 'btn btn-admin-active';
+    renderTable();
+    toast('✅ Mode admin activé');
+  } else {
+    alert('Mot de passe incorrect.');
+  }
+}
+
+// ── RANK RECALCULATION ────────────────────────────────────────────────────────
+// Recalcule les rangs après une modification : trie par points décroissants,
+// en cas d'égalité, celui qui a le moins de tournois est devant.
+function recalcRanks() {
+  const sorted = [...players].sort((a,b) => b.points - a.points || a.tournaments - b.tournaments || a.name.localeCompare(b.name));
+  let rank = 1;
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && (sorted[i].points < sorted[i-1].points || sorted[i].tournaments > sorted[i-1].tournaments)) rank = i + 1;
+    sorted[i].rank = rank;
+  }
+  const rankMap = new Map(sorted.map(p => [p._id, p.rank]));
+  players = players.map(p => ({ ...p, rank: rankMap.get(p._id) }));
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const sorted = [...players].sort((a,b) => a.rank - b.rank || a.name.localeCompare(b.name));
+  const top3 = sorted.slice(0,3);
+  const totalPts = players.reduce((s,p) => s+p.points, 0);
+  const totalT   = players.reduce((s,p) => s+p.tournaments, 0);
+  const band = document.getElementById('statsBand');
+  const medal = ['gold','silver','bronze'];
+  band.innerHTML = `
+    ${top3.map((p,i) => `
+      <div class="stat-item">
+        <div class="stat-val ${medal[i]}">${p.name.split(' ').pop().toUpperCase()}</div>
+        <div class="stat-lbl">${['🥇 1er','🥈 2e','🥉 3e'][i]} · ${p.points} pts</div>
+      </div>
+      <div class="stats-divider"></div>
+    `).join('')}
+    <div class="stat-item">
+      <div class="stat-val">${players.length}</div>
+      <div class="stat-lbl">Joueurs</div>
+    </div>
+  `;
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────────────────────
+// getFiltered() : applique la recherche et le tri, retourne la liste filtrée.
+// renderTable() : génère le HTML de chaque ligne du tableau.
+function getFiltered() {
+  let list = [...players];
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    list = list.filter(p => p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(q));
+  }
+  list.sort((a,b) => {
+    let va = a[sortCol], vb = b[sortCol];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    return sortDir * (va < vb ? -1 : va > vb ? 1 : 0);
+  });
+  return list;
+}
+
+function renderTable() {
+  const list = getFiltered();
+  const tbody = document.getElementById('tableBody');
+  document.getElementById('resultsCount').textContent = `${list.length} joueur${list.length>1?'s':''} affiché${list.length>1?'s':''}`;
+
+  // Show/hide actions column header
+  document.getElementById('thActions').textContent = adminMode ? 'ACTIONS' : '';
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Aucun joueur trouvé</td></tr>`;
+    return;
+  }
+
+  const maxPts = Math.max(...players.map(p=>p.points));
+  const playerIdx = new Map(players.map((p,i) => [p._id, i]));
+
+  tbody.innerHTML = list.map(p => {
+    const idx = playerIdx.get(p._id) || 0;
+    const rankClass = p.rank === 1 ? 'rank-1' : p.rank === 2 ? 'rank-2' : p.rank === 3 ? 'rank-3' : 'rank-other';
+    const rowClass  = p.rank === 1 ? 'top1' : p.rank === 2 ? 'top2' : p.rank === 3 ? 'top3' : '';
+    const col       = getAvatarColor(idx);
+    const initials  = getInitials(p.name);
+    const parts     = p.name.trim().split(' ');
+    const firstName = parts[0];
+    const lastName  = parts.slice(1).join(' ').toUpperCase();
+    const barW      = Math.round((p.points / maxPts) * 100);
+    const histCount = getPlayerHistory(p._id).length;
+    const wins = getPlayerHistory(p._id).filter(r => (r.r || r.resultat || '').toLowerCase().includes('vainqueur')).length;
+    const starsHtml = wins > 0 ? `<span class="win-stars" title="${wins} victoire${wins>1?'s':''}">${'🏆'.repeat(wins)}</span>` : '';
+
+    const adminActions = adminMode ? `
+      <td class="td-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" onclick="openEdit(${p._id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePlayer(${p._id})" style="margin-left:4px">✕</button>
+      </td>` : `<td class="td-actions"></td>`;
+
+    return `<tr class="${rowClass}" data-id="${p._id}" onclick="openHistory(${p._id})">
+      <td class="td-rank"><span class="rank-num ${rankClass}">${p.rank}</span></td>
+      <td class="td-player">
+        <div class="player-cell">
+          <div class="avatar" style="background:${col}">${initials}</div>
+          <div class="player-names">
+            <div class="player-first">${firstName}</div>
+            <div class="player-last">${lastName || firstName.toUpperCase()}</div>
+          </div>
+        </div>
+      </td>
+      <td class="td-t">
+        <span class="tourn-pill">
+          <span>${p.tournaments}</span> tournoi${p.tournaments > 1 ? 's' : ''}
+        </span>
+      </td>
+      <td class="td-pts">
+        <div class="pts-badge">
+          <span class="pts-num">${p.points}</span>
+          <span class="pts-lbl">PTS</span>
+        </div>
+      </td>
+      <td class="td-wins">${starsHtml}</td>
+      ${adminActions}
+    </tr>`;
+  }).join('');
+}
+
+function refresh() {
+  recalcRanks();
+  updateStats();
+  renderTable();
+  updateSortHeaders();
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────────
+function updateSortHeaders() {
+  document.querySelectorAll('thead th[data-col]').forEach(th => {
+    const col = th.dataset.col;
+    th.classList.toggle('sorted', col === sortCol);
+    const arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = (col === sortCol) ? (sortDir === 1 ? '▲' : '▼') : '↕';
+  });
+}
+document.querySelectorAll('thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = 1; }
+    renderTable(); updateSortHeaders();
+  });
+});
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  renderTable();
+});
+
+// ── RESULT BADGE STYLE ───────────────────────────────────────────────────────
+// Détermine la couleur du badge selon le résultat :
+//   "vainqueur"  → or   | "finaliste" (sans repêchage) → argent
+//   "demi"       → bronze | tout le reste → bleu
+// Si tu ajoutes de nouveaux résultats, adapte ces règles ici.
+function resultBadgeClass(r) {
+  if (!r) return 'pos-other';
+  const up = r.toLowerCase();
+  if (up.includes('vainqueur')) return 'pos-1';
+  if (up.includes('finaliste') && !up.includes('repê') && !up.includes('repe')) return 'pos-2';
+  if (up.includes('demi') && !up.includes('repê') && !up.includes('repe')) return 'pos-3';
+  return 'pos-other';
+}
+
+// ── HISTORY MODAL ─────────────────────────────────────────────────────────────
+// S'ouvre quand on clique sur une ligne du tableau.
+// Affiche le résumé du joueur + le tableau de ses résultats par tournoi.
+// En mode admin, un formulaire permet d'ajouter de nouveaux résultats.
+function openHistory(id) {
+  const p = players.find(x => x._id === id);
+  if (!p) return;
+  historyPlayerId = id;
+
+  const idx = players.indexOf(p);
+  const col = getAvatarColor(idx);
+  const rankClass = p.rank === 1 ? 'rank-1' : p.rank === 2 ? 'rank-2' : p.rank === 3 ? 'rank-3' : 'rank-other';
+  const parts = p.name.trim().split(' ');
+  const firstName = parts[0];
+  const lastName  = parts.slice(1).join(' ').toUpperCase() || firstName.toUpperCase();
+
+  document.getElementById('historyHeader').innerHTML = `
+    <div class="history-avatar" style="background:${col}">${getInitials(p.name)}</div>
+    <div class="history-player-info">
+      <div class="history-player-name">${firstName} ${lastName}</div>
+      <div class="history-player-sub">${p.points} pts · ${p.tournaments} tournoi${p.tournaments>1?'s':''}</div>
+    </div>
+    <div class="history-rank-badge ${rankClass}">#${p.rank}</div>
+  `;
+
+  renderHistoryTable(id);
+  document.getElementById('addResultSection').style.display = adminMode ? 'block' : 'none';
+  document.getElementById('addPlayerInHistory').style.display = 'none';
+  document.getElementById('historyModal').classList.add('open');
+}
+
+function getPlayerHistory(id) {
+  const p = players.find(x => x._id === id);
+  if (!p) return [];
+  const excel = EXCEL_HISTORY[p.name] || [];
+  const extra = extraHistory[id] || [];
+  return [...excel, ...extra];
+}
+
+function renderHistoryTable(id) {
+  const history = getPlayerHistory(id);
+  const container = document.getElementById('historyContent');
+
+  if (!history.length) {
+    container.innerHTML = `
+      <div class="history-empty">
+        <div class="icon">🎲</div>
+        <div>Aucun historique de tournoi disponible</div>
+      </div>`;
+    return;
+  }
+
+  const totalPts = history.reduce((s,r) => s + (r.p || r.points || 0), 0);
+  const wins = history.filter(r => (r.r||r.resultat||'').toLowerCase().includes('vainqueur')).length;
+
+  container.innerHTML = `
+    <div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="stat-item">
+        <div class="stat-val gold">${totalPts}</div>
+        <div class="stat-lbl">Total points</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">${history.length}</div>
+        <div class="stat-lbl">Tournois joués</div>
+      </div>
+      ${wins ? `<div class="stat-item">
+        <div class="stat-val gold">🏆 ${wins}</div>
+        <div class="stat-lbl">Victoire${wins>1?'s':''}</div>
+      </div>` : ''}
+    </div>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Tournoi</th>
+          <th>Résultat</th>
+          <th>Points</th>
+          ${adminMode ? '<th></th>' : ''}
+        </tr>
+      </thead>
+      <tbody>
+        ${history.map((r, i) => {
+          const resultat = r.r || r.resultat || '—';
+          const pts      = r.p || r.points || 0;
+          const tournoi  = r.t || r.tournament || '—';
+          const badgeClass = resultBadgeClass(resultat);
+          const deleteBtn  = adminMode && r.isExtra
+            ? `<td><button class="btn btn-danger btn-sm" onclick="deleteExtraResult(${id},${i})">✕</button></td>`
+            : adminMode ? '<td></td>' : '';
+          return `<tr>
+            <td style="font-weight:700;color:var(--gold)">${tournoi}</td>
+            <td><span class="pos-badge ${badgeClass}">${resultat}</span></td>
+            <td><strong>${pts}</strong> pts</td>
+            ${deleteBtn}
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function deleteExtraResult(playerId, index) {
+  if (!adminMode) return;
+  if (!confirm('Supprimer ce résultat ?')) return;
+  // index is in combined array — offset by excel history length
+  const excelLen = (EXCEL_HISTORY[players.find(x=>x._id===playerId)?.name]||[]).length;
+  const extraIdx = index - excelLen;
+  if (extraIdx >= 0 && extraHistory[playerId]) {
+    extraHistory[playerId].splice(extraIdx, 1);
+    renderHistoryTable(playerId);
+    toast('Résultat supprimé');
+  }
+}
+
+function closeHistory() {
+  historyPlayerId = null;
+  document.getElementById('historyModal').classList.remove('open');
+}
+document.getElementById('closeHistory').onclick = closeHistory;
+document.getElementById('historyModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('historyModal')) closeHistory();
+});
+
+// Add result — met aussi à jour les points et le nb de tournois du joueur
+document.getElementById('confirmAddResult').onclick = () => {
+  if (!adminMode || historyPlayerId === null) return;
+  const tournament = document.getElementById('resTournament').value.trim();
+  const resultat   = document.getElementById('resPosition').value.trim();
+  const points     = parseInt(document.getElementById('resPoints').value) || 0;
+  if (!tournament) { toast('⚠️ Entrez le nom du tournoi'); return; }
+
+  // 1. Ajoute le résultat à l'historique
+  if (!extraHistory[historyPlayerId]) extraHistory[historyPlayerId] = [];
+  extraHistory[historyPlayerId].push({ t: tournament, r: resultat, p: points, isExtra: true });
+
+  // 2. Met à jour les points et le nombre de tournois du joueur
+  players = players.map(p => {
+    if (p._id !== historyPlayerId) return p;
+    return { ...p, points: p.points + points, tournaments: p.tournaments + 1 };
+  });
+
+  // 3. Vide le formulaire
+  document.getElementById('resTournament').value = '';
+  document.getElementById('resPosition').value = '';
+  document.getElementById('resPoints').value = '';
+
+  // 4. Met à jour le sous-titre de la modale avec les nouvelles stats
+  const p = players.find(x => x._id === historyPlayerId);
+  if (p) {
+    const subEl = document.querySelector('#historyHeader .history-player-sub');
+    if (subEl) subEl.textContent = `${p.points} pts · ${p.tournaments} tournoi${p.tournaments>1?'s':''}`;
+  }
+
+  // 5. Rafraîchit l'historique ET le classement global
+  renderHistoryTable(historyPlayerId);
+  refresh();
+  toast('✅ Résultat ajouté — classement mis à jour');
+};
+
+// ── EDIT MODAL ────────────────────────────────────────────────────────────────
+// Permet à l'admin de modifier le nom, les points et le nombre de tournois
+// d'un joueur. Accessible uniquement en mode admin via le bouton ✏️.
+function openEdit(id) {
+  if (!adminMode) return;
+  const p = players.find(x => x._id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('editModalTitle').textContent = `Modifier — ${p.name}`;
+  document.getElementById('editName').value = p.name;
+  document.getElementById('editPoints').value = p.points;
+  document.getElementById('editTournaments').value = p.tournaments;
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEdit() {
+  editingId = null;
+  document.getElementById('editModal').classList.remove('open');
+}
+document.getElementById('closeModal').onclick = closeEdit;
+document.getElementById('cancelEdit').onclick = closeEdit;
+document.getElementById('editModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('editModal')) closeEdit();
+});
+document.getElementById('confirmEdit').onclick = () => {
+  const name   = document.getElementById('editName').value.trim();
+  const pts    = parseInt(document.getElementById('editPoints').value) || 0;
+  const tourns = parseInt(document.getElementById('editTournaments').value) || 0;
+  if (!name) { toast('⚠️ Le nom ne peut pas être vide'); return; }
+  players = players.map(p => p._id === editingId ? { ...p, name, points: pts, tournaments: tourns } : p);
+  closeEdit();
+  refresh();
+  toast('✅ Joueur modifié avec succès');
+};
+
+// ── DELETE ────────────────────────────────────────────────────────────────────
+// Supprime un joueur après confirmation. Admin uniquement (bouton ✕).
+function deletePlayer(id) {
+  if (!adminMode) return;
+  const p = players.find(x => x._id === id);
+  if (!p) return;
+  if (!confirm(`Supprimer "${p.name}" du classement ?`)) return;
+  players = players.filter(x => x._id !== id);
+  delete extraHistory[id];
+  refresh();
+  toast(`🗑️ ${p.name} supprimé`);
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+// Affiche une notification temporaire en bas à droite (disparaît après 2,8s).
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+// La touche Échap ferme toutes les fenêtres ouvertes.
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeEdit(); closeHistory(); }
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+// Charge les données depuis Google Sheets puis lance l'affichage.
+(async () => {
+  document.getElementById('tableBody').innerHTML =
+    '<tr class="empty-row"><td colspan="6">⏳ Chargement du classement…</td></tr>';
+  try {
+    const [sheetPlayers, sheetHistory] = await Promise.all([
+      fetchPlayersFromSheet(),
+      fetchHistoryFromSheet()
+    ]);
+    players = sheetPlayers;
+    EXCEL_HISTORY = sheetHistory;
+    console.log('✅ Classement chargé depuis Google Sheets (' + players.length + ' joueurs)');
+    console.log('✅ Historique chargé (' + Object.keys(EXCEL_HISTORY).length + ' joueurs avec historique)');
+  } catch (e) {
+    console.warn('⚠️ Google Sheets inaccessible, utilisation des données locales :', e.message);
+    players = FALLBACK_DATA.map((p, i) => ({ ...p, _id: i, _origRank: p.rank }));
+  }
+  refresh();
+})();
+</script>
+</body>
+</html>
