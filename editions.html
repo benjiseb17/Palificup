@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA PALIFICUP — Éditions précédentes</title>
+
+<!-- SEO -->
+<meta name="description" content="Retrouvez toutes les éditions de La Palificup, le premier tournoi de Perudo de France. Résultats, podiums et statistiques de chaque tournoi.">
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph -->
+<meta property="og:title" content="LA PALIFICUP — Éditions précédentes">
+<meta property="og:description" content="Tous les résultats et podiums des éditions passées de La Palificup.">
+<meta property="og:url" content="https://www.palificup.fr/editions.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.palificup.fr/logo.png">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="logo.png">
+
+<style>
+  :root {
+    --navy:       #FDF5EC;
+    --navy-hdr:   #FFF8F0;
+    --navy-card:  #FDE8D0;
+    --navy-alt:   #FFFFFF;
+    --blue-lt:    #C05A00;
+    --accent:     #E85500;
+    --gold:       #E6AC00;
+    --silver:     #909090;
+    --bronze:     #A0622A;
+    --white:      #1A0800;
+    --text-dim:   #9A6A40;
+    --separator:  #F0D0B0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  .site-header {
+    background: var(--navy-hdr);
+    border-bottom: 3px solid var(--accent);
+    padding: 0 24px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 70px;
+  }
+  .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+  .logo-img { height: 54px; width: auto; object-fit: contain; border-radius: 6px; }
+  .logo-text { line-height: 1.2; }
+  .logo-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--blue-lt); }
+  .logo-sub   { font-size: 10px; color: var(--blue-lt); letter-spacing: 3px; text-transform: uppercase; }
+
+  nav { display: flex; gap: 4px; align-items: center; }
+  .nav-link {
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    color: var(--blue-lt); text-decoration: none;
+    transition: all .18s;
+  }
+  .nav-link:hover { background: var(--navy-card); color: var(--white); }
+  .nav-link.active { background: var(--accent); color: #fff; }
+  .nav-burger { display: none; background: none; border: none; cursor: pointer; font-size: 22px; color: var(--blue-lt); }
+
+  /* ── NAV MOBILE ─────────────────────────────────────── */
+  .nav-mobile {
+    display: none; flex-direction: column;
+    position: fixed; top: 70px; left: 0; right: 0;
+    background: var(--navy-hdr);
+    border-bottom: 2px solid var(--separator);
+    padding: 12px 16px; gap: 4px; z-index: 99;
+  }
+  .nav-mobile.open { display: flex; }
+  .nav-mobile .nav-link { padding: 12px 16px; }
+
+  /* ── PAGE TITLE ─────────────────────────────────────── */
+  .page-hero {
+    background: linear-gradient(135deg, var(--navy-hdr) 0%, var(--navy-card) 100%);
+    border-bottom: 1px solid var(--separator);
+    padding: 40px 24px 36px;
+    text-align: center;
+  }
+  .page-hero-icon { font-size: 48px; margin-bottom: 12px; }
+  .page-hero-title {
+    font-size: 32px; font-weight: 900;
+    letter-spacing: 3px; color: var(--accent);
+    font-family: 'Arial Black', Arial, sans-serif;
+    margin-bottom: 8px;
+  }
+  .page-hero-sub { font-size: 13px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ── STATS GLOBALES ─────────────────────────────────── */
+  .global-stats {
+    display: flex; gap: 0;
+    background: var(--navy-card);
+    border-bottom: 1px solid var(--separator);
+    justify-content: space-around;
+    flex-wrap: nowrap; overflow-x: auto;
+    padding: 16px 24px;
+  }
+  .gstat { text-align: center; padding: 0 16px; }
+  .gstat-val { font-size: 28px; font-weight: 900; color: var(--accent); line-height: 1; }
+  .gstat-lbl { font-size: 10px; color: var(--blue-lt); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; }
+  .gstat-divider { width: 1px; background: var(--separator); align-self: stretch; }
+
+  /* ── SECTION ────────────────────────────────────────── */
+  .section { padding: 40px 24px; max-width: 900px; margin: 0 auto; }
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--blue-lt);
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--separator); }
+
+  /* ── EDITION CARD ───────────────────────────────────── */
+  .edition-card {
+    background: var(--navy-hdr);
+    border: 1px solid var(--separator);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    transition: box-shadow .2s;
+  }
+  .edition-card:hover { box-shadow: 0 4px 24px rgba(232,85,0,.1); }
+
+  .edition-header {
+    background: linear-gradient(135deg, var(--accent) 0%, #c94400 100%);
+    color: #fff;
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    flex-wrap: wrap;
+  }
+  .edition-num {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; opacity: .85; margin-bottom: 4px;
+  }
+  .edition-title { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+  .edition-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    background: rgba(255,255,255,.2); color: #fff;
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; gap: 5px;
+    white-space: nowrap;
+  }
+
+  .edition-body { padding: 24px; }
+
+  /* ── PODIUM ─────────────────────────────────────────── */
+  .podium-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-bottom: 0;
+  }
+  .podium-item {
+    background: var(--navy);
+    border: 1px solid var(--separator);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    position: relative;
+  }
+  .podium-item.p1 { border-color: var(--gold); background: linear-gradient(160deg, #fffbe6 0%, var(--navy) 100%); }
+  .podium-item.p2 { border-color: var(--silver); }
+  .podium-item.p3 { border-color: var(--bronze); }
+  .podium-medal-sm { font-size: 22px; margin-bottom: 6px; }
+  .podium-place {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .p1 .podium-place { color: var(--gold); }
+  .p2 .podium-place { color: var(--silver); }
+  .p3 .podium-place { color: var(--bronze); }
+  .podium-avatar-sm {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff;
+    margin: 0 auto 8px;
+  }
+  .podium-pname-last  { font-size: 13px; font-weight: 800; color: var(--white); }
+  .podium-pname-first { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
+  .podium-score {
+    display: inline-block;
+    background: var(--separator); color: var(--blue-lt);
+    border-radius: 10px; padding: 2px 10px;
+    font-size: 11px; font-weight: 700;
+  }
+  .podium-score span { color: var(--white); font-weight: 800; }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--separator);
+    padding: 24px; text-align: center;
+    font-size: 12px; color: var(--text-dim);
+  }
+
+  /* ── RESPONSIVE ─────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .site-header { padding: 0 12px; height: 56px; }
+    .logo-img { height: 38px; }
+    .logo-title { font-size: 14px; letter-spacing: 1px; }
+    .logo-sub { display: none; }
+    nav { display: none; }
+    .nav-burger { display: block; }
+    .nav-mobile { top: 56px; }
+
+    .page-hero { padding: 28px 16px; }
+    .page-hero-title { font-size: 24px; }
+
+    .global-stats { padding: 12px 8px; }
+    .gstat { padding: 0 10px; }
+    .gstat-val { font-size: 22px; }
+
+    .section { padding: 28px 16px; }
+
+    .edition-header { padding: 16px; }
+    .edition-title { font-size: 18px; }
+    .edition-body { padding: 16px; }
+
+    .podium-row { grid-template-columns: 1fr; gap: 8px; }
+    .podium-item {
+      display: flex; align-items: center;
+      text-align: left; gap: 12px; padding: 12px 16px;
+    }
+    .podium-medal-sm { font-size: 20px; margin-bottom: 0; flex-shrink: 0; }
+    .podium-avatar-sm { margin: 0; flex-shrink: 0; }
+    .podium-place { margin-bottom: 2px; }
+    .podium-pname-first { margin-bottom: 4px; }
+  }
+
+  @media (max-width: 380px) {
+    .gstat-val { font-size: 18px; }
+    .edition-title { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a href="index.html" class="logo">
+    <img src="logo.png" class="logo-img" alt="Palificup"
+         onerror="this.style.display='none'">
+    <div class="logo-text">
+      <div class="logo-title">LA PALIFICUP</div>
+      <div class="logo-sub">Classement Officiel</div>
+    </div>
+  </a>
+  <nav>
+    <a href="index.html"      class="nav-link">🏠 Accueil</a>
+    <a href="classement.html" class="nav-link">🏆 Classement</a>
+    <a href="editions.html"   class="nav-link active">📅 Éditions</a>
+  </nav>
+  <button class="nav-burger" onclick="toggleMenu()" aria-label="Menu">☰</button>
+</header>
+
+<!-- NAV MOBILE -->
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html"      class="nav-link" onclick="toggleMenu()">🏠 Accueil</a>
+  <a href="classement.html" class="nav-link" onclick="toggleMenu()">🏆 Classement</a>
+  <a href="editions.html"   class="nav-link active" onclick="toggleMenu()">📅 Éditions</a>
+</div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-icon">📅</div>
+  <div class="page-hero-title">ÉDITIONS PRÉCÉDENTES</div>
+  <div class="page-hero-sub">Tous les tournois de La Palificup</div>
+</div>
+
+<!-- STATS GLOBALES -->
+<div class="global-stats">
+  <div class="gstat">
+    <div class="gstat-val">4</div>
+    <div class="gstat-lbl">Tournois</div>
+  </div>
+  <div class="gstat-divider"></div>
+  <div class="gstat">
+    <div class="gstat-val">239</div>
+    <div class="gstat-lbl">Joueurs uniques</div>
+  </div>
+  <div class="gstat-divider"></div>
+  <div class="gstat">
+    <div class="gstat-val">310</div>
+    <div class="gstat-lbl">Participations</div>
+  </div>
+  <div class="gstat-divider"></div>
+  <div class="gstat">
+    <div class="gstat-val">🎲</div>
+    <div class="gstat-lbl">Perudo</div>
+  </div>
+</div>
+
+<!-- EDITIONS -->
+<div class="section">
+  <div class="section-title">📋 Historique des tournois</div>
+
+  <!-- T4 -->
+  <div class="edition-card">
+    <div class="edition-header">
+      <div>
+        <div class="edition-num">Tournoi · T4 · Le plus récent</div>
+        <div class="edition-title">Boom Boom Villette</div>
+      </div>
+      <div class="edition-badges">
+        <div class="badge">📅 24 janvier 2026</div>
+        <div class="badge">📍 Boom Boom Villette, Paris</div>
+        <div class="badge">👥 109 joueurs</div>
+      </div>
+    </div>
+    <div class="edition-body">
+      <div class="podium-row" id="podium-t4"></div>
+    </div>
+  </div>
+
+  <!-- T3 -->
+  <div class="edition-card">
+    <div class="edition-header">
+      <div>
+        <div class="edition-num">Tournoi · T3</div>
+        <div class="edition-title">Bar à la Folie</div>
+      </div>
+      <div class="edition-badges">
+        <div class="badge">📅 5 juillet 2025</div>
+        <div class="badge">📍 Bar à la Folie, Paris</div>
+        <div class="badge">👥 91 joueurs</div>
+      </div>
+    </div>
+    <div class="edition-body">
+      <div class="podium-row" id="podium-t3"></div>
+    </div>
+  </div>
+
+  <!-- T2 -->
+  <div class="edition-card">
+    <div class="edition-header">
+      <div>
+        <div class="edition-num">Tournoi · T2</div>
+        <div class="edition-title">The Wanted</div>
+      </div>
+      <div class="edition-badges">
+        <div class="badge">📅 1er mars 2025</div>
+        <div class="badge">📍 The Wanted, Paris</div>
+        <div class="badge">👥 78 joueurs</div>
+      </div>
+    </div>
+    <div class="edition-body">
+      <div class="podium-row" id="podium-t2"></div>
+    </div>
+  </div>
+
+  <!-- T1 -->
+  <div class="edition-card">
+    <div class="edition-header">
+      <div>
+        <div class="edition-num">Tournoi · T1 · Premier tournoi</div>
+        <div class="edition-title">The Wanted</div>
+      </div>
+      <div class="edition-badges">
+        <div class="badge">📅 26 octobre 2024</div>
+        <div class="badge">📍 The Wanted, Paris</div>
+        <div class="badge">👥 32 joueurs</div>
+      </div>
+    </div>
+    <div class="edition-body">
+      <div class="podium-row" id="podium-t1"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 La Palificup · Le premier tournoi de Perudo de France · <a href="classement.html" style="color:var(--accent)">Classement</a> · <a href="index.html" style="color:var(--accent)">Accueil</a> · <a href="https://www.instagram.com/palificup" target="_blank" rel="noopener" style="color:var(--accent)">📸 Instagram</a></p>
+</footer>
+
+<script>
+// ── NAVIGATION MOBILE ─────────────────────────────────────────────────────────
+function toggleMenu() {
+  document.getElementById('navMobile').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const nav = document.getElementById('navMobile');
+  if (!e.target.closest('.nav-burger') && !e.target.closest('#navMobile')) {
+    nav.classList.remove('open');
+  }
+});
+
+// ── DONNÉES PODIUMS ───────────────────────────────────────────────────────────
+const AVATAR_COLORS = ['#1565C0','#F9A825','#2E7D32','#D32F2F','#E65100','#6A1B9A'];
+const getInitials = name => { const p = name.trim().split(' '); return p.length >= 2 ? (p[0][0]+(p[p.length-1][0])).toUpperCase() : name.slice(0,2).toUpperCase(); };
+
+const TOURNAMENTS = {
+  t1: [
+    { name: 'Oscar Chemla',       result: 'Vainqueur',  pts: 150 },
+    { name: 'Jean de Gourcuff',   result: 'Finaliste',  pts: 70  },
+    { name: 'Nicolas Soulignac',  result: 'Finaliste',  pts: 70  },
+  ],
+  t2: [
+    { name: 'Léna Garcia',        result: 'Vainqueur',  pts: 170 },
+    { name: 'Balthazar Albaric',  result: 'Finaliste',  pts: 70  },
+    { name: 'Gaspard Baret',      result: 'Finaliste',  pts: 70  },
+  ],
+  t3: [
+    { name: 'Nicolas Poirier',    result: 'Vainqueur',           pts: 150 },
+    { name: 'Augustin Voruz',     result: 'Finaliste repêchage', pts: 90  },
+    { name: 'Balthazar Albaric',  result: 'Finaliste',           pts: 70  },
+  ],
+  t4: [
+    { name: 'Mathilde Beaugrand', result: 'Vainqueur',           pts: 150 },
+    { name: 'Nicolas Morillot',   result: 'Finaliste repêchage', pts: 90  },
+    { name: 'Laure Lafabure',     result: 'Finaliste',           pts: 70  },
+  ],
+};
+
+const medals  = ['🥇', '🥈', '🥉'];
+const classes = ['p1', 'p2', 'p3'];
+const labels  = ['1ER', '2ÈME', '3ÈME'];
+
+function renderPodium(containerId, players) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = players.map((p, i) => {
+    const parts = p.name.trim().split(' ');
+    const first = parts[0] || '';
+    const last  = parts.slice(1).join(' ').toUpperCase() || first.toUpperCase();
+    return `
+    <div class="podium-item ${classes[i]}">
+      <div class="podium-medal-sm">${medals[i]}</div>
+      <div class="podium-place">${labels[i]}</div>
+      <div class="podium-avatar-sm" style="background:${AVATAR_COLORS[i]}">${getInitials(p.name)}</div>
+      <div>
+        <div class="podium-pname-first">${first}</div>
+        <div class="podium-pname-last">${last}</div>
+        <div class="podium-score"><span>${p.pts}</span> pts · ${p.result}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+renderPodium('podium-t1', TOURNAMENTS.t1);
+renderPodium('podium-t2', TOURNAMENTS.t2);
+renderPodium('podium-t3', TOURNAMENTS.t3);
+renderPodium('podium-t4', TOURNAMENTS.t4);
+</script>
+</body>
+</html>
