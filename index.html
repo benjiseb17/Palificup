@@ -4,21 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LA PALIFICUP — Le premier tournoi de Perudo de France</title>
-
 <!-- SEO -->
 <meta name="description" content="Le premier tournoi de Perudo de France. Découvrez le classement officiel, les prochains tournois et les éditions précédentes.">
 <meta name="robots" content="index, follow">
-
 <!-- Open Graph -->
 <meta property="og:title" content="LA PALIFICUP — Le premier tournoi de Perudo de France">
 <meta property="og:description" content="Le premier tournoi de Perudo de France. Classement officiel, prochains tournois et éditions précédentes.">
 <meta property="og:url" content="https://www.palificup.fr">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://www.palificup.fr/logo.png">
-
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="logo.png">
-
 <style>
   :root {
     --navy:       #FDF5EC;
@@ -36,16 +32,13 @@
     --separator:  #F0D0B0;
     --green:      #1A9E4A;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--navy);
     color: var(--white);
     font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     min-height: 100vh;
   }
-
   /* ── HEADER ─────────────────────────────────────────── */
   .site-header {
     background: var(--navy-hdr);
@@ -71,7 +64,6 @@
   .logo-text { line-height: 1.2; }
   .logo-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--blue-lt); }
   .logo-sub   { font-size: 10px; color: var(--blue-lt); letter-spacing: 3px; text-transform: uppercase; }
-
   /* ── NAV ─────────────────────────────────────────────── */
   nav { display: flex; gap: 4px; align-items: center; }
   .nav-link {
@@ -87,7 +79,6 @@
     border-color: var(--accent);
   }
   .nav-burger { display: none; background: none; border: none; cursor: pointer; font-size: 22px; color: var(--blue-lt); }
-
   /* ── HERO ─────────────────────────────────────────────── */
   .hero {
     background: linear-gradient(135deg, var(--navy-hdr) 0%, var(--navy-card) 100%);
@@ -139,7 +130,6 @@
     border: 1.5px solid var(--separator);
   }
   .btn-ghost:hover { background: var(--navy-card); color: var(--white); }
-
   /* ── SECTIONS ─────────────────────────────────────────── */
   .section { padding: 48px 24px; max-width: 1100px; margin: 0 auto; }
   .section-title {
@@ -151,7 +141,6 @@
   .section-title::after {
     content: ''; flex: 1; height: 1px; background: var(--separator);
   }
-
   /* ── NEXT TOURNAMENT ──────────────────────────────────── */
   .next-tournament {
     background: var(--navy-card);
@@ -179,7 +168,6 @@
     display: flex; align-items: center; gap: 6px;
     font-size: 13px; color: var(--text-dim);
   }
-
   /* ── TOP 3 ────────────────────────────────────────────── */
   .podium {
     display: grid;
@@ -233,7 +221,6 @@
     border-radius: 12px; padding: 4px 12px;
   }
   .podium-pts span { font-size: 15px; font-weight: 800; color: var(--white); }
-
   /* ── CTA CLASSEMENT ───────────────────────────────────── */
   .cta-block {
     background: linear-gradient(135deg, var(--accent) 0%, #c94400 100%);
@@ -246,7 +233,38 @@
   .cta-block p  { font-size: 14px; opacity: .85; margin-bottom: 24px; }
   .btn-white { background: #fff; color: var(--accent); font-weight: 800; }
   .btn-white:hover { background: #fff5ee; }
-
+  /* ── PARTENAIRE ───────────────────────────────────────── */
+  .partner-block {
+    text-align: center;
+    padding: 32px 24px 8px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .partner-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--blue-lt);
+    margin-bottom: 14px;
+  }
+  .partner-logo-wrap {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #fff; border: 1px solid var(--separator);
+    border-radius: 12px; padding: 14px 28px;
+    transition: transform .18s, box-shadow .18s;
+    text-decoration: none;
+  }
+  .partner-logo-wrap:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(232,85,0,.12);
+  }
+  .partner-logo-img {
+    height: 42px; width: auto; object-fit: contain;
+    display: block;
+  }
+  .partner-logo-fallback {
+    display: none;
+    font-size: 22px; font-weight: 900; letter-spacing: 4px;
+    color: #1A0800; font-family: 'Arial Black', Arial, sans-serif;
+  }
   /* ── FOOTER ───────────────────────────────────────────── */
   footer {
     border-top: 1px solid var(--separator);
@@ -254,7 +272,6 @@
     text-align: center;
     font-size: 12px; color: var(--text-dim);
   }
-
   /* ── LOADING ──────────────────────────────────────────── */
   .loading-placeholder {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
@@ -266,7 +283,6 @@
     border-radius: 14px; height: 200px;
   }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
   /* ── NAV MOBILE ───────────────────────────────────────── */
   .nav-mobile {
     display: none;
@@ -279,7 +295,6 @@
   }
   .nav-mobile.open { display: flex; }
   .nav-mobile .nav-link { width: 100%; padding: 12px 16px; }
-
   /* ── RESPONSIVE ───────────────────────────────────────── */
   @media (max-width: 900px) {
     .hero-title { font-size: 36px; }
@@ -289,7 +304,6 @@
     .podium-name-last { font-size: 13px; }
     .podium-name-first { font-size: 11px; }
   }
-
   @media (max-width: 640px) {
     .site-header { padding: 0 12px; height: 56px; }
     .logo-img { height: 38px; }
@@ -297,17 +311,13 @@
     .logo-sub { display: none; }
     nav { display: none; }
     .nav-burger { display: block; }
-
     .hero { padding: 40px 16px 36px; }
     .hero-logo { width: 72px; height: 72px; }
     .hero-title { font-size: 28px; letter-spacing: 2px; }
     .hero-desc { font-size: 14px; }
-
     .section { padding: 32px 16px; }
-
     .next-tournament { padding: 20px 16px; gap: 16px; }
     .next-t-day { font-size: 28px; }
-
     .podium { grid-template-columns: 1fr; gap: 10px; }
     .podium-card {
       display: grid;
@@ -351,20 +361,19 @@
       flex-shrink: 0;
     }
     .podium-pts span { font-size: 17px; }
-
     .cta-block { padding: 28px 20px; }
     .cta-block h2 { font-size: 18px; }
-
     .nav-mobile { top: 56px; }
+    .partner-block { padding: 24px 16px 4px; }
+    .partner-logo-wrap { padding: 10px 22px; }
+    .partner-logo-img { height: 34px; }
   }
-
   @media (max-width: 380px) {
     .hero-title { font-size: 22px; }
   }
 </style>
 </head>
 <body>
-
 <!-- HEADER -->
 <header class="site-header">
   <a href="index.html" class="logo">
@@ -383,14 +392,12 @@
   </nav>
   <button class="nav-burger" onclick="toggleMenu()" aria-label="Menu">☰</button>
 </header>
-
 <!-- NAV MOBILE -->
 <div class="nav-mobile" id="navMobile">
   <a href="index.html"       class="nav-link active" onclick="toggleMenu()">🏠 Accueil</a>
   <a href="classement.html"  class="nav-link"        onclick="toggleMenu()">🏆 Classement</a>
   <a href="editions.html"    class="nav-link"        onclick="toggleMenu()">📅 Éditions</a>
 </div>
-
 <!-- HERO -->
 <section class="hero">
   <img src="logo.png" class="hero-logo" alt="Palificup"
@@ -405,7 +412,6 @@
     <a href="https://www.instagram.com/palificup" target="_blank" rel="noopener" class="btn btn-ghost">📸 Instagram</a>
   </div>
 </section>
-
 <!-- PROCHAIN TOURNOI -->
 <div class="section">
   <div class="section-title">🎲 Prochain tournoi</div>
@@ -425,7 +431,6 @@
     </div>
   </div>
 </div>
-
 <!-- TOP 3 -->
 <div class="section">
   <div class="section-title">🥇 Top 3 du classement</div>
@@ -438,7 +443,6 @@
     </div>
   </div>
 </div>
-
 <!-- CTA -->
 <div class="section" style="padding-top: 0;">
   <div class="cta-block">
@@ -447,12 +451,20 @@
     <a href="classement.html" class="btn btn-white">🏆 Voir les <span id="ctaCount">239</span> joueurs</a>
   </div>
 </div>
-
+<!-- PARTENAIRE ASMODEE -->
+<div class="partner-block">
+  <div class="partner-label">En partenariat avec</div>
+  <a href="https://www.asmodee.fr" target="_blank" rel="noopener" class="partner-logo-wrap" aria-label="Asmodee">
+    <img src="asmodee-logo.png" class="partner-logo-img" alt="Asmodee"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
+    <span class="partner-logo-fallback">ASMODEE</span>
+  </a>
+</div>
 <!-- FOOTER -->
 <footer>
   <p>© 2025 La Palificup · Le premier tournoi de Perudo de France · <a href="classement.html" style="color:var(--accent)">Classement</a> · <a href="editions.html" style="color:var(--accent)">Éditions</a> · <a href="https://www.instagram.com/palificup" target="_blank" rel="noopener" style="color:var(--accent)">📸 Instagram</a></p>
+  <p style="margin-top:8px; font-size:11px; color:var(--text-dim);">En partenariat avec <strong style="color:var(--blue-lt);">ASMODEE</strong></p>
 </footer>
-
 <script>
 // ── NAVIGATION MOBILE ─────────────────────────────────────────────────────────
 function toggleMenu() {
@@ -464,14 +476,11 @@ document.addEventListener('click', e => {
     nav.classList.remove('open');
   }
 });
-
 // ── GOOGLE SHEETS ─────────────────────────────────────────────────────────────
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNZ9pWWaZTQF23bOyxPnOYk4v4HCoNzQtkcj-y4f-G4bJOyWmemG4Z58fKCqHzzg/pub?gid=385945859&single=true&output=csv';
-
 const AVATAR_COLORS = ['#1565C0','#F9A825','#2E7D32','#D32F2F','#E65100','#6A1B9A'];
 const getInitials = name => { const p = name.trim().split(' '); return p.length >= 2 ? (p[0][0]+(p[p.length-1][0])).toUpperCase() : name.slice(0,2).toUpperCase(); };
 const getAvatarColor = idx => AVATAR_COLORS[idx % AVATAR_COLORS.length];
-
 async function fetchTop3() {
   const res = await fetch(SHEET_CSV_URL);
   if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -494,13 +503,11 @@ async function fetchTop3() {
     };
   });
 }
-
 function renderPodium(players) {
   const medals  = ['🥇', '🥈', '🥉'];
   const classes = ['rank-1', 'rank-2', 'rank-3'];
   const labels  = ['1ER', '2ÈME', '3ÈME'];
   const colors  = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
-
   document.getElementById('podiumContainer').innerHTML = `
     <div class="podium">
       ${players.map((p, i) => {
@@ -521,14 +528,12 @@ function renderPodium(players) {
       }).join('')}
     </div>`;
 }
-
 // Fallback Top 3 si Google Sheets inaccessible
 const FALLBACK_TOP3 = [
   { rank: 1, name: 'Mathilde Beaugrand', points: 240, tournaments: 3 },
   { rank: 2, name: 'Léna Garcia',        points: 210, tournaments: 2 },
   { rank: 3, name: 'Oscar Chemla',       points: 200, tournaments: 2 },
 ];
-
 (async () => {
   try {
     const top3 = await fetchTop3();
