@@ -149,7 +149,14 @@
     padding: 28px 32px;
     display: flex; align-items: center; gap: 32px;
     flex-wrap: wrap;
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s;
   }
+  .next-tournament:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(232,85,0,.18);
+  }
+  .next-t-actions { margin-top: 16px; }
   .next-t-date {
     text-align: center; flex-shrink: 0;
     background: var(--accent); color: #fff;
@@ -415,18 +422,21 @@
 <!-- PROCHAIN TOURNOI -->
 <div class="section">
   <div class="section-title">🎲 Prochain tournoi</div>
-  <div class="next-tournament">
+  <div class="next-tournament" onclick="window.open('https://forms.gle/ztkGD8QMuYsfcaEdA','_blank')" role="link" tabindex="0" aria-label="S'inscrire au prochain tournoi" onkeydown="if(event.key==='Enter'||event.key===' '){window.open('https://forms.gle/ztkGD8QMuYsfcaEdA','_blank')}">
     <div class="next-t-date">
-      <div class="next-t-day" id="nextDay">?</div>
-      <div class="next-t-month" id="nextMonth">À venir</div>
+      <div class="next-t-day" id="nextDay">12</div>
+      <div class="next-t-month" id="nextMonth">Septembre</div>
     </div>
     <div class="next-t-info">
-      <div class="next-t-label">Tournoi officiel · Saison 2025</div>
-      <div class="next-t-title" id="nextTitle">Tournoi T5 — Date à confirmer</div>
+      <div class="next-t-label">Tournoi officiel · Saison 2026</div>
+      <div class="next-t-title" id="nextTitle">Tournoi T5 — Samedi 12 septembre 2026</div>
       <div class="next-t-details">
-        <div class="next-t-detail">📍 <span id="nextLocation">Paris — lieu à confirmer</span></div>
+        <div class="next-t-detail">📍 <span id="nextLocation">La Recyclerie, Paris</span></div>
         <div class="next-t-detail">👥 <span id="nextPlayers">Ouvert à tous les joueurs</span></div>
         <div class="next-t-detail">🎲 <span>Format Perudo officiel</span></div>
+      </div>
+      <div class="next-t-actions">
+        <a href="https://forms.gle/ztkGD8QMuYsfcaEdA" target="_blank" rel="noopener" class="btn btn-primary" onclick="event.stopPropagation()">📝 S'inscrire</a>
       </div>
     </div>
   </div>
