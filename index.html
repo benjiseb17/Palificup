@@ -228,6 +228,34 @@
     border-radius: 12px; padding: 4px 12px;
   }
   .podium-pts span { font-size: 15px; font-weight: 800; color: var(--white); }
+  /* ── PRIZE MONEY ──────────────────────────────────────── */
+  .prize-money-block {
+    background: linear-gradient(135deg, #e8f8ee 0%, var(--navy-hdr) 100%);
+    border: 2px solid var(--green);
+    border-radius: 16px;
+    padding: 28px 32px;
+    display: flex; align-items: center; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .prize-money-icon {
+    font-size: 44px; flex-shrink: 0;
+    width: 76px; height: 76px;
+    background: rgba(26,158,74,.12);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .prize-money-info { flex: 1; min-width: 200px; }
+  .prize-money-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--green); margin-bottom: 6px;
+  }
+  .prize-money-amount {
+    font-size: 40px; font-weight: 900; color: var(--white);
+    line-height: 1; margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .prize-money-detail { font-size: 13px; color: var(--text-dim); }
+  .prize-money-detail strong { color: var(--white); font-weight: 700; }
   /* ── CTA CLASSEMENT ───────────────────────────────────── */
   .cta-block {
     background: linear-gradient(135deg, var(--accent) 0%, #c94400 100%);
@@ -368,6 +396,9 @@
       flex-shrink: 0;
     }
     .podium-pts span { font-size: 17px; }
+    .prize-money-block { padding: 20px 16px; gap: 16px; }
+    .prize-money-icon { width: 56px; height: 56px; font-size: 30px; }
+    .prize-money-amount { font-size: 30px; }
     .cta-block { padding: 28px 20px; }
     .cta-block h2 { font-size: 18px; }
     .nav-mobile { top: 56px; }
@@ -441,6 +472,17 @@
     </div>
   </div>
 </div>
+<!-- PRIZE MONEY -->
+<div class="section" style="padding-top: 0;">
+  <div class="prize-money-block">
+    <div class="prize-money-icon">💰</div>
+    <div class="prize-money-info">
+      <div class="prize-money-label">Prize money du gagnant · Prochain tournoi</div>
+      <div class="prize-money-amount" id="prizeAmount">—</div>
+      <div class="prize-money-detail"><strong id="prizeCount">0</strong> inscrits</div>
+    </div>
+  </div>
+</div>
 <!-- TOP 3 -->
 <div class="section">
   <div class="section-title">🥇 Top 3 du classement</div>
@@ -489,6 +531,8 @@ document.addEventListener('click', e => {
 });
 // ── GOOGLE SHEETS ─────────────────────────────────────────────────────────────
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNZ9pWWaZTQF23bOyxPnOYk4v4HCoNzQtkcj-y4f-G4bJOyWmemG4Z58fKCqHzzg/pub?gid=385945859&single=true&output=csv';
+// Feuille des inscrits au tournoi en cours (formulaire "PALIFICUP #5") — sert au calcul de la cagnotte
+const INSCRIPTIONS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1HUGHca2Z69UWn4Xp6a_1e4glkDismHS_AKEYjp40vLE/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201';
 const AVATAR_COLORS = ['#1565C0','#F9A825','#2E7D32','#D32F2F','#E65100','#6A1B9A'];
 const getInitials = name => { const p = name.trim().split(' '); return p.length >= 2 ? (p[0][0]+(p[p.length-1][0])).toUpperCase() : name.slice(0,2).toUpperCase(); };
 const getAvatarColor = idx => AVATAR_COLORS[idx % AVATAR_COLORS.length];
@@ -545,11 +589,27 @@ const FALLBACK_TOP3 = [
   { rank: 2, name: 'Léna Garcia',        points: 210, tournaments: 2 },
   { rank: 3, name: 'Oscar Chemla',       points: 200, tournaments: 2 },
 ];
+// ── PRIZE MONEY ───────────────────────────────────────────────────────────────
+const PRIZE_PER_INSCRIT = 3.33; // € reversés à la cagnotte par inscrit
+const FALLBACK_INSCRITS_COUNT = 29; // utilisé uniquement si la feuille d'inscriptions est inaccessible
+function updatePrizeMoney(count) {
+  const amount = Math.ceil(count * PRIZE_PER_INSCRIT);
+  document.getElementById('prizeAmount').textContent =
+    amount.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  document.getElementById('prizeCount').textContent = count;
+}
+async function fetchInscriptionsCount() {
+  const res = await fetch(INSCRIPTIONS_CSV_URL);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const csv = await res.text();
+  // -1 pour retirer la ligne d'en-tête (Timestamp, Prénom, Nom, ...)
+  return csv.split('\n').slice(1).filter(r => r.trim()).length;
+}
 (async () => {
   try {
     const top3 = await fetchTop3();
     renderPodium(top3);
-    // Met à jour le compteur du CTA
+    // Met à jour le compteur du CTA à partir du classement général
     const res2 = await fetch(SHEET_CSV_URL);
     const csv2 = await res2.text();
     const count = csv2.split('\n').slice(1).filter(r => r.trim()).length;
@@ -557,6 +617,14 @@ const FALLBACK_TOP3 = [
   } catch (e) {
     console.warn('Fallback top 3 :', e.message);
     renderPodium(FALLBACK_TOP3);
+  }
+  try {
+    // Cagnotte basée sur les inscrits au tournoi en cours (feuille dédiée)
+    const inscritsCount = await fetchInscriptionsCount();
+    updatePrizeMoney(inscritsCount);
+  } catch (e) {
+    console.warn('Fallback cagnotte :', e.message);
+    updatePrizeMoney(FALLBACK_INSCRITS_COUNT);
   }
 })();
 </script>
