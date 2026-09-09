@@ -15,70 +15,8 @@
 <meta property="og:image" content="https://www.palificup.fr/logo.png">
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="styles.css">
 <style>
-  :root {
-    --navy:       #FDF5EC;
-    --navy-hdr:   #FFF8F0;
-    --navy-card:  #FDE8D0;
-    --navy-alt:   #FFFFFF;
-    --blue-lt:    #C05A00;
-    --blue-med:   #A04500;
-    --accent:     #E85500;
-    --gold:       #E6AC00;
-    --silver:     #909090;
-    --bronze:     #A0622A;
-    --white:      #1A0800;
-    --text-dim:   #9A6A40;
-    --separator:  #F0D0B0;
-    --green:      #1A9E4A;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--navy);
-    color: var(--white);
-    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    min-height: 100vh;
-  }
-  /* ── HEADER ─────────────────────────────────────────── */
-  .site-header {
-    background: var(--navy-hdr);
-    border-bottom: 3px solid var(--accent);
-    padding: 0 24px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 70px;
-  }
-  .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
-  .logo-img { height: 54px; width: auto; object-fit: contain; border-radius: 6px; }
-  .logo-fallback {
-    width: 54px; height: 54px;
-    background: linear-gradient(135deg, var(--gold), #e8a000);
-    border-radius: 8px;
-    display: none; align-items: center; justify-content: center;
-    font-size: 26px;
-  }
-  .logo-text { line-height: 1.2; }
-  .logo-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--blue-lt); }
-  .logo-sub   { font-size: 10px; color: var(--blue-lt); letter-spacing: 3px; text-transform: uppercase; }
-  /* ── NAV ─────────────────────────────────────────────── */
-  nav { display: flex; gap: 4px; align-items: center; }
-  .nav-link {
-    padding: 8px 16px; border-radius: 8px;
-    font-size: 13px; font-weight: 600;
-    color: var(--blue-lt); text-decoration: none;
-    transition: all .18s; letter-spacing: .3px;
-    border: 1px solid transparent;
-  }
-  .nav-link:hover { background: var(--navy-card); color: var(--white); }
-  .nav-link.active {
-    background: var(--accent); color: #fff;
-    border-color: var(--accent);
-  }
-  .nav-burger { display: none; background: none; border: none; cursor: pointer; font-size: 22px; color: var(--blue-lt); }
   /* ── HERO ─────────────────────────────────────────────── */
   .hero {
     background: linear-gradient(135deg, var(--navy-hdr) 0%, var(--navy-card) 100%);
@@ -117,19 +55,6 @@
     line-height: 1.6;
   }
   .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-  .btn {
-    padding: 12px 24px; border-radius: 8px; font-size: 14px;
-    font-weight: 700; cursor: pointer; border: none;
-    transition: all .18s; letter-spacing: .3px; text-decoration: none;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #c94400; }
-  .btn-ghost {
-    background: transparent; color: var(--blue-lt);
-    border: 1.5px solid var(--separator);
-  }
-  .btn-ghost:hover { background: var(--navy-card); color: var(--white); }
   /* ── SECTIONS ─────────────────────────────────────────── */
   .section { padding: 48px 24px; max-width: 1100px; margin: 0 auto; }
   .section-title {
@@ -300,13 +225,6 @@
     font-size: 22px; font-weight: 900; letter-spacing: 4px;
     color: #1A0800; font-family: 'Arial Black', Arial, sans-serif;
   }
-  /* ── FOOTER ───────────────────────────────────────────── */
-  footer {
-    border-top: 1px solid var(--separator);
-    padding: 24px;
-    text-align: center;
-    font-size: 12px; color: var(--text-dim);
-  }
   /* ── LOADING ──────────────────────────────────────────── */
   .loading-placeholder {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
@@ -318,18 +236,6 @@
     border-radius: 14px; height: 200px;
   }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  /* ── NAV MOBILE ───────────────────────────────────────── */
-  .nav-mobile {
-    display: none;
-    flex-direction: column;
-    position: absolute; top: 70px; left: 0; right: 0;
-    background: var(--navy-hdr);
-    border-bottom: 2px solid var(--separator);
-    padding: 12px 16px;
-    gap: 4px; z-index: 99;
-  }
-  .nav-mobile.open { display: flex; }
-  .nav-mobile .nav-link { width: 100%; padding: 12px 16px; }
   /* ── RESPONSIVE ───────────────────────────────────────── */
   @media (max-width: 900px) {
     .hero-title { font-size: 36px; }
@@ -536,12 +442,12 @@ const INSCRIPTIONS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1HUGHca2Z69
 const AVATAR_COLORS = ['#1565C0','#F9A825','#2E7D32','#D32F2F','#E65100','#6A1B9A'];
 const getInitials = name => { const p = name.trim().split(' '); return p.length >= 2 ? (p[0][0]+(p[p.length-1][0])).toUpperCase() : name.slice(0,2).toUpperCase(); };
 const getAvatarColor = idx => AVATAR_COLORS[idx % AVATAR_COLORS.length];
-async function fetchTop3() {
+async function fetchPlayers() {
   const res = await fetch(SHEET_CSV_URL);
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const csv = await res.text();
   const rows = csv.split('\n').slice(1).filter(r => r.trim());
-  return rows.slice(0, 3).map((row, i) => {
+  const players = rows.map((row, i) => {
     const cols = [];
     let current = '', inQuotes = false;
     for (const ch of row) {
@@ -557,6 +463,8 @@ async function fetchTop3() {
       tournaments: parseInt(cols[4]) || 0,
     };
   });
+  // Le total de joueurs (pour le CTA) vient de la même réponse : pas besoin d'un second fetch.
+  return { top3: players.slice(0, 3), total: players.length };
 }
 function renderPodium(players) {
   const medals  = ['🥇', '🥈', '🥉'];
@@ -605,25 +513,27 @@ async function fetchInscriptionsCount() {
   // -1 pour retirer la ligne d'en-tête (Timestamp, Prénom, Nom, ...)
   return csv.split('\n').slice(1).filter(r => r.trim()).length;
 }
+// Les deux sources (classement + inscriptions) sont indépendantes : on les
+// charge en parallèle plutôt qu'en cascade pour afficher le Top 3 et le
+// prize money le plus vite possible.
 (async () => {
-  try {
-    const top3 = await fetchTop3();
-    renderPodium(top3);
-    // Met à jour le compteur du CTA à partir du classement général
-    const res2 = await fetch(SHEET_CSV_URL);
-    const csv2 = await res2.text();
-    const count = csv2.split('\n').slice(1).filter(r => r.trim()).length;
-    document.getElementById('ctaCount').textContent = count;
-  } catch (e) {
-    console.warn('Fallback top 3 :', e.message);
+  const [playersResult, inscritsResult] = await Promise.allSettled([
+    fetchPlayers(),
+    fetchInscriptionsCount()
+  ]);
+
+  if (playersResult.status === 'fulfilled') {
+    renderPodium(playersResult.value.top3);
+    document.getElementById('ctaCount').textContent = playersResult.value.total;
+  } else {
+    console.warn('Fallback top 3 :', playersResult.reason.message);
     renderPodium(FALLBACK_TOP3);
   }
-  try {
-    // Cagnotte basée sur les inscrits au tournoi en cours (feuille dédiée)
-    const inscritsCount = await fetchInscriptionsCount();
-    updatePrizeMoney(inscritsCount);
-  } catch (e) {
-    console.warn('Fallback cagnotte :', e.message);
+
+  if (inscritsResult.status === 'fulfilled') {
+    updatePrizeMoney(inscritsResult.value);
+  } else {
+    console.warn('Fallback cagnotte :', inscritsResult.reason.message);
     updatePrizeMoney(FALLBACK_INSCRITS_COUNT);
   }
 })();

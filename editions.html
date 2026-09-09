@@ -18,68 +18,9 @@
 
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="styles.css">
 
 <style>
-  :root {
-    --navy:       #FDF5EC;
-    --navy-hdr:   #FFF8F0;
-    --navy-card:  #FDE8D0;
-    --navy-alt:   #FFFFFF;
-    --blue-lt:    #C05A00;
-    --accent:     #E85500;
-    --gold:       #E6AC00;
-    --silver:     #909090;
-    --bronze:     #A0622A;
-    --white:      #1A0800;
-    --text-dim:   #9A6A40;
-    --separator:  #F0D0B0;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--navy);
-    color: var(--white);
-    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    min-height: 100vh;
-  }
-
-  /* ── HEADER ─────────────────────────────────────────── */
-  .site-header {
-    background: var(--navy-hdr);
-    border-bottom: 3px solid var(--accent);
-    padding: 0 24px;
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 70px;
-  }
-  .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
-  .logo-img { height: 54px; width: auto; object-fit: contain; border-radius: 6px; }
-  .logo-text { line-height: 1.2; }
-  .logo-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--blue-lt); }
-  .logo-sub   { font-size: 10px; color: var(--blue-lt); letter-spacing: 3px; text-transform: uppercase; }
-
-  nav { display: flex; gap: 4px; align-items: center; }
-  .nav-link {
-    padding: 8px 16px; border-radius: 8px;
-    font-size: 13px; font-weight: 600;
-    color: var(--blue-lt); text-decoration: none;
-    transition: all .18s;
-  }
-  .nav-link:hover { background: var(--navy-card); color: var(--white); }
-  .nav-link.active { background: var(--accent); color: #fff; }
-  .nav-burger { display: none; background: none; border: none; cursor: pointer; font-size: 22px; color: var(--blue-lt); }
-
-  /* ── NAV MOBILE ─────────────────────────────────────── */
-  .nav-mobile {
-    display: none; flex-direction: column;
-    position: fixed; top: 70px; left: 0; right: 0;
-    background: var(--navy-hdr);
-    border-bottom: 2px solid var(--separator);
-    padding: 12px 16px; gap: 4px; z-index: 99;
-  }
-  .nav-mobile.open { display: flex; }
-  .nav-mobile .nav-link { padding: 12px 16px; }
-
   /* ── PAGE TITLE ─────────────────────────────────────── */
   .page-hero {
     background: linear-gradient(135deg, var(--navy-hdr) 0%, var(--navy-card) 100%);
