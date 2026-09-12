@@ -618,7 +618,7 @@ function renderTable() {
     const lastName  = parts.slice(1).join(' ').toUpperCase();
     const barW      = Math.round((p.points / maxPts) * 100);
     const histCount = getPlayerHistory(p._id).length;
-    const wins = getPlayerHistory(p._id).filter(r => (r.r || r.resultat || '').toLowerCase().includes('vainqueur')).length;
+    const wins = getPlayerHistory(p._id).filter(r => isVictory(r.r || r.resultat)).length;
     const starsHtml = wins > 0 ? `<span class="win-stars" title="${wins} victoire${wins>1?'s':''}">${'🏆'.repeat(wins)}</span>` : '';
 
     return `<tr class="${rowClass}" data-id="${p._id}" onclick="openHistory(${p._id})">
@@ -679,15 +679,25 @@ document.getElementById('searchInput').addEventListener('input', e => {
   renderTable();
 });
 
+// ── VICTOIRE ──────────────────────────────────────────────────────────────────
+// Un résultat ne compte comme victoire (tournoi remporté) que s'il contient
+// "vainqueur" SANS être un parcours de finaliste passé par le repêchage
+// (ex: "Vainqueur repêchage - Finaliste" = a atteint la finale, ne l'a pas gagnée).
+function isVictory(r) {
+  if (!r) return false;
+  const up = r.toLowerCase();
+  return up.includes('vainqueur') && !up.includes('finaliste');
+}
+
 // ── RESULT BADGE STYLE ───────────────────────────────────────────────────────
 // Détermine la couleur du badge selon le résultat :
-//   "vainqueur"  → or   | "finaliste" (sans repêchage) → argent
+//   victoire     → or   | "finaliste" (sans repêchage) → argent
 //   "demi"       → bronze | tout le reste → bleu
 // Si tu ajoutes de nouveaux résultats, adapte ces règles ici.
 function resultBadgeClass(r) {
   if (!r) return 'pos-other';
   const up = r.toLowerCase();
-  if (up.includes('vainqueur')) return 'pos-1';
+  if (isVictory(r)) return 'pos-1';
   if (up.includes('finaliste') && !up.includes('repê') && !up.includes('repe')) return 'pos-2';
   if (up.includes('demi') && !up.includes('repê') && !up.includes('repe')) return 'pos-3';
   return 'pos-other';
@@ -740,7 +750,7 @@ function renderHistoryTable(id) {
   }
 
   const totalPts = history.reduce((s,r) => s + (r.p || r.points || 0), 0);
-  const wins = history.filter(r => (r.r||r.resultat||'').toLowerCase().includes('vainqueur')).length;
+  const wins = history.filter(r => isVictory(r.r || r.resultat)).length;
 
   container.innerHTML = `
     <div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap">
