@@ -232,6 +232,31 @@
     color: var(--text-dim); font-size: 14px;
   }
 
+  /* ── SKELETON (chargement) ────────────────────────────── */
+  .skeleton-block {
+    height: 14px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--navy-card) 25%, var(--separator) 50%, var(--navy-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skel-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+  .skel-player-cell { display: flex; align-items: center; gap: 12px; }
+  .skel-player-lines { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+  /* ── BANDEAU HORS-LIGNE ───────────────────────────────── */
+  .offline-banner {
+    display: none;
+    align-items: center; gap: 10px;
+    background: rgba(230,172,0,.12);
+    border: 1px solid rgba(230,172,0,.4);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin: 0 24px 12px;
+    font-size: 13px; color: var(--blue-lt);
+  }
+  .offline-banner.show { display: flex; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--navy); }
   ::-webkit-scrollbar-thumb { background: var(--separator); border-radius: 3px; }
@@ -258,6 +283,7 @@
     .table-wrap { padding: 0 16px 28px; }
     table { font-size: 13px; }
     td, th { padding: 8px 10px; }
+    .offline-banner { margin: 0 16px 12px; }
 
     /* Masquer la colonne Tournois */
     .td-t, th.td-t { display: none; }
@@ -318,6 +344,7 @@
 
     /* ── Table ─────────────────────────────────────────── */
     .table-wrap { padding: 0 6px 20px; }
+    .offline-banner { margin: 0 6px 10px; font-size: 12px; }
     table { font-size: 13px; }
     thead th, tbody td { padding: 8px 6px; }
 
@@ -403,6 +430,11 @@
     <input class="search-input" id="searchInput" placeholder="Rechercher un joueur…" />
   </div>
   <span class="results-count" id="resultsCount"></span>
+</div>
+
+<!-- BANDEAU HORS-LIGNE -->
+<div class="offline-banner" id="offlineBanner">
+  ⚠️ Classement affiché en mode hors-ligne (données de secours) — Google Sheets est momentanément inaccessible. Réessayez en rechargeant la page.
 </div>
 
 <!-- TABLE -->
@@ -806,16 +838,48 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeHistory();
 });
 
+// ── SKELETON (état de chargement) ───────────────────────────────────────────
+// Lignes fantômes affichées pendant le chargement, pour éviter qu'un tableau
+// vide donne l'impression d'une page cassée.
+function renderSkeleton(rows = 8) {
+  const cell = w => `<div class="skeleton-block" style="width:${w}"></div>`;
+  document.getElementById('tableBody').innerHTML = Array.from({ length: rows }).map(() => `
+    <tr>
+      <td class="td-rank">${cell('20px')}</td>
+      <td class="td-player">
+        <div class="skel-player-cell">
+          <div class="skeleton-block skel-avatar"></div>
+          <div class="skel-player-lines">${cell('40%')}${cell('65%')}</div>
+        </div>
+      </td>
+      <td class="td-t">${cell('60px')}</td>
+      <td class="td-pts">${cell('50px')}</td>
+      <td class="td-wins"></td>
+    </tr>`).join('');
+}
+
+// Réessaie fn() plusieurs fois avant d'abandonner : une requête Google Sheets
+// isolée qui échoue (réseau, latence) ne doit pas faire basculer tout le site
+// sur les données de secours périmées.
+async function withRetry(fn, attempts = 3, delayMs = 1200) {
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn(); }
+    catch (e) {
+      if (i === attempts - 1) throw e;
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 // Charge les données depuis Google Sheets puis lance l'affichage.
 (async () => {
-  document.getElementById('tableBody').innerHTML =
-    '<tr class="empty-row"><td colspan="5">⏳ Chargement du classement…</td></tr>';
+  renderSkeleton();
   try {
-    const [sheetPlayers, sheetHistory] = await Promise.all([
+    const [sheetPlayers, sheetHistory] = await withRetry(() => Promise.all([
       fetchPlayersFromSheet(),
       fetchHistoryFromSheet()
-    ]);
+    ]));
     players = sheetPlayers;
     EXCEL_HISTORY = sheetHistory;
     console.log('✅ Classement chargé depuis Google Sheets (' + players.length + ' joueurs)');
@@ -823,6 +887,7 @@ document.addEventListener('keydown', e => {
   } catch (e) {
     console.warn('⚠️ Google Sheets inaccessible, utilisation des données locales :', e.message);
     players = FALLBACK_DATA.map((p, i) => ({ ...p, _id: i, _origRank: p.rank }));
+    document.getElementById('offlineBanner').classList.add('show');
     try {
       const res = await fetch('history-fallback.json');
       EXCEL_HISTORY = await res.json();
