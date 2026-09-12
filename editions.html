@@ -219,17 +219,17 @@
 <!-- STATS GLOBALES -->
 <div class="global-stats">
   <div class="gstat">
-    <div class="gstat-val">4</div>
+    <div class="gstat-val">5</div>
     <div class="gstat-lbl">Tournois</div>
   </div>
   <div class="gstat-divider"></div>
   <div class="gstat">
-    <div class="gstat-val">239</div>
+    <div class="gstat-val">313</div>
     <div class="gstat-lbl">Joueurs uniques</div>
   </div>
   <div class="gstat-divider"></div>
   <div class="gstat">
-    <div class="gstat-val">310</div>
+    <div class="gstat-val">406</div>
     <div class="gstat-lbl">Participations</div>
   </div>
   <div class="gstat-divider"></div>
@@ -243,11 +243,29 @@
 <div class="section">
   <div class="section-title">📋 Historique des tournois</div>
 
+  <!-- T5 -->
+  <div class="edition-card">
+    <div class="edition-header">
+      <div>
+        <div class="edition-num">Tournoi · T5 · Le plus récent</div>
+        <div class="edition-title">La Recyclerie</div>
+      </div>
+      <div class="edition-badges">
+        <div class="badge">📅 12 septembre 2026</div>
+        <div class="badge">📍 La Recyclerie, Paris</div>
+        <div class="badge">👥 96 joueurs</div>
+      </div>
+    </div>
+    <div class="edition-body">
+      <div class="podium-row" id="podium-t5"></div>
+    </div>
+  </div>
+
   <!-- T4 -->
   <div class="edition-card">
     <div class="edition-header">
       <div>
-        <div class="edition-num">Tournoi · T4 · Le plus récent</div>
+        <div class="edition-num">Tournoi · T4</div>
         <div class="edition-title">Boom Boom Villette</div>
       </div>
       <div class="edition-badges">
@@ -359,6 +377,11 @@ const TOURNAMENTS = {
     { name: 'Nicolas Morillot',   result: 'Finaliste repêchage', pts: 90  },
     { name: 'Laure Lafabure',     result: 'Finaliste',           pts: 70  },
   ],
+  t5: [
+    { name: 'Eliott Foulon',      result: 'Vainqueur',                      pts: 150 },
+    { name: 'Gilles Boinet',      result: 'Finaliste',                      pts: 70  },
+    { name: 'Mathys Rosse',       result: 'Vainqueur repêchage - Finaliste', pts: 90  },
+  ],
 };
 
 const medals  = ['🥇', '🥈', '🥉'];
@@ -390,6 +413,7 @@ renderPodium('podium-t1', TOURNAMENTS.t1);
 renderPodium('podium-t2', TOURNAMENTS.t2);
 renderPodium('podium-t3', TOURNAMENTS.t3);
 renderPodium('podium-t4', TOURNAMENTS.t4);
+renderPodium('podium-t5', TOURNAMENTS.t5);
 </script>
 </body>
 </html>
