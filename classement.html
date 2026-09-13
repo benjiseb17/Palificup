@@ -53,6 +53,11 @@
   .stat-val.bronze { color: var(--bronze); }
   .stat-lbl { font-size: 10px; color: var(--blue-lt); letter-spacing: 1.5px; text-transform: uppercase; }
   .stats-divider { width: 1px; height: 36px; background: var(--separator); }
+  .stat-info-btn {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    padding: 0;
+  }
+  .stat-info-btn:hover .stat-lbl { color: var(--white); }
 
   /* ── TOOLBAR ─────────────────────────────────────────── */
   /* Reste visible juste sous la bande de stats lors du défilement */
@@ -98,12 +103,6 @@
   thead th:hover { color: var(--white); }
   thead th .sort-arrow { margin-left: 4px; opacity: .4; }
   thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
-  .pts-info-btn {
-    background: none; border: none; cursor: pointer; padding: 0;
-    font-size: 12px; margin-left: 3px; vertical-align: middle;
-    opacity: .7; line-height: 1;
-  }
-  .pts-info-btn:hover { opacity: 1; }
 
   tbody tr {
     border-bottom: 1px solid var(--separator);
@@ -451,7 +450,7 @@
         <th class="td-rank"    data-col="rank">RANG <span class="sort-arrow">▼</span></th>
         <th class="td-player"  data-col="name">JOUEUR <span class="sort-arrow">↕</span></th>
         <th class="td-t"       data-col="tournaments">TOURNOIS <span class="sort-arrow">↕</span></th>
-        <th class="td-pts"     data-col="points">POINTS <button class="pts-info-btn" onclick="event.stopPropagation(); openPointsInfo();" title="Comment sont calculés les points ?" aria-label="Comment sont calculés les points ?">ℹ️</button> <span class="sort-arrow">↕</span></th>
+        <th class="td-pts"     data-col="points">POINTS <span class="sort-arrow">↕</span></th>
         <th class="td-wins"></th>
       </tr>
     </thead>
@@ -638,6 +637,11 @@ function updateStats() {
       <div class="stat-val">${players.length}</div>
       <div class="stat-lbl">Joueurs</div>
     </div>
+    <div class="stats-divider"></div>
+    <button class="stat-item stat-info-btn" onclick="openPointsInfo()">
+      <div class="stat-val">ℹ️</div>
+      <div class="stat-lbl">Détail des points</div>
+    </button>
   `;
 }
 
