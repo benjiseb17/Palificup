@@ -98,6 +98,12 @@
   thead th:hover { color: var(--white); }
   thead th .sort-arrow { margin-left: 4px; opacity: .4; }
   thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
+  .pts-info-btn {
+    background: none; border: none; cursor: pointer; padding: 0;
+    font-size: 12px; margin-left: 3px; vertical-align: middle;
+    opacity: .7; line-height: 1;
+  }
+  .pts-info-btn:hover { opacity: 1; }
 
   tbody tr {
     border-bottom: 1px solid var(--separator);
@@ -445,7 +451,7 @@
         <th class="td-rank"    data-col="rank">RANG <span class="sort-arrow">▼</span></th>
         <th class="td-player"  data-col="name">JOUEUR <span class="sort-arrow">↕</span></th>
         <th class="td-t"       data-col="tournaments">TOURNOIS <span class="sort-arrow">↕</span></th>
-        <th class="td-pts"     data-col="points">POINTS <span class="sort-arrow">↕</span></th>
+        <th class="td-pts"     data-col="points">POINTS <button class="pts-info-btn" onclick="event.stopPropagation(); openPointsInfo();" title="Comment sont calculés les points ?" aria-label="Comment sont calculés les points ?">ℹ️</button> <span class="sort-arrow">↕</span></th>
         <th class="td-wins"></th>
       </tr>
     </thead>
@@ -459,6 +465,33 @@
     <button class="modal-close" id="closeHistory">×</button>
     <div class="history-header" id="historyHeader"></div>
     <div id="historyContent"></div>
+  </div>
+</div>
+
+<!-- POINTS INFO MODAL -->
+<div class="modal-overlay" id="pointsInfoModal">
+  <div class="modal">
+    <button class="modal-close" id="closePointsInfo">×</button>
+    <div class="modal-title">Comment sont calculés les points ?</div>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;">
+      Seuls les <strong style="color:var(--white)">3 meilleurs résultats</strong> de chaque joueur comptent dans le total officiel affiché dans le classement. Jouer plus de tournois ne fait jamais baisser ton total, mais ne le fait monter que si un nouveau résultat est meilleur qu'un de tes 3 résultats déjà comptés.
+    </p>
+    <table class="history-table">
+      <thead>
+        <tr><th>Résultat</th><th>Points</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Vainqueur + Repêchage</td><td><strong>170</strong> pts</td></tr>
+        <tr><td>Vainqueur</td><td><strong>150</strong> pts</td></tr>
+        <tr><td>Vainqueur repêchage - Finaliste</td><td><strong>90</strong> pts</td></tr>
+        <tr><td>Finaliste</td><td><strong>70</strong> pts</td></tr>
+        <tr><td>Finaliste repêchage (2e/3e)</td><td><strong>50</strong> pts</td></tr>
+        <tr><td>Demi</td><td><strong>50</strong> pts</td></tr>
+        <tr><td>Demi repêchage</td><td><strong>40</strong> pts</td></tr>
+        <tr><td>Quart</td><td><strong>30</strong> pts</td></tr>
+        <tr><td>Quart repêchage</td><td><strong>10</strong> pts</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -832,10 +865,23 @@ document.getElementById('historyModal').addEventListener('click', e => {
   if (e.target === document.getElementById('historyModal')) closeHistory();
 });
 
+// ── POINTS INFO MODAL ─────────────────────────────────────────────────────────
+// Explique le barème de points et la règle du "top 3 résultats".
+function openPointsInfo() {
+  document.getElementById('pointsInfoModal').classList.add('open');
+}
+function closePointsInfo() {
+  document.getElementById('pointsInfoModal').classList.remove('open');
+}
+document.getElementById('closePointsInfo').onclick = closePointsInfo;
+document.getElementById('pointsInfoModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pointsInfoModal')) closePointsInfo();
+});
+
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
-// La touche Échap ferme la fenêtre d'historique.
+// La touche Échap ferme les fenêtres ouvertes.
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeHistory();
+  if (e.key === 'Escape') { closeHistory(); closePointsInfo(); }
 });
 
 // ── SKELETON (état de chargement) ───────────────────────────────────────────
