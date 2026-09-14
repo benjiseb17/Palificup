@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* Palette reprise de palificup.fr (styles.css du site vitrine) */
+@theme {
+  --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  --color-cream: #fdf5ec; /* fond principal */
+  --color-cream-header: #fff8f0; /* header / hero */
+  --color-cream-row: #fff1e0; /* lignes impaires */
+  --color-cream-alt: #ffffff; /* lignes paires */
+  --color-cream-card: #fde8d0; /* cartes */
+
+  --color-orange-label: #c05a00; /* labels, sous-titres */
+  --color-orange-mid: #a04500;
+  --color-orange-bright: #ff7a00; /* barre de progression */
+  --color-accent: #e85500; /* orange Perudo — accent principal */
+
+  --color-gold: #e6ac00;
+  --color-silver: #909090;
+  --color-bronze: #a0622a;
+
+  --color-ink: #1a0800; /* texte principal */
+  --color-caramel: #9a6a40; /* texte discret */
+
+  --color-good: #1a9e4a;
+  --color-bad: #cc2020;
+  --color-separator: #f0d0b0;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
