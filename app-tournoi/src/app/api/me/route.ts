@@ -14,8 +14,17 @@ export async function GET() {
     return NextResponse.json({ error: "not-authenticated" }, { status: 401 });
   }
 
-  const { players, rounds, seats, finalSeats, repechageEnabled, pouleQualifiers, bRepechageCount } =
-    await loadTournamentData();
+  const {
+    players,
+    rounds,
+    seats,
+    finalSeats,
+    repechageEnabled,
+    pouleQualifiers,
+    bRepechageCount,
+    aQualifiersPerRound,
+    bQualifiersPerRound,
+  } = await loadTournamentData();
   const view = getPlayerView(
     playerId,
     players,
@@ -24,7 +33,9 @@ export async function GET() {
     finalSeats,
     repechageEnabled,
     pouleQualifiers,
-    bRepechageCount
+    bRepechageCount,
+    aQualifiersPerRound,
+    bQualifiersPerRound
   );
 
   return NextResponse.json({ player, view });

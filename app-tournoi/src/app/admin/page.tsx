@@ -5,12 +5,15 @@ import { useState } from "react";
 import useSWR from "swr";
 import SiteHeader from "@/components/SiteHeader";
 
+type TableSeat = { player_id: string; name: string; finish_rank: string };
 type TableSummary = {
   round_id: string;
   stage: string;
+  table_number: number;
   gen: number;
   seatCount: number;
   complete: boolean;
+  seats: TableSeat[];
 };
 type BracketSummary = { status: string; tables: TableSummary[] };
 type StatusResponse = {
@@ -20,6 +23,8 @@ type StatusResponse = {
     table_target_size?: string;
     poule_qualifiers?: string;
     b_repechage_count?: string;
+    a_qualifiers_per_round?: string;
+    b_qualifiers_per_round?: string;
   };
   playerCount: number;
   tournamentStarted: boolean;
@@ -206,6 +211,12 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
         {data.bracketA.status !== "waiting-poules" && data.bracketA.status !== "not-generated" && (
           <Section title="Tableau A">
             <TableList tables={data.bracketA.tables} />
+            <QualifiersPerRound
+              label="Qualifiés par tour (Tableau A)"
+              value={data.config.a_qualifiers_per_round ?? "1"}
+              onSave={(v) => call("/api/admin/config", { a_qualifiers_per_round: v })}
+              busy={busy !== null}
+            />
             <BracketAction
               status={data.bracketA.status}
               onAdvance={() => call("/api/admin/advance", { bracket: "A" })}
@@ -219,6 +230,12 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           data.bracketB.status !== "not-generated" && (
             <Section title="Tableau B (repêchage)">
               <TableList tables={data.bracketB.tables} />
+              <QualifiersPerRound
+                label="Qualifiés par tour (Tableau B)"
+                value={data.config.b_qualifiers_per_round ?? "1"}
+                onSave={(v) => call("/api/admin/config", { b_qualifiers_per_round: v })}
+                busy={busy !== null}
+              />
               <BracketAction
                 status={data.bracketB.status}
                 onAdvance={() => call("/api/admin/advance", { bracket: "B" })}
@@ -276,10 +293,9 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             <div className="w-28">
               <label className="block text-sm font-semibold text-orange-label mb-1">Taille table</label>
               <input
-                className="w-full rounded-lg bg-white border border-separator px-3 py-2 disabled:opacity-50"
+                className="w-full rounded-lg bg-white border border-separator px-3 py-2"
                 value={tableSize}
                 onChange={(e) => setTableSize(e.target.value)}
-                disabled={data.tournamentStarted}
               />
             </div>
           </div>
@@ -290,10 +306,9 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                 Qualifiés directs par poule
               </label>
               <input
-                className="w-full rounded-lg bg-white border border-separator px-3 py-2 disabled:opacity-50"
+                className="w-full rounded-lg bg-white border border-separator px-3 py-2"
                 value={pouleQualifiers}
                 onChange={(e) => setPouleQualifiers(e.target.value)}
-                disabled={data.tournamentStarted}
               />
             </div>
             {repechage && (
@@ -302,10 +317,9 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                   Repêchés du Tableau B en finale
                 </label>
                 <input
-                  className="w-full rounded-lg bg-white border border-separator px-3 py-2 disabled:opacity-50"
+                  className="w-full rounded-lg bg-white border border-separator px-3 py-2"
                   value={bRepechageCount}
                   onChange={(e) => setBRepechageCount(e.target.value)}
-                  disabled={data.tournamentStarted}
                 />
               </div>
             )}
@@ -320,8 +334,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
               type="checkbox"
               checked={repechage}
               onChange={(e) => setRepechage(e.target.checked)}
-              disabled={data.tournamentStarted}
-              className="w-4 h-4 accent-accent disabled:opacity-50"
+              className="w-4 h-4 accent-accent"
             />
             Activer le repêchage (Tableau B)
           </label>
@@ -329,11 +342,10 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             Désactivé : les non-qualifiés de poule sont directement éliminés, la Grande Finale
             ne réunit que les qualifiés du Tableau A.
           </p>
-          {data.tournamentStarted && (
-            <p className="text-caramel text-xs mt-1 italic">
-              Ces réglages sont figés une fois le tournoi lancé.
-            </p>
-          )}
+          <p className="text-caramel text-xs mt-1 italic">
+            Tous ces réglages peuvent être changés à tout moment — ça ne change que les tours pas
+            encore générés, jamais ceux déjà joués.
+          </p>
 
           <button
             onClick={() =>
@@ -388,9 +400,54 @@ function BracketAction({
   return null;
 }
 
+function QualifiersPerRound({
+  label,
+  value,
+  onSave,
+  busy,
+}: {
+  label: string;
+  value: string;
+  onSave: (value: string) => void;
+  busy: boolean;
+}) {
+  const [local, setLocal] = useState(value);
+  return (
+    <div className="mt-3 flex items-end gap-2">
+      <div className="w-56">
+        <label className="block text-sm font-semibold text-orange-label mb-1">{label}</label>
+        <input
+          className="w-full rounded-lg bg-white border border-separator px-3 py-2"
+          value={local}
+          onChange={(e) => setLocal(e.target.value)}
+        />
+      </div>
+      <button
+        onClick={() => onSave(local)}
+        disabled={busy}
+        className="rounded-lg bg-cream-card hover:bg-separator disabled:opacity-50 px-3 py-2 text-sm font-semibold text-orange-label"
+      >
+        Appliquer au prochain tour
+      </button>
+    </div>
+  );
+}
+
 function TableList({ tables }: { tables: TableSummary[] }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
   if (tables.length === 0) return <p className="text-caramel text-sm">Aucune table.</p>;
   const done = tables.filter((t) => t.complete).length;
+
+  function toggle(round_id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(round_id)) next.delete(round_id);
+      else next.add(round_id);
+      return next;
+    });
+  }
+
   return (
     <div>
       <p className="text-sm text-caramel mb-2">
@@ -398,16 +455,41 @@ function TableList({ tables }: { tables: TableSummary[] }) {
       </p>
       <div className="flex flex-wrap gap-2">
         {tables.map((t) => (
-          <span
+          <button
             key={t.round_id}
+            onClick={() => toggle(t.round_id)}
             className={`text-xs font-semibold rounded px-2 py-1 ${
               t.complete ? "bg-good/15 text-good" : "bg-cream-card text-orange-label"
             }`}
           >
             {t.round_id}
-          </span>
+          </button>
         ))}
       </div>
+      {[...expanded].map((round_id) => {
+        const t = tables.find((x) => x.round_id === round_id);
+        if (!t) return null;
+        return (
+          <div
+            key={round_id}
+            className="mt-2 rounded-lg bg-cream-row border border-separator p-3"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-2">
+              {t.round_id} · Table {t.table_number}
+            </p>
+            <ul className="flex flex-col gap-1">
+              {t.seats.map((s) => (
+                <li key={s.player_id} className="flex items-center justify-between text-sm">
+                  <span>{s.name}</span>
+                  <span className="text-caramel font-semibold">
+                    {s.finish_rank ? `#${s.finish_rank}` : "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -36,7 +36,9 @@ export function computeClassement(
   rounds: RRow[],
   seats: SRow[],
   repechageEnabled: boolean,
-  pouleQualifiers: number
+  pouleQualifiers: number,
+  aQualifiersPerRound: number,
+  bQualifiersPerRound: number
 ): ClassementEntry[] {
   const tables = groupIntoTables(rounds, seats);
   const finalTable = [...tables.values()].find(
@@ -94,10 +96,11 @@ export function computeClassement(
     if (!t.seats.every((s) => s.finish_rank !== "")) continue;
     const ranked = rankedSeats(t);
     const distanceFromEnd = maxGenByBracket[bracket] - parsed.gen;
+    const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
     ranked.forEach((seat, idx) => {
       if (finalPlayerIds.has(seat.player_id)) return; // already scored via the Grand Final
       const rank = idx + 1;
-      const advances = rank === 1;
+      const advances = rank <= qualifiersPerRound;
       // Advancing players are never "final" at this table: either a later table/round
       // already exists for them (scored there or via the Grand Final block above), or
       // the admin hasn't generated it yet — either way they aren't eliminated here.

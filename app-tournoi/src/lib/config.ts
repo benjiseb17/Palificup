@@ -11,6 +11,8 @@ export type ConfigMap = {
   repechage_enabled: "true" | "false";
   poule_qualifiers: string;
   b_repechage_count: string;
+  a_qualifiers_per_round: string;
+  b_qualifiers_per_round: string;
 };
 
 export async function getConfig(): Promise<Partial<ConfigMap>> {

@@ -27,6 +27,13 @@ export async function loadTournamentData() {
     Math.max(1, finalSeats - 1)
   );
 
+  const clampPerRound = (raw: string | undefined) => {
+    const n = Number(raw || "1");
+    return Math.min(Math.max(1, Number.isFinite(n) ? Math.round(n) : 1), tableSize.max - 1);
+  };
+  const aQualifiersPerRound = clampPerRound(config.a_qualifiers_per_round);
+  const bQualifiersPerRound = clampPerRound(config.b_qualifiers_per_round);
+
   return {
     players,
     rounds,
@@ -37,5 +44,7 @@ export async function loadTournamentData() {
     repechageEnabled,
     pouleQualifiers,
     bRepechageCount,
+    aQualifiersPerRound,
+    bQualifiersPerRound,
   };
 }

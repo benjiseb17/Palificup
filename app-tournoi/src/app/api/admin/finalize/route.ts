@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getBracketState, groupIntoTables, planFinal, rankedSeats } from "@/lib/bracket";
+import { getBracketState, groupIntoTables, planFinal } from "@/lib/bracket";
 import { createRounds, createSeats, getRounds, getSeats } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
 import { loadTournamentData } from "@/lib/tournament";
@@ -10,7 +10,13 @@ export async function POST() {
   }
 
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
-  const { finalSeats, repechageEnabled, bRepechageCount } = await loadTournamentData();
+  const {
+    finalSeats,
+    repechageEnabled,
+    bRepechageCount,
+    aQualifiersPerRound,
+    bQualifiersPerRound,
+  } = await loadTournamentData();
   const aBudget = repechageEnabled ? finalSeats - bRepechageCount : finalSeats;
   const tables = groupIntoTables(rounds, seats);
 
@@ -21,8 +27,10 @@ export async function POST() {
 
   const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
   const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-  const aState = getBracketState(aTables, aBudget);
-  const bState = repechageEnabled ? getBracketState(bTables, bRepechageCount) : null;
+  const aState = getBracketState(aTables, aBudget, aQualifiersPerRound);
+  const bState = repechageEnabled
+    ? getBracketState(bTables, bRepechageCount, bQualifiersPerRound)
+    : null;
 
   const bReady = repechageEnabled ? bState?.status === "done" : true;
   if (aState.status !== "done" || !bReady) {
@@ -36,13 +44,9 @@ export async function POST() {
     );
   }
 
-  const aChampionSeats = aState.tables.map((t) => rankedSeats(t)[0]);
-  const bChampionSeats =
-    repechageEnabled && bState?.status === "done"
-      ? bState.tables.map((t) => rankedSeats(t)[0])
-      : [];
+  const bChampionSeats = repechageEnabled && bState?.status === "done" ? bState.qualifiedSeats : [];
 
-  const { rounds: newRounds, seats: newSeats } = planFinal(aChampionSeats, bChampionSeats);
+  const { rounds: newRounds, seats: newSeats } = planFinal(aState.qualifiedSeats, bChampionSeats);
   await createRounds(newRounds);
   await createSeats(newSeats);
 

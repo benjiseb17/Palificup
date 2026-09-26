@@ -48,7 +48,9 @@ export function getPlayerView(
   finalSeats: number,
   repechageEnabled: boolean,
   pouleQualifiers: number,
-  bRepechageCount: number
+  bRepechageCount: number,
+  aQualifiersPerRound: number,
+  bQualifiersPerRound: number
 ): PlayerView {
   const bySeatId = new Map(players.map((p) => [p.id, p]));
   const mySeats = seats.filter((s) => s.player_id === playerId);
@@ -121,19 +123,11 @@ export function getPlayerView(
         ? finalSeats - bRepechageCount
         : finalSeats
       : bRepechageCount;
-  const state = getBracketState(genTables, budget);
+  const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
+  const state = getBracketState(genTables, budget, qualifiersPerRound);
 
-  if (state.status === "ready-to-advance") {
-    if (myRank === 1) return { status: "waiting-next-round", lastStage: round.stage };
-    return {
-      status: "eliminated",
-      lastStage: round.stage,
-      points: pointsForEliminationAt(bracket, parsed.gen, rounds),
-    };
-  }
-
-  if (state.status === "done") {
-    if (myRank === 1) {
+  if (state.status === "ready-to-advance" || state.status === "done") {
+    if (myRank <= qualifiersPerRound) {
       return { status: "waiting-next-round", lastStage: round.stage };
     }
     return {

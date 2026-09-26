@@ -3,8 +3,24 @@ import { computeClassement, computeTeamClassement } from "@/lib/scoring";
 import { loadTournamentData } from "@/lib/tournament";
 
 export async function GET() {
-  const { players, rounds, seats, repechageEnabled, pouleQualifiers } = await loadTournamentData();
-  const individual = computeClassement(players, rounds, seats, repechageEnabled, pouleQualifiers);
+  const {
+    players,
+    rounds,
+    seats,
+    repechageEnabled,
+    pouleQualifiers,
+    aQualifiersPerRound,
+    bQualifiersPerRound,
+  } = await loadTournamentData();
+  const individual = computeClassement(
+    players,
+    rounds,
+    seats,
+    repechageEnabled,
+    pouleQualifiers,
+    aQualifiersPerRound,
+    bQualifiersPerRound
+  );
   const team = computeTeamClassement(individual);
 
   return NextResponse.json({

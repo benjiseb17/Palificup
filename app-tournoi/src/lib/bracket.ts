@@ -250,17 +250,21 @@ export function planFromPoules(
 export type BracketState =
   | { status: "in-progress"; tables: TableState[] }
   | { status: "ready-to-advance"; tables: TableState[] }
-  | { status: "done"; tables: TableState[]; champions: string[] };
+  | { status: "done"; tables: TableState[]; qualifiedSeats: SRow[] };
 
 /**
- * Format officiel Palificup : à chaque table, dans les deux tableaux, seul le
- * vainqueur (rang 1) continue — les autres sont définitivement éliminés.
- * Chaque tableau s'arrête dès que le nombre de vainqueurs restants tient dans
- * son budget de sièges pour la Grande Finale : ils y entrent alors directement
- * (le Tableau A vise le budget "places directes", le Tableau B vise le nombre
- * de repêchés voulu).
+ * Format officiel Palificup : par défaut, à chaque table, seul le vainqueur
+ * (rang 1) continue — mais l'admin peut faire monter plus d'un joueur par
+ * table à un tour donné (qualifiersPerRound). Chaque tableau s'arrête dès que
+ * le nombre de qualifiés restants tient dans son budget de sièges pour la
+ * Grande Finale : ils y entrent alors directement (le Tableau A vise le
+ * budget "places directes", le Tableau B vise le nombre de repêchés voulu).
  */
-export function getBracketState(tables: TableState[], budget: number): BracketState {
+export function getBracketState(
+  tables: TableState[],
+  budget: number,
+  qualifiersPerRound: number
+): BracketState {
   if (tables.length === 0) return { status: "in-progress", tables: [] };
   const maxGen = Math.max(...tables.map((t) => parseRoundId(t.round.round_id).gen));
   const current = tables.filter(
@@ -269,9 +273,11 @@ export function getBracketState(tables: TableState[], budget: number): BracketSt
   if (!current.every(isTableComplete)) {
     return { status: "in-progress", tables: current };
   }
-  const winners = current.map((t) => rankedSeats(t)[0].player_id);
-  if (winners.length <= budget) {
-    return { status: "done", tables: current, champions: winners };
+  const qualifiedSeats = current.flatMap((t) =>
+    rankedSeats(t).slice(0, qualifiersPerRound)
+  );
+  if (qualifiedSeats.length <= budget) {
+    return { status: "done", tables: current, qualifiedSeats };
   }
   return { status: "ready-to-advance", tables: current };
 }
@@ -279,7 +285,8 @@ export function getBracketState(tables: TableState[], budget: number): BracketSt
 export function planNextBracketRound(
   bracket: "A" | "B",
   currentTables: TableState[],
-  size: TableSizeConfig
+  size: TableSizeConfig,
+  qualifiersPerRound: number
 ): { rounds: RoundRow[]; seats: SeatRow[] } {
   const gen = Math.max(
     ...currentTables.map((t) => parseRoundId(t.round.round_id).gen)
@@ -288,12 +295,15 @@ export function planNextBracketRound(
 
   const entries: { playerId: string; originRoundId: string; rank: string }[] = [];
   currentTables.forEach((t) => {
-    const winner = rankedSeats(t)[0];
-    entries.push({
-      playerId: winner.player_id,
-      originRoundId: t.round.round_id,
-      rank: "1",
-    });
+    rankedSeats(t)
+      .slice(0, qualifiersPerRound)
+      .forEach((s, idx) => {
+        entries.push({
+          playerId: s.player_id,
+          originRoundId: t.round.round_id,
+          rank: String(idx + 1),
+        });
+      });
   });
 
   const newTables = distributeIntoTables(entries, size);

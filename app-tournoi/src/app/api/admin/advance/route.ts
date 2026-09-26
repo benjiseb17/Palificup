@@ -15,7 +15,14 @@ export async function POST(req: NextRequest) {
   }
 
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
-  const { finalSeats, tableSize, repechageEnabled, bRepechageCount } = await loadTournamentData();
+  const {
+    finalSeats,
+    tableSize,
+    repechageEnabled,
+    bRepechageCount,
+    aQualifiersPerRound,
+    bQualifiersPerRound,
+  } = await loadTournamentData();
   const tables = groupIntoTables(rounds, seats);
   const bracketTables = [...tables.values()].filter((t) => t.round.bracket === bracket);
 
@@ -29,7 +36,8 @@ export async function POST(req: NextRequest) {
         ? finalSeats - bRepechageCount
         : finalSeats
       : bRepechageCount;
-  const state = getBracketState(bracketTables, budget);
+  const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
+  const state = getBracketState(bracketTables, budget, qualifiersPerRound);
   if (state.status !== "ready-to-advance") {
     return NextResponse.json(
       { error: `Le tableau ${bracket} n'est pas prêt à avancer (statut: ${state.status}).` },
@@ -40,7 +48,8 @@ export async function POST(req: NextRequest) {
   const { rounds: newRounds, seats: newSeats } = planNextBracketRound(
     bracket,
     state.tables,
-    tableSize
+    tableSize,
+    qualifiersPerRound
   );
   await createRounds(newRounds);
   await createSeats(newSeats);

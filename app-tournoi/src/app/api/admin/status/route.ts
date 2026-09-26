@@ -4,6 +4,8 @@ import {
   groupIntoTables,
   isTableComplete,
   parseRoundId,
+  rankedSeats,
+  type TableState,
 } from "@/lib/bracket";
 import { isAdmin } from "@/lib/session";
 import { loadTournamentData } from "@/lib/tournament";
@@ -13,8 +15,18 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const { players, rounds, seats, config, finalSeats, repechageEnabled, bRepechageCount } =
-    await loadTournamentData();
+  const {
+    players,
+    rounds,
+    seats,
+    config,
+    finalSeats,
+    repechageEnabled,
+    bRepechageCount,
+    aQualifiersPerRound,
+    bQualifiersPerRound,
+  } = await loadTournamentData();
+  const nameById = new Map(players.map((p) => [p.id, p.name]));
   const aBudget = repechageEnabled ? finalSeats - bRepechageCount : finalSeats;
   const tables = groupIntoTables(rounds, seats);
 
@@ -26,22 +38,29 @@ export async function GET() {
   const finalTable = [...tables.values()].find((t) => t.round.bracket === "FINAL");
 
   const pouleDone = pouleTables.length > 0 && pouleTables.every(isTableComplete);
-  const aState = aTables.length > 0 ? getBracketState(aTables, aBudget) : null;
+  const aState =
+    aTables.length > 0 ? getBracketState(aTables, aBudget, aQualifiersPerRound) : null;
   const bState =
     repechageEnabled && bTables.length > 0
-      ? getBracketState(bTables, bRepechageCount)
+      ? getBracketState(bTables, bRepechageCount, bQualifiersPerRound)
       : null;
 
-  const summarize = (list: typeof pouleTables) =>
+  const summarize = (list: TableState[]) =>
     list
       .map((t) => ({
         round_id: t.round.round_id,
         stage: t.round.stage,
+        table_number: Number(t.round.table_number) || 0,
         gen: parseRoundId(t.round.round_id).gen,
         seatCount: t.seats.length,
         complete: isTableComplete(t),
+        seats: rankedSeats(t).map((s) => ({
+          player_id: s.player_id,
+          name: nameById.get(s.player_id) ?? "?",
+          finish_rank: s.finish_rank,
+        })),
       }))
-      .sort((a, b) => a.gen - b.gen || a.round_id.localeCompare(b.round_id));
+      .sort((a, b) => a.gen - b.gen || a.table_number - b.table_number);
 
   return NextResponse.json({
     config,
