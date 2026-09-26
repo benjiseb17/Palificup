@@ -46,7 +46,9 @@ export function getPlayerView(
   rounds: RRow[],
   seats: SRow[],
   finalSeats: number,
-  repechageEnabled: boolean
+  repechageEnabled: boolean,
+  pouleQualifiers: number,
+  bRepechageCount: number
 ): PlayerView {
   const bySeatId = new Map(players.map((p) => [p.id, p]));
   const mySeats = seats.filter((s) => s.player_id === playerId);
@@ -91,7 +93,7 @@ export function getPlayerView(
     // Winners always get a Tableau A seat next; non-winners do too when repechage
     // is on. Either way, this poule seat isn't terminal yet — just show the result
     // while waiting for the next round to be generated (usually near-instant).
-    if (myRank === 1 || repechageEnabled) {
+    if (myRank <= pouleQualifiers || repechageEnabled) {
       const seatmates = table.seats.map((s) => ({
         player: bySeatId.get(s.player_id)!,
         finishRank: s.finish_rank || null,
@@ -113,7 +115,13 @@ export function getPlayerView(
     (t) => parseRoundId(t.round.round_id).gen === parsed.gen &&
       parseRoundId(t.round.round_id).bracket === bracket
   );
-  const state = getBracketState(bracket, genTables, finalSeats, repechageEnabled);
+  const budget =
+    bracket === "A"
+      ? repechageEnabled
+        ? finalSeats - bRepechageCount
+        : finalSeats
+      : bRepechageCount;
+  const state = getBracketState(genTables, budget);
 
   if (state.status === "ready-to-advance") {
     if (myRank === 1) return { status: "waiting-next-round", lastStage: round.stage };

@@ -14,7 +14,13 @@ type TableSummary = {
 };
 type BracketSummary = { status: string; tables: TableSummary[] };
 type StatusResponse = {
-  config: { tournament_code?: string; status?: string; table_target_size?: string };
+  config: {
+    tournament_code?: string;
+    status?: string;
+    table_target_size?: string;
+    poule_qualifiers?: string;
+    b_repechage_count?: string;
+  };
   playerCount: number;
   tournamentStarted: boolean;
   repechageEnabled: boolean;
@@ -117,6 +123,8 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
   const [code, setCode] = useState(data.config.tournament_code ?? "");
   const [tableSize, setTableSize] = useState(data.config.table_target_size ?? "5");
   const [repechage, setRepechage] = useState(data.repechageEnabled);
+  const [pouleQualifiers, setPouleQualifiers] = useState(data.config.poule_qualifiers ?? "1");
+  const [bRepechageCount, setBRepechageCount] = useState(data.config.b_repechage_count ?? "1");
 
   async function call(url: string, body?: unknown) {
     setBusy(url);
@@ -276,6 +284,37 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             </div>
           </div>
 
+          <div className="flex flex-col gap-3 sm:flex-row mt-3">
+            <div className="w-48">
+              <label className="block text-sm font-semibold text-orange-label mb-1">
+                Qualifiés directs par poule
+              </label>
+              <input
+                className="w-full rounded-lg bg-white border border-separator px-3 py-2 disabled:opacity-50"
+                value={pouleQualifiers}
+                onChange={(e) => setPouleQualifiers(e.target.value)}
+                disabled={data.tournamentStarted}
+              />
+            </div>
+            {repechage && (
+              <div className="w-48">
+                <label className="block text-sm font-semibold text-orange-label mb-1">
+                  Repêchés du Tableau B en finale
+                </label>
+                <input
+                  className="w-full rounded-lg bg-white border border-separator px-3 py-2 disabled:opacity-50"
+                  value={bRepechageCount}
+                  onChange={(e) => setBRepechageCount(e.target.value)}
+                  disabled={data.tournamentStarted}
+                />
+              </div>
+            )}
+          </div>
+          <p className="text-caramel text-xs mt-1">
+            Ex : 1 qualifié/poule + 1 repêché = format standard (1er de poule en Tableau A, le
+            reste en Tableau B, un seul repêché rejoint la finale).
+          </p>
+
           <label className="flex items-center gap-2 mt-4 text-sm font-semibold text-orange-label">
             <input
               type="checkbox"
@@ -287,12 +326,12 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             Activer le repêchage (Tableau B)
           </label>
           <p className="text-caramel text-xs mt-1">
-            Désactivé : les non-vainqueurs de poule sont directement éliminés, la Grande Finale
+            Désactivé : les non-qualifiés de poule sont directement éliminés, la Grande Finale
             ne réunit que les qualifiés du Tableau A.
           </p>
           {data.tournamentStarted && (
             <p className="text-caramel text-xs mt-1 italic">
-              Taille de table et repêchage sont figés une fois le tournoi lancé.
+              Ces réglages sont figés une fois le tournoi lancé.
             </p>
           )}
 
@@ -302,6 +341,8 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                 tournament_code: code,
                 table_target_size: tableSize,
                 repechage_enabled: repechage,
+                poule_qualifiers: pouleQualifiers,
+                b_repechage_count: bRepechageCount,
               })
             }
             disabled={busy !== null}

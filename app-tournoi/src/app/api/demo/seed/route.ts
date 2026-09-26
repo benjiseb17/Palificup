@@ -27,6 +27,9 @@ const TEAMS = [
 const PLAYER_COUNT = 100;
 const FINAL_SEATS = 5;
 const REPECHAGE_ENABLED = true;
+const POULE_QUALIFIERS = 1;
+const B_REPECHAGE_COUNT = 1;
+const A_BUDGET = FINAL_SEATS - B_REPECHAGE_COUNT;
 const SIZE = tableSizeConfig(FINAL_SEATS);
 
 function shuffle<T>(arr: T[]): T[] {
@@ -74,6 +77,8 @@ export async function POST(req: NextRequest) {
   await setConfig("tournament_code", "DEMO");
   await setConfig("table_target_size", "5");
   await setConfig("repechage_enabled", "true");
+  await setConfig("poule_qualifiers", String(POULE_QUALIFIERS));
+  await setConfig("b_repechage_count", String(B_REPECHAGE_COUNT));
   await setConfig("status", "running");
 
   const allPlayers = await getPlayers();
@@ -106,7 +111,8 @@ export async function POST(req: NextRequest) {
   const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
     pouleTables,
     SIZE,
-    REPECHAGE_ENABLED
+    REPECHAGE_ENABLED,
+    POULE_QUALIFIERS
   );
   await createRounds([...aRounds, ...bRounds]);
   await createSeats([...aSeats, ...bSeats]);
@@ -117,7 +123,7 @@ export async function POST(req: NextRequest) {
     seats = await getSeats();
     tables = groupIntoTables(rounds, seats);
     const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
-    const state = getBracketState("A", aTables, FINAL_SEATS, REPECHAGE_ENABLED);
+    const state = getBracketState(aTables, A_BUDGET);
     if (state.status === "done") break;
     if (state.status === "ready-to-advance") {
       const { rounds: newR, seats: newS } = planNextBracketRound("A", state.tables, SIZE);
@@ -136,7 +142,7 @@ export async function POST(req: NextRequest) {
     seats = await getSeats();
     tables = groupIntoTables(rounds, seats);
     const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-    const state = getBracketState("B", bTables, FINAL_SEATS, REPECHAGE_ENABLED);
+    const state = getBracketState(bTables, B_REPECHAGE_COUNT);
     if (state.status === "done") break; // small demo field: stop if it finishes anyway
     if (state.status === "ready-to-advance") {
       const { rounds: newR, seats: newS } = planNextBracketRound("B", state.tables, SIZE);

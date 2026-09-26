@@ -30,11 +30,12 @@ export async function POST() {
     );
   }
 
-  const { tableSize, repechageEnabled } = await loadTournamentData();
+  const { tableSize, repechageEnabled, pouleQualifiers } = await loadTournamentData();
   const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
     pouleTables,
     tableSize,
-    repechageEnabled
+    repechageEnabled,
+    pouleQualifiers
   );
   await createRounds([...aRounds, ...bRounds]);
   await createSeats([...aSeats, ...bSeats]);

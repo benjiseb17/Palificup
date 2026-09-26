@@ -13,8 +13,9 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const { players, rounds, seats, config, finalSeats, repechageEnabled } =
+  const { players, rounds, seats, config, finalSeats, repechageEnabled, bRepechageCount } =
     await loadTournamentData();
+  const aBudget = repechageEnabled ? finalSeats - bRepechageCount : finalSeats;
   const tables = groupIntoTables(rounds, seats);
 
   const pouleTables = [...tables.values()].filter(
@@ -25,11 +26,10 @@ export async function GET() {
   const finalTable = [...tables.values()].find((t) => t.round.bracket === "FINAL");
 
   const pouleDone = pouleTables.length > 0 && pouleTables.every(isTableComplete);
-  const aState =
-    aTables.length > 0 ? getBracketState("A", aTables, finalSeats, repechageEnabled) : null;
+  const aState = aTables.length > 0 ? getBracketState(aTables, aBudget) : null;
   const bState =
     repechageEnabled && bTables.length > 0
-      ? getBracketState("B", bTables, finalSeats, repechageEnabled)
+      ? getBracketState(bTables, bRepechageCount)
       : null;
 
   const summarize = (list: typeof pouleTables) =>

@@ -64,6 +64,36 @@ export function stageLabel(
   return `Tour${suffix}`;
 }
 
+/**
+ * Picks how many size.min-size.max tables a group of `total` people should
+ * split into. When `total` doesn't divide cleanly into that range (e.g. 6
+ * people with 4-5 seat tables — no split keeps every table in range), it
+ * picks whichever extreme (fewer/larger vs more/smaller tables) deviates
+ * least from the range, preferring fewer tables on a tie.
+ */
+function computeTableCount(total: number, size: TableSizeConfig): number {
+  if (total <= 0) return 0;
+  const byMax = Math.max(1, Math.ceil(total / size.max)); // keeps every table <= max
+  const byMin = Math.max(1, Math.floor(total / size.min)); // keeps every table >= min
+  if (byMax <= byMin) {
+    const mid = (size.min + size.max) / 2;
+    let best = byMax;
+    let bestDiff = Infinity;
+    for (let tc = byMax; tc <= byMin; tc++) {
+      const diff = Math.abs(total / tc - mid);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        best = tc;
+      }
+    }
+    return best;
+  }
+  // Gap: no count keeps every table within [min,max].
+  const maxViolation = Math.max(0, size.min - total / byMax);
+  const minViolation = Math.max(0, total / byMin - size.max);
+  return minViolation <= maxViolation ? byMin : byMax;
+}
+
 /** Groups entries into size.min-size.max seat tables, spreading same-origin players apart. */
 function distributeIntoTables(
   entries: { playerId: string; originRoundId: string }[],
@@ -71,10 +101,7 @@ function distributeIntoTables(
 ): string[][] {
   const total = entries.length;
   if (total === 0) return [];
-  const mid = (size.min + size.max) / 2;
-  let tableCount = Math.max(1, Math.round(total / mid));
-  while (tableCount > 1 && total / tableCount > size.max) tableCount++;
-  while (tableCount > 1 && total / tableCount < size.min) tableCount--;
+  const tableCount = computeTableCount(total, size);
 
   const sorted = [...entries].sort((a, b) =>
     a.originRoundId.localeCompare(b.originRoundId)
@@ -111,10 +138,7 @@ export function planPoules(
   const ordered = [...seeded, ...unseeded];
 
   const total = ordered.length;
-  const mid = (size.min + size.max) / 2;
-  let tableCount = Math.max(1, Math.round(total / mid));
-  while (tableCount > 1 && total / tableCount > size.max) tableCount++;
-  while (tableCount > 1 && total / tableCount < size.min) tableCount--;
+  const tableCount = computeTableCount(total, size);
 
   const tables: Player[][] = Array.from({ length: tableCount }, () => []);
   ordered.forEach((p, i) => tables[i % tableCount].push(p));
@@ -146,7 +170,8 @@ export function planPoules(
 export function planFromPoules(
   pouleTables: TableState[],
   size: TableSizeConfig,
-  repechageEnabled: boolean
+  repechageEnabled: boolean,
+  pouleQualifiers: number
 ): {
   aRounds: RoundRow[];
   aSeats: SeatRow[];
@@ -164,9 +189,9 @@ export function planFromPoules(
         originRoundId: t.round.round_id,
         rank: String(rank),
       };
-      if (rank === 1) aEntries.push(entry);
+      if (rank <= pouleQualifiers) aEntries.push(entry);
       else if (repechageEnabled) bEntries.push(entry);
-      // repechage disabled: poule non-winners simply stay eliminated at their poule seat.
+      // repechage disabled: poule non-qualifiers simply stay eliminated at their poule seat.
     });
   });
 
@@ -230,18 +255,12 @@ export type BracketState =
 /**
  * Format officiel Palificup : à chaque table, dans les deux tableaux, seul le
  * vainqueur (rang 1) continue — les autres sont définitivement éliminés.
- * Tableau A s'arrête dès que le nombre de vainqueurs restants tient dans le
- * budget de sièges de la Grande Finale (ils y entrent directement) — ce budget
- * réserve un siège pour le champion du Tableau B, sauf si le repêchage est
- * désactivé. Tableau B continue jusqu'à ne plus avoir qu'une seule table
- * ("Finale B") ; son vainqueur rejoint la Grande Finale comme dernier repêché.
+ * Chaque tableau s'arrête dès que le nombre de vainqueurs restants tient dans
+ * son budget de sièges pour la Grande Finale : ils y entrent alors directement
+ * (le Tableau A vise le budget "places directes", le Tableau B vise le nombre
+ * de repêchés voulu).
  */
-export function getBracketState(
-  bracket: "A" | "B",
-  tables: TableState[],
-  finalSeats: number,
-  repechageEnabled: boolean
-): BracketState {
+export function getBracketState(tables: TableState[], budget: number): BracketState {
   if (tables.length === 0) return { status: "in-progress", tables: [] };
   const maxGen = Math.max(...tables.map((t) => parseRoundId(t.round.round_id).gen));
   const current = tables.filter(
@@ -251,14 +270,6 @@ export function getBracketState(
     return { status: "in-progress", tables: current };
   }
   const winners = current.map((t) => rankedSeats(t)[0].player_id);
-  if (bracket === "B") {
-    if (current.length === 1) {
-      return { status: "done", tables: current, champions: winners };
-    }
-    return { status: "ready-to-advance", tables: current };
-  }
-  // bracket A
-  const budget = repechageEnabled ? finalSeats - 1 : finalSeats;
   if (winners.length <= budget) {
     return { status: "done", tables: current, champions: winners };
   }
@@ -313,7 +324,7 @@ export function planNextBracketRound(
 
 export function planFinal(
   aChampionSeats: SRow[],
-  bChampionSeat: SRow | null
+  bChampionSeats: SRow[]
 ): { rounds: RoundRow[]; seats: SeatRow[] } {
   const round_id = "FINAL-1";
   const rounds: RoundRow[] = [
@@ -325,7 +336,7 @@ export function planFinal(
       status: "open",
     },
   ];
-  const finalists = bChampionSeat ? [...aChampionSeats, bChampionSeat] : aChampionSeats;
+  const finalists = [...aChampionSeats, ...bChampionSeats];
   const seats: SeatRow[] = finalists.map((s) => ({
     round_id,
     player_id: s.player_id,

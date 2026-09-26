@@ -10,7 +10,8 @@ export async function POST() {
   }
 
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
-  const { finalSeats, repechageEnabled } = await loadTournamentData();
+  const { finalSeats, repechageEnabled, bRepechageCount } = await loadTournamentData();
+  const aBudget = repechageEnabled ? finalSeats - bRepechageCount : finalSeats;
   const tables = groupIntoTables(rounds, seats);
 
   const alreadyExists = rounds.some((r) => r.bracket === "FINAL");
@@ -20,10 +21,8 @@ export async function POST() {
 
   const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
   const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-  const aState = getBracketState("A", aTables, finalSeats, repechageEnabled);
-  const bState = repechageEnabled
-    ? getBracketState("B", bTables, finalSeats, repechageEnabled)
-    : null;
+  const aState = getBracketState(aTables, aBudget);
+  const bState = repechageEnabled ? getBracketState(bTables, bRepechageCount) : null;
 
   const bReady = repechageEnabled ? bState?.status === "done" : true;
   if (aState.status !== "done" || !bReady) {
@@ -38,10 +37,12 @@ export async function POST() {
   }
 
   const aChampionSeats = aState.tables.map((t) => rankedSeats(t)[0]);
-  const bChampionSeat =
-    repechageEnabled && bState?.status === "done" ? rankedSeats(bState.tables[0])[0] : null;
+  const bChampionSeats =
+    repechageEnabled && bState?.status === "done"
+      ? bState.tables.map((t) => rankedSeats(t)[0])
+      : [];
 
-  const { rounds: newRounds, seats: newSeats } = planFinal(aChampionSeats, bChampionSeat);
+  const { rounds: newRounds, seats: newSeats } = planFinal(aChampionSeats, bChampionSeats);
   await createRounds(newRounds);
   await createSeats(newSeats);
 

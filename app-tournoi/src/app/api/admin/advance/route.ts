@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
-  const { finalSeats, tableSize, repechageEnabled } = await loadTournamentData();
+  const { finalSeats, tableSize, repechageEnabled, bRepechageCount } = await loadTournamentData();
   const tables = groupIntoTables(rounds, seats);
   const bracketTables = [...tables.values()].filter((t) => t.round.bracket === bracket);
 
@@ -23,7 +23,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Tableau ${bracket} pas encore généré.` }, { status: 400 });
   }
 
-  const state = getBracketState(bracket, bracketTables, finalSeats, repechageEnabled);
+  const budget =
+    bracket === "A"
+      ? repechageEnabled
+        ? finalSeats - bRepechageCount
+        : finalSeats
+      : bRepechageCount;
+  const state = getBracketState(bracketTables, budget);
   if (state.status !== "ready-to-advance") {
     return NextResponse.json(
       { error: `Le tableau ${bracket} n'est pas prêt à avancer (statut: ${state.status}).` },

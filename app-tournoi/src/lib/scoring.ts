@@ -35,7 +35,8 @@ export function computeClassement(
   players: Player[],
   rounds: RRow[],
   seats: SRow[],
-  repechageEnabled: boolean
+  repechageEnabled: boolean,
+  pouleQualifiers: number
 ): ClassementEntry[] {
   const tables = groupIntoTables(rounds, seats);
   const finalTable = [...tables.values()].find(
@@ -80,7 +81,7 @@ export function computeClassement(
       if (t.round.bracket !== "POULE") continue;
       if (!t.seats.every((s) => s.finish_rank !== "")) continue;
       rankedSeats(t).forEach((seat, idx) => {
-        if (idx === 0) return; // poule winner advances to Tableau A, scored elsewhere
+        if (idx < pouleQualifiers) return; // qualifies for Tableau A, scored elsewhere
         results.push({ playerId: seat.player_id, points: FLOOR, stage: "Poules" });
       });
     }

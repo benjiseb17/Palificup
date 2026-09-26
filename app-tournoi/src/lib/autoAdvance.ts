@@ -6,10 +6,10 @@ import {
   planFromPoules,
   planNextBracketRound,
   rankedSeats,
-  tableSizeConfig,
 } from "./bracket";
-import { getConfig, setConfig } from "./config";
-import { createRounds, createSeats, getRounds, getSeats } from "./rounds";
+import { setConfig } from "./config";
+import { createRounds, createSeats } from "./rounds";
+import { loadTournamentData } from "./tournament";
 
 /**
  * Runs after every result submission: cascades through every automatic step
@@ -19,14 +19,17 @@ import { createRounds, createSeats, getRounds, getSeats } from "./rounds";
  */
 export async function autoAdvanceTournament() {
   for (let i = 0; i < 25; i++) {
-    const [rounds, seats, config] = await Promise.all([
-      getRounds(),
-      getSeats(),
-      getConfig(),
-    ]);
-    const finalSeats = Number(config.table_target_size || "5");
-    const size = tableSizeConfig(finalSeats);
-    const repechageEnabled = config.repechage_enabled !== "false";
+    const {
+      rounds,
+      seats,
+      config,
+      tableSize: size,
+      repechageEnabled,
+      pouleQualifiers,
+      bRepechageCount,
+      finalSeats,
+    } = await loadTournamentData();
+    const aBudget = repechageEnabled ? finalSeats - bRepechageCount : finalSeats;
     const tables = groupIntoTables(rounds, seats);
 
     const pouleTables = [...tables.values()].filter((t) => t.round.bracket === "POULE");
@@ -35,7 +38,8 @@ export async function autoAdvanceTournament() {
       const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
         pouleTables,
         size,
-        repechageEnabled
+        repechageEnabled,
+        pouleQualifiers
       );
       await createRounds([...aRounds, ...bRounds]);
       await createSeats([...aSeats, ...bSeats]);
@@ -44,13 +48,8 @@ export async function autoAdvanceTournament() {
 
     const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
     const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-    const aState = aTables.length
-      ? getBracketState("A", aTables, finalSeats, repechageEnabled)
-      : null;
-    const bState =
-      repechageEnabled && bTables.length
-        ? getBracketState("B", bTables, finalSeats, repechageEnabled)
-        : null;
+    const aState = aTables.length ? getBracketState(aTables, aBudget) : null;
+    const bState = repechageEnabled && bTables.length ? getBracketState(bTables, bRepechageCount) : null;
 
     if (aState?.status === "ready-to-advance") {
       const { rounds: newR, seats: newS } = planNextBracketRound("A", aState.tables, size);
@@ -69,11 +68,11 @@ export async function autoAdvanceTournament() {
     const bReady = repechageEnabled ? bState?.status === "done" : true;
     if (!finalExists && aState?.status === "done" && bReady) {
       const aChampionSeats = aState.tables.map((t) => rankedSeats(t)[0]);
-      const bChampionSeat =
+      const bChampionSeats =
         repechageEnabled && bState?.status === "done"
-          ? rankedSeats(bState.tables[0])[0]
-          : null;
-      const { rounds: newR, seats: newS } = planFinal(aChampionSeats, bChampionSeat);
+          ? bState.tables.map((t) => rankedSeats(t)[0])
+          : [];
+      const { rounds: newR, seats: newS } = planFinal(aChampionSeats, bChampionSeats);
       await createRounds(newR);
       await createSeats(newS);
       continue;
