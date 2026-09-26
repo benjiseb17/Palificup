@@ -45,10 +45,19 @@ function invalidate(tab: string) {
 // end-to-end (via /api/demo/seed) without a real Google Sheet / service account.
 const demoStore = new Map<string, string[][]>();
 
-export function resetDemoStore() {
-  if (!DEMO_MODE) throw new Error("resetDemoStore() n'est disponible qu'en DEMO_MODE=1");
-  demoStore.clear();
-  cache.clear();
+/** Deletes every data row of a tab, keeping its header row. */
+export async function clearTabRows(tab: string) {
+  if (DEMO_MODE) {
+    const existing = demoStore.get(tab);
+    if (existing && existing.length > 0) demoStore.set(tab, [existing[0]]);
+    invalidate(tab);
+    return;
+  }
+  await getSheetsApi().spreadsheets.values.clear({
+    spreadsheetId: getSheetId(),
+    range: `${tab}!A2:Z`,
+  });
+  invalidate(tab);
 }
 
 async function getRawValues(tab: string): Promise<string[][]> {

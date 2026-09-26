@@ -1,4 +1,4 @@
-import { appendRows, readTab, updateRowCells } from "./sheets";
+import { appendRows, clearTabRows, readTab, updateRowCells } from "./sheets";
 import type { RoundRow, SeatRow } from "./types";
 
 const ROUNDS_TAB = "Rounds";
@@ -21,6 +21,12 @@ export async function createRounds(rows: RoundRow[]) {
 
 export async function createSeats(rows: SeatRow[]) {
   await appendRows(SEATS_TAB, SEATS_HEADERS, rows);
+}
+
+/** Removes every table and result, keeping players and format settings. */
+export async function clearTournament() {
+  await clearTabRows(ROUNDS_TAB);
+  await clearTabRows(SEATS_TAB);
 }
 
 export async function setRoundStatus(

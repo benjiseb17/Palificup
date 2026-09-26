@@ -67,6 +67,7 @@ export async function GET() {
     config,
     playerCount: players.length,
     tournamentStarted: rounds.length > 0,
+    demoMode: process.env.DEMO_MODE === "1",
     repechageEnabled,
     tableTargets,
     poules: { tables: summarize(pouleTables), done: pouleDone },

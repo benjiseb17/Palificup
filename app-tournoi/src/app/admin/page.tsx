@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import SiteHeader from "@/components/SiteHeader";
+import { planTableSizes } from "@/lib/bracket";
 
 type TableSeat = { player_id: string; name: string; finish_rank: string };
 type TableSummary = {
@@ -47,6 +48,7 @@ type StatusResponse = {
   };
   playerCount: number;
   tournamentStarted: boolean;
+  demoMode: boolean;
   repechageEnabled: boolean;
   tableTargets: TableTargets;
   poules: { tables: TableSummary[]; done: boolean };
@@ -195,22 +197,42 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
         {message && <p className="text-sm text-caramel font-medium">{message}</p>}
 
         {!data.tournamentStarted ? (
-          <Section title="Phase de Poules">
-            <p className="text-caramel mb-3">
-              Génère les Poules à partir de l&apos;onglet <code>Players</code> du Google Sheet
-              ({data.playerCount} joueurs chargés). Seul le vainqueur de chaque table monte au
-              Tableau A
-              {data.repechageEnabled
-                ? ", les autres sont repêchés dans le Tableau B."
-                : " ; le repêchage est désactivé, les autres sont éliminés."}
+          <Section title="Lancer le tournoi">
+            <p className="text-ink font-semibold">
+              {data.playerCount} joueurs inscrits
+              {data.playerCount >= 4 && (
+                <span className="text-caramel font-normal">
+                  {" "}· {poulePreview(data.playerCount, data.tableTargets.poules)}
+                </span>
+              )}
             </p>
-            <button
-              onClick={() => call("/api/admin/start")}
-              disabled={busy !== null}
-              className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-3 font-bold text-white"
-            >
-              Lancer le tournoi (générer les Poules)
-            </button>
+            <p className="text-caramel text-sm mt-1 mb-4">
+              Vérifie le format dans « Configuration avancée » (joueurs par table, qualifiés,
+              repêchage) avant de lancer : les Poules sont créées au moment du clic.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => call("/api/admin/start")}
+                disabled={busy !== null || data.playerCount < 4}
+                className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-5 py-3 font-bold text-white"
+              >
+                🚀 Lancer le tournoi
+              </button>
+              {data.demoMode && (
+                <button
+                  onClick={() => call("/api/demo/seed", { count: 100 })}
+                  disabled={busy !== null}
+                  className="rounded-lg bg-cream-card hover:bg-separator disabled:opacity-50 px-4 py-3 text-sm font-semibold text-orange-label"
+                >
+                  Générer 100 joueurs fictifs
+                </button>
+              )}
+            </div>
+            {data.playerCount < 4 && (
+              <p className="text-bad text-sm mt-2 font-medium">
+                Il faut au moins 4 joueurs pour lancer le tournoi.
+              </p>
+            )}
           </Section>
         ) : (
           <Section title="Phase de Poules">
@@ -296,6 +318,39 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                 )}
               </>
             )}
+          </Section>
+        )}
+
+        {data.tournamentStarted && (
+          <Section title="Nouveau tournoi">
+            <p className="text-caramel text-sm mb-3">
+              Efface toutes les tables et tous les résultats pour repartir de zéro. Les joueurs et
+              le format sont conservés, puis tu pourras relancer le tournoi.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  if (confirm("Effacer toutes les tables et tous les résultats du tournoi en cours ?"))
+                    call("/api/admin/reset");
+                }}
+                disabled={busy !== null}
+                className="rounded-lg border border-bad text-bad hover:bg-bad/10 disabled:opacity-50 px-4 py-2 text-sm font-semibold"
+              >
+                Réinitialiser le tournoi
+              </button>
+              {data.demoMode && (
+                <button
+                  onClick={() => {
+                    if (confirm("Remplacer les joueurs par 100 joueurs fictifs et effacer le tournoi en cours ?"))
+                      call("/api/demo/seed", { count: 100 });
+                  }}
+                  disabled={busy !== null}
+                  className="rounded-lg bg-cream-card hover:bg-separator disabled:opacity-50 px-4 py-2 text-sm font-semibold text-orange-label"
+                >
+                  Repartir avec 100 joueurs fictifs
+                </button>
+              )}
+            </div>
           </Section>
         )}
 
@@ -475,14 +530,32 @@ function QualifiersPerRound({
 }
 
 function tableLabel(t: { stage: string; table_number: number }) {
-  return t.stage === "Poules" ? `Poule ${t.table_number}` : `${t.stage} · T${t.table_number}`;
+  return t.stage === "Poules" ? `Poule ${t.table_number}` : `Table ${t.table_number}`;
+}
+
+function poulePreview(playerCount: number, target: number) {
+  const sizes = planTableSizes(playerCount, target);
+  const bySize = new Map<number, number>();
+  sizes.forEach((s) => bySize.set(s, (bySize.get(s) ?? 0) + 1));
+  const detail = [...bySize.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([size, count]) => `${count} de ${size}`)
+    .join(" + ");
+  return `${sizes.length} poules (${detail})`;
 }
 
 function TableList({ tables }: { tables: TableSummary[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   if (tables.length === 0) return <p className="text-caramel text-sm">Aucune table.</p>;
-  const done = tables.filter((t) => t.complete).length;
+
+  // tables arrive sorted by round then table number, so stages come out in play order
+  const groups: { stage: string; tables: TableSummary[] }[] = [];
+  for (const t of tables) {
+    const group = groups.find((g) => g.stage === t.stage);
+    if (group) group.tables.push(t);
+    else groups.push({ stage: t.stage, tables: [t] });
+  }
 
   function toggle(round_id: string) {
     setExpanded((prev) => {
@@ -494,44 +567,59 @@ function TableList({ tables }: { tables: TableSummary[] }) {
   }
 
   return (
-    <div>
-      <p className="text-sm text-caramel mb-2">
-        {done}/{tables.length} tables rendues
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {tables.map((t) => (
-          <button
-            key={t.round_id}
-            onClick={() => toggle(t.round_id)}
-            className={`text-xs font-semibold rounded px-2 py-1 ${
-              t.complete ? "bg-good/15 text-good" : "bg-cream-card text-orange-label"
-            }`}
-          >
-            {tableLabel(t)}
-          </button>
-        ))}
-      </div>
-      {[...expanded].map((round_id) => {
-        const t = tables.find((x) => x.round_id === round_id);
-        if (!t) return null;
+    <div className="flex flex-col gap-3">
+      {groups.map((g) => {
+        const done = g.tables.filter((t) => t.complete).length;
+        const finished = done === g.tables.length;
         return (
-          <div
-            key={round_id}
-            className="mt-2 rounded-lg bg-cream-row border border-separator p-3"
-          >
-            <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-2">
-              {tableLabel(t)} · {t.seats.length} joueurs
-            </p>
-            <ul className="flex flex-col gap-1">
-              {t.seats.map((s) => (
-                <li key={s.player_id} className="flex items-center justify-between text-sm">
-                  <span>{s.name}</span>
-                  <span className="text-caramel font-semibold">
-                    {s.finish_rank ? `#${s.finish_rank}` : "—"}
-                  </span>
-                </li>
+          <div key={g.stage} className="rounded-lg border border-separator bg-white/70 p-3">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <h3 className="font-extrabold text-ink">{g.stage}</h3>
+              <span
+                className={`text-xs font-semibold rounded-full px-2 py-0.5 ${
+                  finished ? "bg-good/15 text-good" : "bg-cream-card text-orange-label"
+                }`}
+              >
+                {finished
+                  ? `Terminé · ${g.tables.length} table${g.tables.length > 1 ? "s" : ""}`
+                  : `${done}/${g.tables.length} tables rendues`}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {g.tables.map((t) => (
+                <button
+                  key={t.round_id}
+                  onClick={() => toggle(t.round_id)}
+                  className={`text-xs font-semibold rounded px-2 py-1 ${
+                    t.complete ? "bg-good/15 text-good" : "bg-cream-card text-orange-label"
+                  } ${expanded.has(t.round_id) ? "ring-2 ring-accent" : ""}`}
+                >
+                  {tableLabel(t)}
+                </button>
               ))}
-            </ul>
+            </div>
+            {g.tables
+              .filter((t) => expanded.has(t.round_id))
+              .map((t) => (
+                <div
+                  key={t.round_id}
+                  className="mt-2 rounded-lg bg-cream-row border border-separator p-3"
+                >
+                  <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-2">
+                    {g.stage} · {tableLabel(t)} · {t.seats.length} joueurs
+                  </p>
+                  <ul className="flex flex-col gap-1">
+                    {t.seats.map((s) => (
+                      <li key={s.player_id} className="flex items-center justify-between text-sm">
+                        <span>{s.name}</span>
+                        <span className="text-caramel font-semibold">
+                          {s.finish_rank ? `#${s.finish_rank}` : "—"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
           </div>
         );
       })}
