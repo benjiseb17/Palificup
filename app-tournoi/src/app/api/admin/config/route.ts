@@ -16,9 +16,12 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const tournament_code = typeof body?.tournament_code === "string" ? body.tournament_code.trim() : undefined;
   const table_target_size = typeof body?.table_target_size === "string" ? body.table_target_size.trim() : undefined;
+  const repechage_enabled = typeof body?.repechage_enabled === "boolean" ? body.repechage_enabled : undefined;
 
   if (tournament_code) await setConfig("tournament_code", tournament_code);
   if (table_target_size) await setConfig("table_target_size", table_target_size);
+  if (repechage_enabled !== undefined)
+    await setConfig("repechage_enabled", repechage_enabled ? "true" : "false");
   const existing = await getConfig();
   if (!existing.status) await setConfig("status", "setup");
 

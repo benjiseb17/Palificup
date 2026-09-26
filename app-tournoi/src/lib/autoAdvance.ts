@@ -6,6 +6,7 @@ import {
   planFromPoules,
   planNextBracketRound,
   rankedSeats,
+  tableSizeConfig,
 } from "./bracket";
 import { getConfig, setConfig } from "./config";
 import { createRounds, createSeats, getRounds, getSeats } from "./rounds";
@@ -24,12 +25,18 @@ export async function autoAdvanceTournament() {
       getConfig(),
     ]);
     const finalSeats = Number(config.table_target_size || "5");
+    const size = tableSizeConfig(finalSeats);
+    const repechageEnabled = config.repechage_enabled !== "false";
     const tables = groupIntoTables(rounds, seats);
 
     const pouleTables = [...tables.values()].filter((t) => t.round.bracket === "POULE");
     const hasSplit = rounds.some((r) => r.bracket === "A" || r.bracket === "B");
     if (pouleTables.length > 0 && !hasSplit && pouleTables.every(isTableComplete)) {
-      const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(pouleTables);
+      const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
+        pouleTables,
+        size,
+        repechageEnabled
+      );
       await createRounds([...aRounds, ...bRounds]);
       await createSeats([...aSeats, ...bSeats]);
       continue;
@@ -37,26 +44,35 @@ export async function autoAdvanceTournament() {
 
     const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
     const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-    const aState = aTables.length ? getBracketState("A", aTables, finalSeats) : null;
-    const bState = bTables.length ? getBracketState("B", bTables, finalSeats) : null;
+    const aState = aTables.length
+      ? getBracketState("A", aTables, finalSeats, repechageEnabled)
+      : null;
+    const bState =
+      repechageEnabled && bTables.length
+        ? getBracketState("B", bTables, finalSeats, repechageEnabled)
+        : null;
 
     if (aState?.status === "ready-to-advance") {
-      const { rounds: newR, seats: newS } = planNextBracketRound("A", aState.tables);
+      const { rounds: newR, seats: newS } = planNextBracketRound("A", aState.tables, size);
       await createRounds(newR);
       await createSeats(newS);
       continue;
     }
     if (bState?.status === "ready-to-advance") {
-      const { rounds: newR, seats: newS } = planNextBracketRound("B", bState.tables);
+      const { rounds: newR, seats: newS } = planNextBracketRound("B", bState.tables, size);
       await createRounds(newR);
       await createSeats(newS);
       continue;
     }
 
     const finalExists = rounds.some((r) => r.bracket === "FINAL");
-    if (!finalExists && aState?.status === "done" && bState?.status === "done") {
+    const bReady = repechageEnabled ? bState?.status === "done" : true;
+    if (!finalExists && aState?.status === "done" && bReady) {
       const aChampionSeats = aState.tables.map((t) => rankedSeats(t)[0]);
-      const bChampionSeat = rankedSeats(bState.tables[0])[0];
+      const bChampionSeat =
+        repechageEnabled && bState?.status === "done"
+          ? rankedSeats(bState.tables[0])[0]
+          : null;
       const { rounds: newR, seats: newS } = planFinal(aChampionSeats, bChampionSeat);
       await createRounds(newR);
       await createSeats(newS);

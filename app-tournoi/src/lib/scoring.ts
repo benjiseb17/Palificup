@@ -3,7 +3,8 @@ import type { Player } from "./types";
 
 const A_LADDER_FROM_END = [50, 30]; // distance 0 (cutoff-round loss), 1 (round before)
 const B_LADDER_FROM_END = [50, 40, 10]; // distance 0 (Finale B loss), 1, 2
-const FLOOR = 10;
+export const FLOOR_POINTS = 10;
+const FLOOR = FLOOR_POINTS;
 
 function nonFinalPoints(bracket: "A" | "B", distanceFromEnd: number): number {
   const ladder = bracket === "A" ? A_LADDER_FROM_END : B_LADDER_FROM_END;
@@ -33,7 +34,8 @@ export type ClassementEntry = {
 export function computeClassement(
   players: Player[],
   rounds: RRow[],
-  seats: SRow[]
+  seats: SRow[],
+  repechageEnabled: boolean
 ): ClassementEntry[] {
   const tables = groupIntoTables(rounds, seats);
   const finalTable = [...tables.values()].find(
@@ -72,6 +74,17 @@ export function computeClassement(
   }
 
   const finalPlayerIds = new Set(results.map((r) => r.playerId));
+
+  if (!repechageEnabled) {
+    for (const t of tables.values()) {
+      if (t.round.bracket !== "POULE") continue;
+      if (!t.seats.every((s) => s.finish_rank !== "")) continue;
+      rankedSeats(t).forEach((seat, idx) => {
+        if (idx === 0) return; // poule winner advances to Tableau A, scored elsewhere
+        results.push({ playerId: seat.player_id, points: FLOOR, stage: "Poules" });
+      });
+    }
+  }
 
   for (const t of tables.values()) {
     const parsed = parseRoundId(t.round.round_id);

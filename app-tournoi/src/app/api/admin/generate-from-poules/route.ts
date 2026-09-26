@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { groupIntoTables, isTableComplete, planFromPoules } from "@/lib/bracket";
 import { createRounds, createSeats, getRounds, getSeats } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
+import { loadTournamentData } from "@/lib/tournament";
 
 export async function POST() {
   if (!(await isAdmin())) {
@@ -29,7 +30,12 @@ export async function POST() {
     );
   }
 
-  const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(pouleTables);
+  const { tableSize, repechageEnabled } = await loadTournamentData();
+  const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
+    pouleTables,
+    tableSize,
+    repechageEnabled
+  );
   await createRounds([...aRounds, ...bRounds]);
   await createSeats([...aSeats, ...bSeats]);
 

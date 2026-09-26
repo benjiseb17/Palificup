@@ -17,6 +17,7 @@ type StatusResponse = {
   config: { tournament_code?: string; status?: string; table_target_size?: string };
   playerCount: number;
   tournamentStarted: boolean;
+  repechageEnabled: boolean;
   poules: { tables: TableSummary[]; done: boolean };
   bracketA: BracketSummary;
   bracketB: BracketSummary;
@@ -115,6 +116,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
   const [message, setMessage] = useState<string | null>(null);
   const [code, setCode] = useState(data.config.tournament_code ?? "");
   const [tableSize, setTableSize] = useState(data.config.table_target_size ?? "5");
+  const [repechage, setRepechage] = useState(data.repechageEnabled);
 
   async function call(url: string, body?: unknown) {
     setBusy(url);
@@ -162,7 +164,10 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             <p className="text-caramel mb-3">
               Génère les Poules à partir de l&apos;onglet <code>Players</code> du Google Sheet
               ({data.playerCount} joueurs chargés). Seul le vainqueur de chaque table monte au
-              Tableau A, les autres sont repêchés dans le Tableau B.
+              Tableau A
+              {data.repechageEnabled
+                ? ", les autres sont repêchés dans le Tableau B."
+                : " ; le repêchage est désactivé, les autres sont éliminés."}
             </p>
             <button
               onClick={() => call("/api/admin/start")}
@@ -184,7 +189,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                 disabled={busy !== null}
                 className="mt-3 rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-3 font-bold text-white"
               >
-                Générer Tableau A + Tableau B
+                {data.repechageEnabled ? "Générer Tableau A + Tableau B" : "Générer Tableau A"}
               </button>
             )}
           </Section>
@@ -201,18 +206,21 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           </Section>
         )}
 
-        {data.bracketB.status !== "waiting-poules" && data.bracketB.status !== "not-generated" && (
-          <Section title="Tableau B (repêchage)">
-            <TableList tables={data.bracketB.tables} />
-            <BracketAction
-              status={data.bracketB.status}
-              onAdvance={() => call("/api/admin/advance", { bracket: "B" })}
-              busy={busy !== null}
-            />
-          </Section>
-        )}
+        {data.repechageEnabled &&
+          data.bracketB.status !== "waiting-poules" &&
+          data.bracketB.status !== "not-generated" && (
+            <Section title="Tableau B (repêchage)">
+              <TableList tables={data.bracketB.tables} />
+              <BracketAction
+                status={data.bracketB.status}
+                onAdvance={() => call("/api/admin/advance", { bracket: "B" })}
+                busy={busy !== null}
+              />
+            </Section>
+          )}
 
-        {data.bracketA.status === "done" && data.bracketB.status === "done" && (
+        {data.bracketA.status === "done" &&
+          (data.repechageEnabled ? data.bracketB.status === "done" : true) && (
           <Section title="Grande Finale">
             {!data.final.exists ? (
               <button
@@ -260,15 +268,41 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             <div className="w-28">
               <label className="block text-sm font-semibold text-orange-label mb-1">Taille table</label>
               <input
-                className="w-full rounded-lg bg-white border border-separator px-3 py-2"
+                className="w-full rounded-lg bg-white border border-separator px-3 py-2 disabled:opacity-50"
                 value={tableSize}
                 onChange={(e) => setTableSize(e.target.value)}
+                disabled={data.tournamentStarted}
               />
             </div>
           </div>
+
+          <label className="flex items-center gap-2 mt-4 text-sm font-semibold text-orange-label">
+            <input
+              type="checkbox"
+              checked={repechage}
+              onChange={(e) => setRepechage(e.target.checked)}
+              disabled={data.tournamentStarted}
+              className="w-4 h-4 accent-accent disabled:opacity-50"
+            />
+            Activer le repêchage (Tableau B)
+          </label>
+          <p className="text-caramel text-xs mt-1">
+            Désactivé : les non-vainqueurs de poule sont directement éliminés, la Grande Finale
+            ne réunit que les qualifiés du Tableau A.
+          </p>
+          {data.tournamentStarted && (
+            <p className="text-caramel text-xs mt-1 italic">
+              Taille de table et repêchage sont figés une fois le tournoi lancé.
+            </p>
+          )}
+
           <button
             onClick={() =>
-              call("/api/admin/config", { tournament_code: code, table_target_size: tableSize })
+              call("/api/admin/config", {
+                tournament_code: code,
+                table_target_size: tableSize,
+                repechage_enabled: repechage,
+              })
             }
             disabled={busy !== null}
             className="mt-3 rounded-lg bg-cream-card hover:bg-separator px-4 py-2 text-sm font-semibold text-orange-label"

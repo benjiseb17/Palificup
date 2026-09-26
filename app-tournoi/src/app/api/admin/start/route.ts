@@ -4,6 +4,7 @@ import { setConfig } from "@/lib/config";
 import { getPlayers } from "@/lib/players";
 import { createRounds, createSeats, getRounds } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
+import { loadTournamentData } from "@/lib/tournament";
 
 export async function POST() {
   if (!(await isAdmin())) {
@@ -26,7 +27,8 @@ export async function POST() {
     );
   }
 
-  const { rounds, seats } = planPoules(players);
+  const { tableSize } = await loadTournamentData();
+  const { rounds, seats } = planPoules(players, tableSize);
   await createRounds(rounds);
   await createSeats(seats);
   await setConfig("status", "running");

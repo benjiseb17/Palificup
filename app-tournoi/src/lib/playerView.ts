@@ -6,7 +6,7 @@ import {
   type RRow,
   type SRow,
 } from "./bracket";
-import { pointsForEliminationAt } from "./scoring";
+import { FLOOR_POINTS, pointsForEliminationAt } from "./scoring";
 import type { Player } from "./types";
 
 function depthOf(roundId: string): number {
@@ -45,7 +45,8 @@ export function getPlayerView(
   players: Player[],
   rounds: RRow[],
   seats: SRow[],
-  finalSeats: number
+  finalSeats: number,
+  repechageEnabled: boolean
 ): PlayerView {
   const bySeatId = new Map(players.map((p) => [p.id, p]));
   const mySeats = seats.filter((s) => s.player_id === playerId);
@@ -83,15 +84,36 @@ export function getPlayerView(
   }
 
   const parsed = parseRoundId(round.round_id);
+  const ranked = rankedSeats(table);
+  const myRank = ranked.findIndex((s) => s.player_id === playerId) + 1;
+
+  if (parsed.bracket === "POULE") {
+    // Winners always get a Tableau A seat next; non-winners do too when repechage
+    // is on. Either way, this poule seat isn't terminal yet — just show the result
+    // while waiting for the next round to be generated (usually near-instant).
+    if (myRank === 1 || repechageEnabled) {
+      const seatmates = table.seats.map((s) => ({
+        player: bySeatId.get(s.player_id)!,
+        finishRank: s.finish_rank || null,
+      }));
+      return {
+        status: "waiting-table-results",
+        round,
+        stage: round.stage,
+        seatmates,
+        canSubmit: false,
+      };
+    }
+    // Repechage disabled and this player didn't win their poule: game over.
+    return { status: "eliminated", lastStage: round.stage, points: FLOOR_POINTS };
+  }
+
   const bracket = parsed.bracket as "A" | "B";
   const genTables = [...tables.values()].filter(
     (t) => parseRoundId(t.round.round_id).gen === parsed.gen &&
       parseRoundId(t.round.round_id).bracket === bracket
   );
-  const state = getBracketState(bracket, genTables, finalSeats);
-
-  const ranked = rankedSeats(table);
-  const myRank = ranked.findIndex((s) => s.player_id === playerId) + 1;
+  const state = getBracketState(bracket, genTables, finalSeats, repechageEnabled);
 
   if (state.status === "ready-to-advance") {
     if (myRank === 1) return { status: "waiting-next-round", lastStage: round.stage };

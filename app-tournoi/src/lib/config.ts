@@ -8,6 +8,7 @@ export type ConfigMap = {
   tournament_code: string;
   status: TournamentStatus;
   table_target_size: string;
+  repechage_enabled: "true" | "false";
 };
 
 export async function getConfig(): Promise<Partial<ConfigMap>> {

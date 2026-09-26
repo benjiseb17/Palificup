@@ -5,6 +5,7 @@ import {
   planFromPoules,
   planNextBracketRound,
   planPoules,
+  tableSizeConfig,
 } from "@/lib/bracket";
 import { setConfig } from "@/lib/config";
 import { getPlayers } from "@/lib/players";
@@ -25,6 +26,8 @@ const TEAMS = [
 ];
 const PLAYER_COUNT = 100;
 const FINAL_SEATS = 5;
+const REPECHAGE_ENABLED = true;
+const SIZE = tableSizeConfig(FINAL_SEATS);
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -70,10 +73,11 @@ export async function POST(req: NextRequest) {
   await appendRows("Players", ["id", "name", "team", "seed"], players);
   await setConfig("tournament_code", "DEMO");
   await setConfig("table_target_size", "5");
+  await setConfig("repechage_enabled", "true");
   await setConfig("status", "running");
 
   const allPlayers = await getPlayers();
-  const { rounds: pRounds, seats: pSeats } = planPoules(allPlayers);
+  const { rounds: pRounds, seats: pSeats } = planPoules(allPlayers, SIZE);
   await createRounds(pRounds);
   await createSeats(pSeats);
 
@@ -99,7 +103,11 @@ export async function POST(req: NextRequest) {
   seats = await getSeats();
   tables = groupIntoTables(rounds, seats);
   const pouleTables = [...tables.values()].filter((t) => t.round.bracket === "POULE");
-  const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(pouleTables);
+  const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
+    pouleTables,
+    SIZE,
+    REPECHAGE_ENABLED
+  );
   await createRounds([...aRounds, ...bRounds]);
   await createSeats([...aSeats, ...bSeats]);
 
@@ -109,10 +117,10 @@ export async function POST(req: NextRequest) {
     seats = await getSeats();
     tables = groupIntoTables(rounds, seats);
     const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
-    const state = getBracketState("A", aTables, FINAL_SEATS);
+    const state = getBracketState("A", aTables, FINAL_SEATS, REPECHAGE_ENABLED);
     if (state.status === "done") break;
     if (state.status === "ready-to-advance") {
-      const { rounds: newR, seats: newS } = planNextBracketRound("A", state.tables);
+      const { rounds: newR, seats: newS } = planNextBracketRound("A", state.tables, SIZE);
       await createRounds(newR);
       await createSeats(newS);
       continue;
@@ -128,10 +136,10 @@ export async function POST(req: NextRequest) {
     seats = await getSeats();
     tables = groupIntoTables(rounds, seats);
     const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-    const state = getBracketState("B", bTables, FINAL_SEATS);
+    const state = getBracketState("B", bTables, FINAL_SEATS, REPECHAGE_ENABLED);
     if (state.status === "done") break; // small demo field: stop if it finishes anyway
     if (state.status === "ready-to-advance") {
-      const { rounds: newR, seats: newS } = planNextBracketRound("B", state.tables);
+      const { rounds: newR, seats: newS } = planNextBracketRound("B", state.tables, SIZE);
       await createRounds(newR);
       await createSeats(newS);
       continue;

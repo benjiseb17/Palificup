@@ -10,7 +10,7 @@ export async function POST() {
   }
 
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
-  const { finalSeats } = await loadTournamentData();
+  const { finalSeats, repechageEnabled } = await loadTournamentData();
   const tables = groupIntoTables(rounds, seats);
 
   const alreadyExists = rounds.some((r) => r.bracket === "FINAL");
@@ -20,20 +20,26 @@ export async function POST() {
 
   const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
   const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-  const aState = getBracketState("A", aTables, finalSeats);
-  const bState = getBracketState("B", bTables, finalSeats);
+  const aState = getBracketState("A", aTables, finalSeats, repechageEnabled);
+  const bState = repechageEnabled
+    ? getBracketState("B", bTables, finalSeats, repechageEnabled)
+    : null;
 
-  if (aState.status !== "done" || bState.status !== "done") {
+  const bReady = repechageEnabled ? bState?.status === "done" : true;
+  if (aState.status !== "done" || !bReady) {
     return NextResponse.json(
       {
-        error: "Les tableaux A et B doivent tous les deux être terminés avant la Grande Finale.",
+        error: repechageEnabled
+          ? "Les tableaux A et B doivent tous les deux être terminés avant la Grande Finale."
+          : "Le tableau A doit être terminé avant la Grande Finale.",
       },
       { status: 400 }
     );
   }
 
   const aChampionSeats = aState.tables.map((t) => rankedSeats(t)[0]);
-  const bChampionSeat = rankedSeats(bState.tables[0])[0];
+  const bChampionSeat =
+    repechageEnabled && bState?.status === "done" ? rankedSeats(bState.tables[0])[0] : null;
 
   const { rounds: newRounds, seats: newSeats } = planFinal(aChampionSeats, bChampionSeat);
   await createRounds(newRounds);

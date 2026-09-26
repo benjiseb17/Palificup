@@ -13,7 +13,8 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const { players, rounds, seats, config, finalSeats } = await loadTournamentData();
+  const { players, rounds, seats, config, finalSeats, repechageEnabled } =
+    await loadTournamentData();
   const tables = groupIntoTables(rounds, seats);
 
   const pouleTables = [...tables.values()].filter(
@@ -24,8 +25,12 @@ export async function GET() {
   const finalTable = [...tables.values()].find((t) => t.round.bracket === "FINAL");
 
   const pouleDone = pouleTables.length > 0 && pouleTables.every(isTableComplete);
-  const aState = aTables.length > 0 ? getBracketState("A", aTables, finalSeats) : null;
-  const bState = bTables.length > 0 ? getBracketState("B", bTables, finalSeats) : null;
+  const aState =
+    aTables.length > 0 ? getBracketState("A", aTables, finalSeats, repechageEnabled) : null;
+  const bState =
+    repechageEnabled && bTables.length > 0
+      ? getBracketState("B", bTables, finalSeats, repechageEnabled)
+      : null;
 
   const summarize = (list: typeof pouleTables) =>
     list
@@ -42,13 +47,16 @@ export async function GET() {
     config,
     playerCount: players.length,
     tournamentStarted: rounds.length > 0,
+    repechageEnabled,
     poules: { tables: summarize(pouleTables), done: pouleDone },
     bracketA: aState
       ? { status: aState.status, tables: summarize(aTables) }
       : { status: pouleDone ? "not-generated" : "waiting-poules", tables: [] },
-    bracketB: bState
-      ? { status: bState.status, tables: summarize(bTables) }
-      : { status: pouleDone ? "not-generated" : "waiting-poules", tables: [] },
+    bracketB: !repechageEnabled
+      ? { status: "disabled", tables: [] }
+      : bState
+        ? { status: bState.status, tables: summarize(bTables) }
+        : { status: pouleDone ? "not-generated" : "waiting-poules", tables: [] },
     final: finalTable
       ? {
           exists: true,

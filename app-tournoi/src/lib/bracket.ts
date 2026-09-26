@@ -6,8 +6,13 @@ export type SRow = SheetRecord<SeatRow>;
 
 export type TableState = { round: RRow; seats: SRow[] };
 
-const TARGET_MIN = 4;
-const TARGET_MAX = 5;
+export type TableSizeConfig = { min: number; max: number };
+
+/** Derives a min/max table size range from a single "target" number (e.g. 5 -> 4-5 seats). */
+export function tableSizeConfig(target: number): TableSizeConfig {
+  const t = Number.isFinite(target) && target >= 3 ? Math.round(target) : 5;
+  return { min: t - 1, max: t };
+}
 
 export function groupIntoTables(
   rounds: RRow[],
@@ -59,15 +64,17 @@ export function stageLabel(
   return `Tour${suffix}`;
 }
 
-/** Groups entries into 4-5 seat tables, spreading players with the same origin table apart. */
+/** Groups entries into size.min-size.max seat tables, spreading same-origin players apart. */
 function distributeIntoTables(
-  entries: { playerId: string; originRoundId: string }[]
+  entries: { playerId: string; originRoundId: string }[],
+  size: TableSizeConfig
 ): string[][] {
   const total = entries.length;
   if (total === 0) return [];
-  let tableCount = Math.max(1, Math.round(total / 5));
-  while (tableCount > 1 && total / tableCount > TARGET_MAX) tableCount++;
-  while (tableCount > 1 && total / tableCount < TARGET_MIN) tableCount--;
+  const mid = (size.min + size.max) / 2;
+  let tableCount = Math.max(1, Math.round(total / mid));
+  while (tableCount > 1 && total / tableCount > size.max) tableCount++;
+  while (tableCount > 1 && total / tableCount < size.min) tableCount--;
 
   const sorted = [...entries].sort((a, b) =>
     a.originRoundId.localeCompare(b.originRoundId)
@@ -86,7 +93,10 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function planPoules(players: Player[]): {
+export function planPoules(
+  players: Player[],
+  size: TableSizeConfig
+): {
   rounds: RoundRow[];
   seats: SeatRow[];
 } {
@@ -101,9 +111,10 @@ export function planPoules(players: Player[]): {
   const ordered = [...seeded, ...unseeded];
 
   const total = ordered.length;
-  let tableCount = Math.max(1, Math.round(total / 5));
-  while (tableCount > 1 && total / tableCount > TARGET_MAX) tableCount++;
-  while (tableCount > 1 && total / tableCount < TARGET_MIN) tableCount--;
+  const mid = (size.min + size.max) / 2;
+  let tableCount = Math.max(1, Math.round(total / mid));
+  while (tableCount > 1 && total / tableCount > size.max) tableCount++;
+  while (tableCount > 1 && total / tableCount < size.min) tableCount--;
 
   const tables: Player[][] = Array.from({ length: tableCount }, () => []);
   ordered.forEach((p, i) => tables[i % tableCount].push(p));
@@ -132,7 +143,11 @@ export function planPoules(players: Player[]): {
   return { rounds, seats };
 }
 
-export function planFromPoules(pouleTables: TableState[]): {
+export function planFromPoules(
+  pouleTables: TableState[],
+  size: TableSizeConfig,
+  repechageEnabled: boolean
+): {
   aRounds: RoundRow[];
   aSeats: SeatRow[];
   bRounds: RoundRow[];
@@ -150,12 +165,13 @@ export function planFromPoules(pouleTables: TableState[]): {
         rank: String(rank),
       };
       if (rank === 1) aEntries.push(entry);
-      else bEntries.push(entry);
+      else if (repechageEnabled) bEntries.push(entry);
+      // repechage disabled: poule non-winners simply stay eliminated at their poule seat.
     });
   });
 
-  const aTables = distributeIntoTables(aEntries);
-  const bTables = distributeIntoTables(bEntries);
+  const aTables = distributeIntoTables(aEntries, size);
+  const bTables = repechageEnabled ? distributeIntoTables(bEntries, size) : [];
 
   const aRounds: RoundRow[] = [];
   const aSeats: SeatRow[] = [];
@@ -215,14 +231,16 @@ export type BracketState =
  * Format officiel Palificup : à chaque table, dans les deux tableaux, seul le
  * vainqueur (rang 1) continue — les autres sont définitivement éliminés.
  * Tableau A s'arrête dès que le nombre de vainqueurs restants tient dans le
- * budget de sièges de la Grande Finale (ils y entrent directement).
- * Tableau B continue jusqu'à ne plus avoir qu'une seule table ("Finale B") ;
- * son vainqueur rejoint la Grande Finale comme dernier repêché.
+ * budget de sièges de la Grande Finale (ils y entrent directement) — ce budget
+ * réserve un siège pour le champion du Tableau B, sauf si le repêchage est
+ * désactivé. Tableau B continue jusqu'à ne plus avoir qu'une seule table
+ * ("Finale B") ; son vainqueur rejoint la Grande Finale comme dernier repêché.
  */
 export function getBracketState(
   bracket: "A" | "B",
   tables: TableState[],
-  finalSeats: number
+  finalSeats: number,
+  repechageEnabled: boolean
 ): BracketState {
   if (tables.length === 0) return { status: "in-progress", tables: [] };
   const maxGen = Math.max(...tables.map((t) => parseRoundId(t.round.round_id).gen));
@@ -240,7 +258,8 @@ export function getBracketState(
     return { status: "ready-to-advance", tables: current };
   }
   // bracket A
-  if (winners.length <= finalSeats - 1) {
+  const budget = repechageEnabled ? finalSeats - 1 : finalSeats;
+  if (winners.length <= budget) {
     return { status: "done", tables: current, champions: winners };
   }
   return { status: "ready-to-advance", tables: current };
@@ -248,7 +267,8 @@ export function getBracketState(
 
 export function planNextBracketRound(
   bracket: "A" | "B",
-  currentTables: TableState[]
+  currentTables: TableState[],
+  size: TableSizeConfig
 ): { rounds: RoundRow[]; seats: SeatRow[] } {
   const gen = Math.max(
     ...currentTables.map((t) => parseRoundId(t.round.round_id).gen)
@@ -265,7 +285,7 @@ export function planNextBracketRound(
     });
   });
 
-  const newTables = distributeIntoTables(entries);
+  const newTables = distributeIntoTables(entries, size);
   const rounds: RoundRow[] = [];
   const seats: SeatRow[] = [];
   newTables.forEach((playerIds, idx) => {
@@ -293,7 +313,7 @@ export function planNextBracketRound(
 
 export function planFinal(
   aChampionSeats: SRow[],
-  bChampionSeat: SRow
+  bChampionSeat: SRow | null
 ): { rounds: RoundRow[]; seats: SeatRow[] } {
   const round_id = "FINAL-1";
   const rounds: RoundRow[] = [
@@ -305,7 +325,8 @@ export function planFinal(
       status: "open",
     },
   ];
-  const seats: SeatRow[] = [...aChampionSeats, bChampionSeat].map((s) => ({
+  const finalists = bChampionSeat ? [...aChampionSeats, bChampionSeat] : aChampionSeats;
+  const seats: SeatRow[] = finalists.map((s) => ({
     round_id,
     player_id: s.player_id,
     from_round_id: s.round_id,
