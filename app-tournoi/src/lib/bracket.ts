@@ -50,18 +50,19 @@ export function parseRoundId(id: string): {
   return { bracket: m[1] as "A" | "B", gen: Number(m[2]), table: Number(m[3]) };
 }
 
-export function stageLabel(
-  bracket: "POULE" | "A" | "B" | "FINAL",
-  tableCountThisRound: number
-) {
+/**
+ * Nomenclature simplifiée et fixe par tableau : 1er tour après les Poules =
+ * Quarts, 2e = Demies, 3e = Finale (du tableau), peu importe le nombre de
+ * tables à ce tour. Chaque étape précise le tableau (A ou B) pour éviter la
+ * confusion avec la Grande Finale (fusion des deux tableaux).
+ */
+export function stageLabel(bracket: "POULE" | "A" | "B" | "FINAL", gen: number): string {
   if (bracket === "POULE") return "Poules";
   if (bracket === "FINAL") return "Grande Finale";
-  const suffix = bracket === "B" ? " (repêchage)" : "";
-  if (tableCountThisRound === 1) return bracket === "B" ? "Finale B" : "Finale A";
-  if (tableCountThisRound <= 2) return `Demies${suffix}`;
-  if (tableCountThisRound <= 4) return `Quarts${suffix}`;
-  if (tableCountThisRound <= 8) return `Huitièmes${suffix}`;
-  return `Tour${suffix}`;
+  const tableauLabel = bracket === "A" ? "Tableau A" : "Tableau B";
+  const names = ["Quarts", "Demies", "Finale"];
+  const stageName = names[gen - 1] ?? `Tour ${gen}`;
+  return `${stageName} (${tableauLabel})`;
 }
 
 /**
@@ -205,7 +206,7 @@ export function planFromPoules(
     aRounds.push({
       round_id,
       bracket: "A",
-      stage: stageLabel("A", aTables.length),
+      stage: stageLabel("A", 1),
       table_number: String(idx + 1),
       status: "open",
     });
@@ -228,7 +229,7 @@ export function planFromPoules(
     bRounds.push({
       round_id,
       bracket: "B",
-      stage: stageLabel("B", bTables.length),
+      stage: stageLabel("B", 1),
       table_number: String(idx + 1),
       status: "open",
     });
@@ -314,7 +315,7 @@ export function planNextBracketRound(
     rounds.push({
       round_id,
       bracket,
-      stage: stageLabel(bracket, newTables.length),
+      stage: stageLabel(bracket, nextGen),
       table_number: String(idx + 1),
       status: "open",
     });
