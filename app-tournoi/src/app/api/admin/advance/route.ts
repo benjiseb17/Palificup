@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBracketState, groupIntoTables, planNextBracketRound } from "@/lib/bracket";
+import {
+  getBracketState,
+  groupIntoTables,
+  parseRoundId,
+  planNextBracketRound,
+} from "@/lib/bracket";
 import { createRounds, createSeats, getRounds, getSeats } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
-import { loadTournamentData } from "@/lib/tournament";
+import { loadTournamentData, targetForRound } from "@/lib/tournament";
 
 export async function POST(req: NextRequest) {
   if (!(await isAdmin())) {
@@ -17,7 +22,7 @@ export async function POST(req: NextRequest) {
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
   const {
     finalSeats,
-    tableSize,
+    tableTargets,
     repechageEnabled,
     bRepechageCount,
     aQualifiersPerRound,
@@ -45,10 +50,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const nextGen = parseRoundId(state.tables[0].round.round_id).gen + 1;
   const { rounds: newRounds, seats: newSeats } = planNextBracketRound(
     bracket,
     state.tables,
-    tableSize,
+    targetForRound(tableTargets, bracket, nextGen),
     qualifiersPerRound
   );
   await createRounds(newRounds);

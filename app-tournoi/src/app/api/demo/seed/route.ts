@@ -5,7 +5,6 @@ import {
   planFromPoules,
   planNextBracketRound,
   planPoules,
-  tableSizeConfig,
 } from "@/lib/bracket";
 import { setConfig } from "@/lib/config";
 import { getPlayers } from "@/lib/players";
@@ -32,7 +31,7 @@ const B_REPECHAGE_COUNT = 1;
 const A_QUALIFIERS_PER_ROUND = 1;
 const B_QUALIFIERS_PER_ROUND = 1;
 const A_BUDGET = FINAL_SEATS - B_REPECHAGE_COUNT;
-const SIZE = tableSizeConfig(FINAL_SEATS);
+const SIZE = 5;
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -114,7 +113,7 @@ export async function POST(req: NextRequest) {
   const pouleTables = [...tables.values()].filter((t) => t.round.bracket === "POULE");
   const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
     pouleTables,
-    SIZE,
+    { a: SIZE, b: SIZE },
     REPECHAGE_ENABLED,
     POULE_QUALIFIERS
   );

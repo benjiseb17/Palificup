@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getConfig, setConfig } from "@/lib/config";
+import { STAGE_SIZE_KEYS, getConfig, setConfig } from "@/lib/config";
 import { isAdmin } from "@/lib/session";
 
 export async function GET() {
@@ -33,6 +33,10 @@ export async function POST(req: NextRequest) {
   if (b_repechage_count) await setConfig("b_repechage_count", b_repechage_count);
   if (a_qualifiers_per_round) await setConfig("a_qualifiers_per_round", a_qualifiers_per_round);
   if (b_qualifiers_per_round) await setConfig("b_qualifiers_per_round", b_qualifiers_per_round);
+  for (const key of STAGE_SIZE_KEYS) {
+    const value = typeof body?.[key] === "string" ? body[key].trim() : "";
+    if (value) await setConfig(key, value);
+  }
   const existing = await getConfig();
   if (!existing.status) await setConfig("status", "setup");
 

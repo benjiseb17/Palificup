@@ -6,12 +6,68 @@ export type SRow = SheetRecord<SeatRow>;
 
 export type TableState = { round: RRow; seats: SRow[] };
 
-export type TableSizeConfig = { min: number; max: number };
+/** Règles fixes d'une table de Perudo, indépendantes de la taille cible choisie. */
+export const MIN_TABLE_SIZE = 3;
+export const MAX_TABLE_SIZE = 5;
 
-/** Derives a min/max table size range from a single "target" number (e.g. 5 -> 4-5 seats). */
-export function tableSizeConfig(target: number): TableSizeConfig {
-  const t = Number.isFinite(target) && target >= 3 ? Math.round(target) : 5;
-  return { min: t - 1, max: t };
+/** Clamps a configured target size into the playable [MIN, MAX] range. */
+export function clampTableTarget(target: number): number {
+  const t = Number.isFinite(target) ? Math.round(target) : MAX_TABLE_SIZE;
+  return Math.min(MAX_TABLE_SIZE, Math.max(MIN_TABLE_SIZE, t));
+}
+
+/**
+ * Plans how many players go at each table for a group of `total` players,
+ * aiming for `target` players per table (the minimum number of tables):
+ * - Fill as many tables as possible with exactly `target` players.
+ * - If the leftover is 3 or more, it becomes its own (smaller) table.
+ * - If the leftover is only 1 or 2 (too few for a table), spread them one
+ *   by one onto the other tables — never beyond MAX_TABLE_SIZE.
+ * - If every table is already full at MAX_TABLE_SIZE, borrow players from
+ *   the last table to make the leftover a playable table of 3.
+ */
+export function planTableSizes(total: number, target: number): number[] {
+  if (total <= 0) return [];
+  const t = clampTableTarget(target);
+  const full = Math.floor(total / t);
+  const remainder = total - full * t;
+  const sizes = Array<number>(full).fill(t);
+  if (remainder === 0) return sizes;
+  if (remainder >= MIN_TABLE_SIZE || full === 0) return [...sizes, remainder];
+
+  let toPlace = remainder;
+  for (let i = 0; toPlace > 0 && sizes.some((s) => s < MAX_TABLE_SIZE); i++) {
+    const idx = i % sizes.length;
+    if (sizes[idx] < MAX_TABLE_SIZE) {
+      sizes[idx] += 1;
+      toPlace -= 1;
+    }
+  }
+  if (toPlace === 0) return sizes;
+
+  const borrow = MIN_TABLE_SIZE - toPlace;
+  const last = sizes.length - 1;
+  if (sizes[last] - borrow >= MIN_TABLE_SIZE) {
+    sizes[last] -= borrow;
+    return [...sizes, MIN_TABLE_SIZE];
+  }
+  return [...sizes, toPlace];
+}
+
+/** Deals entries round-robin into tables of the given capacities. */
+function dealIntoTables<T>(ordered: T[], sizes: number[]): T[][] {
+  const tables: T[][] = sizes.map(() => []);
+  let cursor = 0;
+  for (const item of ordered) {
+    let tries = 0;
+    while (tables[cursor % tables.length].length >= sizes[cursor % tables.length] && tries < tables.length) {
+      cursor++;
+      tries++;
+    }
+    tables[cursor % tables.length].push(item);
+    cursor++;
+  }
+  return tables;
 }
 
 export function groupIntoTables(
@@ -52,64 +108,29 @@ export function parseRoundId(id: string): {
 
 /**
  * Nomenclature simplifiée et fixe par tableau : 1er tour après les Poules =
- * Quarts, 2e = Demies, 3e = Finale (du tableau), peu importe le nombre de
+ * Quart, 2e = Demi, 3e = Finale (du tableau), peu importe le nombre de
  * tables à ce tour. Chaque étape précise le tableau (A ou B) pour éviter la
  * confusion avec la Grande Finale (fusion des deux tableaux).
  */
 export function stageLabel(bracket: "POULE" | "A" | "B" | "FINAL", gen: number): string {
   if (bracket === "POULE") return "Poules";
   if (bracket === "FINAL") return "Grande Finale";
-  const tableauLabel = bracket === "A" ? "Tableau A" : "Tableau B";
-  const names = ["Quarts", "Demies", "Finale"];
+  const names = ["Quart", "Demi", "Finale"];
   const stageName = names[gen - 1] ?? `Tour ${gen}`;
-  return `${stageName} (${tableauLabel})`;
+  return `${stageName} ${bracket}`;
 }
 
-/**
- * Picks how many size.min-size.max tables a group of `total` people should
- * split into. When `total` doesn't divide cleanly into that range (e.g. 6
- * people with 4-5 seat tables — no split keeps every table in range), it
- * picks whichever extreme (fewer/larger vs more/smaller tables) deviates
- * least from the range, preferring fewer tables on a tie.
- */
-function computeTableCount(total: number, size: TableSizeConfig): number {
-  if (total <= 0) return 0;
-  const byMax = Math.max(1, Math.ceil(total / size.max)); // keeps every table <= max
-  const byMin = Math.max(1, Math.floor(total / size.min)); // keeps every table >= min
-  if (byMax <= byMin) {
-    const mid = (size.min + size.max) / 2;
-    let best = byMax;
-    let bestDiff = Infinity;
-    for (let tc = byMax; tc <= byMin; tc++) {
-      const diff = Math.abs(total / tc - mid);
-      if (diff < bestDiff) {
-        bestDiff = diff;
-        best = tc;
-      }
-    }
-    return best;
-  }
-  // Gap: no count keeps every table within [min,max].
-  const maxViolation = Math.max(0, size.min - total / byMax);
-  const minViolation = Math.max(0, total / byMin - size.max);
-  return minViolation <= maxViolation ? byMin : byMax;
-}
-
-/** Groups entries into size.min-size.max seat tables, spreading same-origin players apart. */
+/** Groups entries into tables aiming for `target` seats, spreading same-origin players apart. */
 function distributeIntoTables(
   entries: { playerId: string; originRoundId: string }[],
-  size: TableSizeConfig
+  target: number
 ): string[][] {
-  const total = entries.length;
-  if (total === 0) return [];
-  const tableCount = computeTableCount(total, size);
-
+  if (entries.length === 0) return [];
   const sorted = [...entries].sort((a, b) =>
     a.originRoundId.localeCompare(b.originRoundId)
   );
-  const tables: string[][] = Array.from({ length: tableCount }, () => []);
-  sorted.forEach((e, i) => tables[i % tableCount].push(e.playerId));
-  return tables;
+  const sizes = planTableSizes(sorted.length, target);
+  return dealIntoTables(sorted, sizes).map((table) => table.map((e) => e.playerId));
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -123,7 +144,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 export function planPoules(
   players: Player[],
-  size: TableSizeConfig
+  target: number
 ): {
   rounds: RoundRow[];
   seats: SeatRow[];
@@ -138,11 +159,7 @@ export function planPoules(
   const unseeded = shuffle(withSeed.filter((p) => p.seedNum === null));
   const ordered = [...seeded, ...unseeded];
 
-  const total = ordered.length;
-  const tableCount = computeTableCount(total, size);
-
-  const tables: Player[][] = Array.from({ length: tableCount }, () => []);
-  ordered.forEach((p, i) => tables[i % tableCount].push(p));
+  const tables = dealIntoTables(ordered, planTableSizes(ordered.length, target));
 
   const rounds: RoundRow[] = [];
   const seats: SeatRow[] = [];
@@ -170,7 +187,7 @@ export function planPoules(
 
 export function planFromPoules(
   pouleTables: TableState[],
-  size: TableSizeConfig,
+  targets: { a: number; b: number },
   repechageEnabled: boolean,
   pouleQualifiers: number
 ): {
@@ -196,8 +213,8 @@ export function planFromPoules(
     });
   });
 
-  const aTables = distributeIntoTables(aEntries, size);
-  const bTables = repechageEnabled ? distributeIntoTables(bEntries, size) : [];
+  const aTables = distributeIntoTables(aEntries, targets.a);
+  const bTables = repechageEnabled ? distributeIntoTables(bEntries, targets.b) : [];
 
   const aRounds: RoundRow[] = [];
   const aSeats: SeatRow[] = [];
@@ -286,7 +303,7 @@ export function getBracketState(
 export function planNextBracketRound(
   bracket: "A" | "B",
   currentTables: TableState[],
-  size: TableSizeConfig,
+  target: number,
   qualifiersPerRound: number
 ): { rounds: RoundRow[]; seats: SeatRow[] } {
   const gen = Math.max(
@@ -307,7 +324,7 @@ export function planNextBracketRound(
       });
   });
 
-  const newTables = distributeIntoTables(entries, size);
+  const newTables = distributeIntoTables(entries, target);
   const rounds: RoundRow[] = [];
   const seats: SeatRow[] = [];
   newTables.forEach((playerIds, idx) => {

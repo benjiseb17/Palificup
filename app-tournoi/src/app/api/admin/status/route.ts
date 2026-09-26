@@ -25,6 +25,7 @@ export async function GET() {
     bRepechageCount,
     aQualifiersPerRound,
     bQualifiersPerRound,
+    tableTargets,
   } = await loadTournamentData();
   const nameById = new Map(players.map((p) => [p.id, p.name]));
   const aBudget = repechageEnabled ? finalSeats - bRepechageCount : finalSeats;
@@ -67,6 +68,7 @@ export async function GET() {
     playerCount: players.length,
     tournamentStarted: rounds.length > 0,
     repechageEnabled,
+    tableTargets,
     poules: { tables: summarize(pouleTables), done: pouleDone },
     bracketA: aState
       ? { status: aState.status, tables: summarize(aTables) }

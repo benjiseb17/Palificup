@@ -27,8 +27,8 @@ export async function POST() {
     );
   }
 
-  const { tableSize } = await loadTournamentData();
-  const { rounds, seats } = planPoules(players, tableSize);
+  const { tableTargets } = await loadTournamentData();
+  const { rounds, seats } = planPoules(players, tableTargets.poules);
   await createRounds(rounds);
   await createSeats(seats);
   await setConfig("status", "running");

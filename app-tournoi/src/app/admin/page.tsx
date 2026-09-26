@@ -16,6 +16,25 @@ type TableSummary = {
   seats: TableSeat[];
 };
 type BracketSummary = { status: string; tables: TableSummary[] };
+type TableTargets = {
+  poules: number;
+  quartA: number;
+  demiA: number;
+  finaleA: number;
+  quartB: number;
+  demiB: number;
+  finaleB: number;
+};
+
+const STAGE_FIELDS: { key: keyof TableTargets; configKey: string; label: string; bracket?: "A" | "B" }[] = [
+  { key: "poules", configKey: "table_size_poules", label: "Poules" },
+  { key: "quartA", configKey: "table_size_quart_a", label: "Quart A", bracket: "A" },
+  { key: "demiA", configKey: "table_size_demi_a", label: "Demi A", bracket: "A" },
+  { key: "finaleA", configKey: "table_size_finale_a", label: "Finale A", bracket: "A" },
+  { key: "quartB", configKey: "table_size_quart_b", label: "Quart B", bracket: "B" },
+  { key: "demiB", configKey: "table_size_demi_b", label: "Demi B", bracket: "B" },
+  { key: "finaleB", configKey: "table_size_finale_b", label: "Finale B", bracket: "B" },
+];
 type StatusResponse = {
   config: {
     tournament_code?: string;
@@ -29,6 +48,7 @@ type StatusResponse = {
   playerCount: number;
   tournamentStarted: boolean;
   repechageEnabled: boolean;
+  tableTargets: TableTargets;
   poules: { tables: TableSummary[]; done: boolean };
   bracketA: BracketSummary;
   bracketB: BracketSummary;
@@ -126,7 +146,9 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [code, setCode] = useState(data.config.tournament_code ?? "");
-  const [tableSize, setTableSize] = useState(data.config.table_target_size ?? "5");
+  const [stageSizes, setStageSizes] = useState<Record<string, string>>(() =>
+    Object.fromEntries(STAGE_FIELDS.map((f) => [f.configKey, String(data.tableTargets[f.key])]))
+  );
   const [repechage, setRepechage] = useState(data.repechageEnabled);
   const [pouleQualifiers, setPouleQualifiers] = useState(data.config.poule_qualifiers ?? "1");
   const [bRepechageCount, setBRepechageCount] = useState(data.config.b_repechage_count ?? "1");
@@ -281,24 +303,43 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           <summary className="font-extrabold text-ink cursor-pointer select-none">
             ⚙️ Configuration avancée
           </summary>
-          <div className="flex flex-col gap-3 sm:flex-row mt-4">
-            <div className="flex-1">
-              <label className="block text-sm font-semibold text-orange-label mb-1">Code du tournoi</label>
-              <input
-                className="w-full rounded-lg bg-white border border-separator px-3 py-2"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
-            </div>
-            <div className="w-28">
-              <label className="block text-sm font-semibold text-orange-label mb-1">Taille table</label>
-              <input
-                className="w-full rounded-lg bg-white border border-separator px-3 py-2"
-                value={tableSize}
-                onChange={(e) => setTableSize(e.target.value)}
-              />
-            </div>
+          <div className="mt-4">
+            <label className="block text-sm font-semibold text-orange-label mb-1">Code du tournoi</label>
+            <input
+              className="w-full rounded-lg bg-white border border-separator px-3 py-2"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
           </div>
+
+          <p className="text-sm font-semibold text-orange-label mt-4 mb-1">
+            Joueurs par table, à chaque étape
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {STAGE_FIELDS.filter((f) => repechage || f.bracket !== "B").map((f) => (
+              <div key={f.configKey}>
+                <label className="block text-xs font-semibold text-caramel mb-1">{f.label}</label>
+                <select
+                  className="w-full rounded-lg bg-white border border-separator px-2 py-2 text-center font-semibold"
+                  value={stageSizes[f.configKey]}
+                  onChange={(e) =>
+                    setStageSizes((prev) => ({ ...prev, [f.configKey]: e.target.value }))
+                  }
+                >
+                  {[3, 4, 5].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+          <p className="text-caramel text-xs mt-1">
+            Le nombre de tables est calculé au plus juste (ex : 100 joueurs à 5 = 20 tables, à 4 =
+            25). S&apos;il reste 1 ou 2 joueurs, ils sont ajoutés à d&apos;autres tables (jamais
+            plus de 5) ; s&apos;il en reste 3 ou plus, ils forment une table à part.
+          </p>
 
           <div className="flex flex-col gap-3 sm:flex-row mt-3">
             <div className="w-48">
@@ -351,10 +392,10 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             onClick={() =>
               call("/api/admin/config", {
                 tournament_code: code,
-                table_target_size: tableSize,
                 repechage_enabled: repechage,
                 poule_qualifiers: pouleQualifiers,
                 b_repechage_count: bRepechageCount,
+                ...stageSizes,
               })
             }
             disabled={busy !== null}
@@ -433,6 +474,10 @@ function QualifiersPerRound({
   );
 }
 
+function tableLabel(t: { stage: string; table_number: number }) {
+  return t.stage === "Poules" ? `Poule ${t.table_number}` : `${t.stage} · T${t.table_number}`;
+}
+
 function TableList({ tables }: { tables: TableSummary[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -462,7 +507,7 @@ function TableList({ tables }: { tables: TableSummary[] }) {
               t.complete ? "bg-good/15 text-good" : "bg-cream-card text-orange-label"
             }`}
           >
-            {t.round_id}
+            {tableLabel(t)}
           </button>
         ))}
       </div>
@@ -475,7 +520,7 @@ function TableList({ tables }: { tables: TableSummary[] }) {
             className="mt-2 rounded-lg bg-cream-row border border-separator p-3"
           >
             <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-2">
-              {t.round_id} · Table {t.table_number}
+              {tableLabel(t)} · {t.seats.length} joueurs
             </p>
             <ul className="flex flex-col gap-1">
               {t.seats.map((s) => (

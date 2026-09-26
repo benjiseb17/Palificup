@@ -84,7 +84,7 @@ function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Chercher une table (ex: A1-2) ou un joueur…"
+          placeholder="Chercher une étape (ex: Quart A) ou un joueur…"
           className="w-full rounded-lg bg-white border border-separator px-4 py-3 outline-none focus:border-accent"
         />
         <p className="text-caramel text-sm mt-2">
@@ -163,7 +163,7 @@ function TableCard({ table, onSaved }: { table: TableInfo; onSaved: () => void }
             {table.stage}
           </p>
           <p className="font-extrabold text-ink">
-            {table.round_id} · Table {table.table_number}
+            Table {table.table_number} · {table.seats.length} joueurs
           </p>
         </div>
         <span

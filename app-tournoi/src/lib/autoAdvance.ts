@@ -2,21 +2,22 @@ import {
   getBracketState,
   groupIntoTables,
   isTableComplete,
+  parseRoundId,
   planFinal,
   planFromPoules,
   planNextBracketRound,
 } from "./bracket";
 import { setConfig } from "./config";
 import { createRounds, createSeats } from "./rounds";
-import { loadTournamentData } from "./tournament";
+import { loadTournamentData, targetForRound } from "./tournament";
 
 /**
  * Runs after every result submission: cascades through every automatic step
  * that is now unlocked (poules -> Tableau A/B, next round of A or B, the
  * Grand Final, and closing the tournament) so players see their next table
  * appear without any admin action. Every round is generated using whatever
- * format settings (table size, qualifiers per round, repechage...) are
- * currently configured — the admin can change them between rounds at any
+ * format settings (table size per stage, qualifiers per round, repechage...)
+ * are currently configured — the admin can change them between rounds at any
  * time, it only affects rounds not yet generated.
  */
 export async function autoAdvanceTournament() {
@@ -25,7 +26,7 @@ export async function autoAdvanceTournament() {
       rounds,
       seats,
       config,
-      tableSize: size,
+      tableTargets,
       repechageEnabled,
       pouleQualifiers,
       bRepechageCount,
@@ -41,7 +42,7 @@ export async function autoAdvanceTournament() {
     if (pouleTables.length > 0 && !hasSplit && pouleTables.every(isTableComplete)) {
       const { aRounds, aSeats, bRounds, bSeats } = planFromPoules(
         pouleTables,
-        size,
+        { a: tableTargets.quartA, b: tableTargets.quartB },
         repechageEnabled,
         pouleQualifiers
       );
@@ -59,10 +60,11 @@ export async function autoAdvanceTournament() {
         : null;
 
     if (aState?.status === "ready-to-advance") {
+      const nextGen = parseRoundId(aState.tables[0].round.round_id).gen + 1;
       const { rounds: newR, seats: newS } = planNextBracketRound(
         "A",
         aState.tables,
-        size,
+        targetForRound(tableTargets, "A", nextGen),
         aQualifiersPerRound
       );
       await createRounds(newR);
@@ -70,10 +72,11 @@ export async function autoAdvanceTournament() {
       continue;
     }
     if (bState?.status === "ready-to-advance") {
+      const nextGen = parseRoundId(bState.tables[0].round.round_id).gen + 1;
       const { rounds: newR, seats: newS } = planNextBracketRound(
         "B",
         bState.tables,
-        size,
+        targetForRound(tableTargets, "B", nextGen),
         bQualifiersPerRound
       );
       await createRounds(newR);
