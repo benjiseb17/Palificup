@@ -283,15 +283,15 @@ function TableView({
               .slice()
               .sort((a, b) => Number(a.finishRank ?? 99) - Number(b.finishRank ?? 99))
               .map((s) => (
-                <li
+                <SeatmateRow
                   key={s.player.id}
-                  className="flex items-center justify-between rounded-lg bg-cream-row border border-separator px-4 py-2"
-                >
-                  <span className="font-medium">{s.player.name}</span>
-                  <span className="text-caramel text-sm font-semibold">
-                    {s.finishRank ? `#${s.finishRank}` : "…"}
-                  </span>
-                </li>
+                  name={s.player.name}
+                  right={
+                    <span className="text-caramel text-sm font-semibold">
+                      {s.finishRank ? `#${s.finishRank}` : "…"}
+                    </span>
+                  }
+                />
               ))}
           </ul>
         </>
@@ -306,26 +306,26 @@ function TableView({
               const value = ranks[s.player.id];
               const duplicate = value !== "" && chosen.filter((v) => v === value).length > 1;
               return (
-                <li
+                <SeatmateRow
                   key={s.player.id}
-                  className="flex items-center justify-between rounded-lg bg-cream-row border border-separator px-4 py-2"
-                >
-                  <span className="font-medium">{s.player.name}</span>
-                  <select
-                    value={value}
-                    onChange={(e) => setRank(s.player.id, e.target.value)}
-                    className={`rounded-lg border px-3 py-2 font-bold text-center bg-white ${
-                      duplicate ? "border-bad text-bad" : "border-separator text-orange-label"
-                    }`}
-                  >
-                    <option value="">—</option>
-                    {Array.from({ length: seatCount }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        {n === 1 ? "1 · 🏆" : n}
-                      </option>
-                    ))}
-                  </select>
-                </li>
+                  name={s.player.name}
+                  right={
+                    <select
+                      value={value}
+                      onChange={(e) => setRank(s.player.id, e.target.value)}
+                      className={`rounded-lg border px-3 py-2 font-bold text-center bg-white ${
+                        duplicate ? "border-bad text-bad" : "border-separator text-orange-label"
+                      }`}
+                    >
+                      <option value="">—</option>
+                      {Array.from({ length: seatCount }, (_, i) => i + 1).map((n) => (
+                        <option key={n} value={n}>
+                          {n === 1 ? "1 · 🏆" : n}
+                        </option>
+                      ))}
+                    </select>
+                  }
+                />
               );
             })}
           </ul>
@@ -345,6 +345,71 @@ function TableView({
         </>
       )}
     </Card>
+  );
+}
+
+type PlayerHistory = {
+  available: boolean;
+  tournaments?: number;
+  totalPoints?: number;
+  last?: { tournoi: string; resultat: string; points: number } | null;
+};
+
+/** A table row for one seatmate, whose name can be tapped to reveal their
+ * historical record from past tournaments (read live, nothing stored here). */
+function SeatmateRow({ name, right }: { name: string; right: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const [history, setHistory] = useState<PlayerHistory | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function toggle() {
+    const next = !open;
+    setOpen(next);
+    if (next && history === null) {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/players/history?name=${encodeURIComponent(name)}`);
+        setHistory(res.ok ? await res.json() : { available: false });
+      } catch {
+        setHistory({ available: false });
+      } finally {
+        setLoading(false);
+      }
+    }
+  }
+
+  return (
+    <li className="rounded-lg bg-cream-row border border-separator px-4 py-2">
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={toggle}
+          className="font-medium text-left underline decoration-dotted decoration-caramel/50 underline-offset-2"
+        >
+          {name}
+        </button>
+        {right}
+      </div>
+      {open && (
+        <div className="mt-2 pt-2 border-t border-separator/70 text-sm text-caramel">
+          {loading && "Chargement…"}
+          {!loading && (!history || !history.available) && "Historique indisponible."}
+          {!loading && history?.available && history.tournaments === 0 && "🆕 Premier tournoi !"}
+          {!loading && history?.available && (history.tournaments ?? 0) > 0 && (
+            <>
+              🎲 {history.tournaments} tournoi{(history.tournaments ?? 0) > 1 ? "s" : ""} ·{" "}
+              {history.totalPoints} pts (top 3)
+              {history.last && (
+                <>
+                  {" "}
+                  · dernier : {history.last.resultat} ({history.last.tournoi})
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </li>
   );
 }
 

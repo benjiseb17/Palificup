@@ -92,11 +92,9 @@ async function getRawValues(tab: string): Promise<string[][]> {
 
 export type SheetRecord<T> = T & { _row: number };
 
-/** Reads a tab as objects keyed by its header row. Skips fully-blank rows. */
-export async function readTab<T extends Record<string, string>>(
-  tab: string
-): Promise<SheetRecord<T>[]> {
-  const values = await getRawValues(tab);
+function rowsToRecords<T extends Record<string, string>>(
+  values: string[][]
+): SheetRecord<T>[] {
   if (values.length === 0) return [];
   const [header, ...rows] = values;
   return rows
@@ -110,6 +108,43 @@ export async function readTab<T extends Record<string, string>>(
     .filter((r) =>
       Object.entries(r).some(([k, v]) => k !== "_row" && String(v) !== "")
     );
+}
+
+/** Reads a tab as objects keyed by its header row. Skips fully-blank rows. */
+export async function readTab<T extends Record<string, string>>(
+  tab: string
+): Promise<SheetRecord<T>[]> {
+  const values = await getRawValues(tab);
+  return rowsToRecords<T>(values);
+}
+
+const externalCache = new Map<string, CacheEntry>();
+const EXTERNAL_CACHE_TTL_MS = 60_000;
+
+/**
+ * Read-only access to a DIFFERENT spreadsheet than the app's own operational
+ * one — e.g. the historical classement maintained separately (palificup.fr).
+ * Same service account, just shared as Viewer there. Never writes, never
+ * touches DEMO_MODE's in-memory store, and caches longer since this data
+ * changes rarely (once per past tournament, not live during a table).
+ */
+export async function readExternalTab<T extends Record<string, string>>(
+  spreadsheetId: string,
+  tab: string
+): Promise<SheetRecord<T>[]> {
+  const key = `${spreadsheetId}:${tab}`;
+  const now = Date.now();
+  const hit = externalCache.get(key);
+  if (hit && hit.expires > now) return rowsToRecords<T>(hit.data);
+
+  const sheets = getSheetsApi();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${tab}!A:Z`,
+  });
+  const values = (res.data.values as string[][]) ?? [];
+  externalCache.set(key, { data: values, expires: now + EXTERNAL_CACHE_TTL_MS });
+  return rowsToRecords<T>(values);
 }
 
 async function ensureHeaders(tab: string, headers: string[]) {
