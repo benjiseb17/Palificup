@@ -84,6 +84,7 @@ export async function GET() {
           exists: true,
           complete: isTableComplete(finalTable),
           seatCount: finalTable.seats.length,
+          table: summarize([finalTable])[0],
         }
       : { exists: false },
   });

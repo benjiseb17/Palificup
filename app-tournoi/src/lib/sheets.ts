@@ -41,6 +41,19 @@ function invalidate(tab: string) {
   cache.delete(tab);
 }
 
+/**
+ * Forces the next read of these tabs (on this serverless instance) to skip the
+ * in-memory cache and hit Google Sheets directly. The cache is per-instance, so a
+ * write on one instance doesn't clear another instance's cache — a table that was
+ * just created (e.g. Poules -> Tableau B) could still look "not found" on a
+ * different instance for up to CACHE_TTL_MS. Call this right before a
+ * read-validate-write sequence (like submitting a table result) where a stale
+ * read would wrongly reject a valid submission.
+ */
+export function invalidateTabs(tabs: string[]) {
+  tabs.forEach(invalidate);
+}
+
 // In-memory backend used only when DEMO_MODE=1, so the app can be tried out
 // end-to-end (via /api/demo/seed) without a real Google Sheet / service account.
 const demoStore = new Map<string, string[][]>();

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { autoAdvanceTournament } from "@/lib/autoAdvance";
 import { getRounds, getSeats, setFinishRank } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
+import { invalidateTabs } from "@/lib/sheets";
 
 /**
  * Same as /api/table/submit but for the admin: no "already advanced" lock,
@@ -19,6 +20,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
   }
 
+  // See src/app/api/table/submit/route.ts: force a fresh read so a table just
+  // created on another serverless instance is never wrongly seen as stale/empty.
+  invalidateTabs(["Rounds", "Seats"]);
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
   const round = rounds.find((r) => r.round_id === round_id);
   if (!round) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { autoAdvanceTournament } from "@/lib/autoAdvance";
 import { getRounds, getSeats, setFinishRank } from "@/lib/rounds";
 import { getPlayerSession } from "@/lib/session";
+import { invalidateTabs } from "@/lib/sheets";
 
 export async function POST(req: NextRequest) {
   const playerId = await getPlayerSession();
@@ -16,6 +17,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
   }
 
+  // The in-memory read cache is per serverless instance: a table that was just
+  // created on another instance (e.g. Poules -> Tableau A/B) could still look
+  // stale here for a few seconds. Force a fresh read before validating a
+  // submission so a genuinely valid result is never wrongly rejected.
+  invalidateTabs(["Rounds", "Seats"]);
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
   const round = rounds.find((r) => r.round_id === round_id);
   if (!round) {

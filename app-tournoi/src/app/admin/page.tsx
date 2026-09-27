@@ -54,7 +54,7 @@ type StatusResponse = {
   poules: { tables: TableSummary[]; done: boolean };
   bracketA: BracketSummary;
   bracketB: BracketSummary;
-  final: { exists: boolean; complete?: boolean; seatCount?: number };
+  final: { exists: boolean; complete?: boolean; seatCount?: number; table?: TableSummary };
 };
 
 const fetcher = (url: string) =>
@@ -304,6 +304,21 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                 <p className="text-caramel mb-3">
                   {data.final.seatCount} joueurs — {data.final.complete ? "résultat complet" : "en attente du résultat"}
                 </p>
+                {data.final.table && (
+                  <ul className="flex flex-col gap-1 mb-4 rounded-lg bg-cream-row border border-separator p-3">
+                    {data.final.table.seats
+                      .slice()
+                      .sort((a, b) => Number(a.finish_rank || 99) - Number(b.finish_rank || 99))
+                      .map((s) => (
+                        <li key={s.player_id} className="flex items-center justify-between text-sm">
+                          <span className="font-medium">{s.name}</span>
+                          <span className="text-caramel font-semibold">
+                            {s.finish_rank ? `#${s.finish_rank}` : "—"}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                )}
                 {data.final.complete && data.config.status !== "finished" && (
                   <button
                     onClick={() => call("/api/admin/finish")}
