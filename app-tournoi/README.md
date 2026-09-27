@@ -30,7 +30,22 @@ elle-même) :
 - `Rounds`
 - `Seats`
 
+> ⚠️ Si tu pars d'un fichier Excel (`.xlsx`) importé dans Google Sheets, il reste par
+> défaut en "mode compatibilité Office" (visible au `.xlsx` dans le titre) — l'API
+> Google Sheets refuse ce format (`This operation is not supported for this document.
+> The document must not be an Office file.`). Corrige avec le menu **Fichier → 
+> Enregistrer au format Google Sheets**, ce qui crée une copie native (nouvelle URL/ID
+> à utiliser), puis repartage cette copie avec le compte de service (le partage n'est
+> pas recopié automatiquement).
+
 ## 2. Créer le compte de service Google (accès en écriture)
+
+> ⚠️ Si ton compte Google fait partie d'un Google Workspace d'entreprise, l'admin a
+> peut-être appliqué la règle d'organisation `iam.disableServiceAccountKeyCreation`,
+> qui bloque la création de clés de compte de service (erreur "La création de clés de
+> compte de service est désactivée"). Le plus simple est de refaire ce projet Google
+> Cloud avec un compte Google **personnel** (Gmail perso), qui n'est soumis à aucune
+> règle d'organisation.
 
 1. Va sur [Google Cloud Console](https://console.cloud.google.com/), crée un projet
    (ou réutilise un projet existant).
@@ -41,9 +56,9 @@ elle-même) :
 4. Une fois le compte créé, ouvre-le → onglet "Clés" → "Ajouter une clé" → "Créer une
    clé" → format **JSON**. Un fichier `.json` se télécharge : garde-le précieusement,
    il contient `client_email` et `private_key`.
-5. Dans le Google Sheet créé à l'étape 1, clique sur "Partager" et donne accès en
-   **Éditeur** à l'adresse `client_email` du fichier JSON (ex:
-   `palificup-tournoi@xxxx.iam.gserviceaccount.com`).
+5. Dans le Google Sheet créé à l'étape 1 (au format natif Google Sheets, pas `.xlsx`),
+   clique sur "Partager" et donne accès en **Éditeur** à l'adresse `client_email` du
+   fichier JSON (ex: `palificup-tournoi@xxxx.iam.gserviceaccount.com`).
 6. Récupère l'ID du Sheet dans son URL :
    `https://docs.google.com/spreadsheets/d/CET_ID_LA/edit`.
 
@@ -60,7 +75,12 @@ Remplis `.env.local` avec :
 - `GOOGLE_SHEET_ID` = l'ID récupéré à l'étape précédente.
 - `ADMIN_PASSWORD` = le mot de passe que tu utiliseras sur `/admin`.
 
-Sur Vercel, ajoute les mêmes variables dans Project Settings → Environment Variables.
+Sur Vercel, ajoute les mêmes variables dans Project Settings → Environment Variables
+(pense à mettre `DEMO_MODE` à `0`, ou à la supprimer, une fois le vrai Sheet branché —
+sinon l'app reste en mode démo mémoire même avec les identifiants Google renseignés).
+**Après avoir modifié des variables d'environnement sur un projet déjà déployé, il
+faut redéployer manuellement** (bouton "Redeploy") pour qu'elles prennent effet — les
+changer dans les Settings ne suffit pas.
 
 ## 4. Lancer en local
 
