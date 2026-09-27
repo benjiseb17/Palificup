@@ -398,7 +398,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
 
           <div className="flex flex-col gap-3 sm:flex-row mt-3">
             <div className="w-48">
-              <label className="block text-sm font-semibold text-orange-label mb-1">
+              <label className="flex min-h-[2.5rem] items-end text-sm font-semibold text-orange-label mb-1">
                 Qualifiés directs par poule
               </label>
               <input
@@ -409,7 +409,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             </div>
             {repechage && (
               <div className="w-48">
-                <label className="block text-sm font-semibold text-orange-label mb-1">
+                <label className="flex min-h-[2.5rem] items-end text-sm font-semibold text-orange-label mb-1">
                   Repêchés du Tableau B en finale
                 </label>
                 <input
