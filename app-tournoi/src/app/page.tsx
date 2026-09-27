@@ -22,7 +22,26 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [roster, setRoster] = useState<RosterPlayer[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const lastFetchedCode = useRef<string>("");
+  const nameFieldRef = useRef<HTMLDivElement>(null);
+
+  // Native <datalist> suggestions are unreliable on mobile browsers (iOS
+  // Safari in particular often shows nothing at all), so the dropdown below
+  // is built entirely by hand instead — same behaviour everywhere.
+  useEffect(() => {
+    function onOutsidePointer(e: MouseEvent | TouchEvent) {
+      if (nameFieldRef.current && !nameFieldRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", onOutsidePointer);
+    document.addEventListener("touchstart", onOutsidePointer);
+    return () => {
+      document.removeEventListener("mousedown", onOutsidePointer);
+      document.removeEventListener("touchstart", onOutsidePointer);
+    };
+  }, []);
 
   // Once the tournament code looks complete-ish, fetch the real player list
   // so the name field can offer autocomplete + a team confirmation instead of
@@ -49,6 +68,15 @@ export default function LoginPage() {
 
   const matched = roster.find((p) => normalize(p.name) === normalize(name));
   const showNoMatchHint = roster.length > 0 && name.trim().length > 2 && !matched;
+  const suggestions =
+    name.trim().length > 0
+      ? roster.filter((p) => normalize(p.name).includes(normalize(name))).slice(0, 8)
+      : [];
+
+  function selectName(n: string) {
+    setName(n);
+    setShowDropdown(false);
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -105,26 +133,38 @@ export default function LoginPage() {
               required
             />
           </div>
-          <div>
+          <div ref={nameFieldRef} className="relative">
             <label className="block text-sm font-semibold text-orange-label mb-1" htmlFor="name">
               Nom &amp; prénom
             </label>
             <input
               id="name"
-              list="roster-names"
               className="w-full rounded-lg bg-white border border-separator px-4 py-3 text-base text-ink outline-none focus:border-accent"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setShowDropdown(true);
+              }}
+              onFocus={() => setShowDropdown(true)}
               placeholder={roster.length > 0 ? "Commence à taper ton nom…" : "Ex: Thomas Perigaud"}
               autoComplete="off"
               required
             />
-            {roster.length > 0 && (
-              <datalist id="roster-names">
-                {roster.map((p) => (
-                  <option key={p.name} value={p.name} />
+            {showDropdown && suggestions.length > 0 && (
+              <ul className="absolute z-10 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-separator bg-white shadow-lg">
+                {suggestions.map((p) => (
+                  <li key={p.name}>
+                    <button
+                      type="button"
+                      onClick={() => selectName(p.name)}
+                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-cream-row active:bg-cream-row"
+                    >
+                      <span className="font-medium text-ink">{p.name}</span>
+                      {p.team && <span className="text-caramel"> · {p.team}</span>}
+                    </button>
+                  </li>
                 ))}
-              </datalist>
+              </ul>
             )}
             {matched && (
               <p className="text-good text-sm font-medium mt-1">
