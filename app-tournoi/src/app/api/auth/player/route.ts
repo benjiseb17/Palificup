@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
   }
 
   const config = await getConfig();
-  if (!config.tournament_code || code.trim() !== config.tournament_code) {
+  if (
+    !config.tournament_code ||
+    code.trim().toUpperCase() !== config.tournament_code.trim().toUpperCase()
+  ) {
     return NextResponse.json({ error: "Code du tournoi incorrect." }, { status: 401 });
   }
 

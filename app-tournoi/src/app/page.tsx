@@ -128,8 +128,10 @@ export default function LoginPage() {
               id="code"
               className="w-full rounded-lg bg-white border border-separator px-4 py-3 text-base text-ink outline-none focus:border-accent tracking-widest uppercase"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="Ex: PALIF5"
+              autoCapitalize="characters"
+              autoCorrect="off"
               required
             />
           </div>
