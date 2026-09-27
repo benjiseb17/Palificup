@@ -23,8 +23,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [roster, setRoster] = useState<RosterPlayer[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const lastFetchedCode = useRef<string>("");
   const nameFieldRef = useRef<HTMLDivElement>(null);
+
+  // The logo and "Ma table"/"Classement" headers all link back here — if a
+  // player already has a session (they came back via the logo, or just
+  // opened the site again), send them straight to their table instead of
+  // dead-ending on the login form as if they'd been logged out.
+  useEffect(() => {
+    fetch("/api/me")
+      .then((res) => {
+        if (res.ok) router.replace("/ma-table");
+        else setCheckingSession(false);
+      })
+      .catch(() => setCheckingSession(false));
+  }, [router]);
 
   // Native <datalist> suggestions are unreliable on mobile browsers (iOS
   // Safari in particular often shows nothing at all), so the dropdown below
@@ -99,6 +113,14 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-cream-header to-cream-card">
+        <p className="text-caramel">Chargement…</p>
+      </main>
+    );
   }
 
   return (
