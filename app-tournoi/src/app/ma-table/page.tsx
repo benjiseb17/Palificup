@@ -7,6 +7,12 @@ import useSWR from "swr";
 import SiteHeader from "@/components/SiteHeader";
 
 type Player = { id: string; name: string; team: string };
+type MeResponse = {
+  player: Player;
+  view: ApiView;
+  teamChangeLocked: boolean;
+  availableTeams: string[];
+};
 type Seatmate = { player: Player; finishRank: string | null };
 type ApiView =
   | { status: "not-started" }
@@ -29,11 +35,9 @@ const fetcher = (url: string) =>
 
 export default function MaTablePage() {
   const router = useRouter();
-  const { data, error, mutate } = useSWR<{ player: Player; view: ApiView }>(
-    "/api/me",
-    fetcher,
-    { refreshInterval: 8000 }
-  );
+  const { data, error, mutate } = useSWR<MeResponse>("/api/me", fetcher, {
+    refreshInterval: 8000,
+  });
 
   useEffect(() => {
     if (error) router.push("/");
@@ -63,19 +67,20 @@ export default function MaTablePage() {
   );
 }
 
-function Content({
-  data,
-  mutate,
-}: {
-  data: { player: Player; view: ApiView };
-  mutate: () => void;
-}) {
-  const { player, view } = data;
+function Content({ data, mutate }: { data: MeResponse; mutate: () => void }) {
+  const { player, view, teamChangeLocked, availableTeams } = data;
 
   return (
     <main className="flex flex-1 flex-col px-6 py-8 max-w-md w-full mx-auto">
       <p className="text-sm text-caramel mb-1">Bonjour</p>
-      <h1 className="text-2xl font-extrabold mb-6 text-ink">{player.name}</h1>
+      <h1 className="text-2xl font-extrabold mb-4 text-ink">{player.name}</h1>
+
+      <TeamSection
+        player={player}
+        locked={teamChangeLocked}
+        availableTeams={availableTeams}
+        onChanged={() => mutate()}
+      />
 
       {view.status === "not-started" && (
         <Card>
@@ -120,6 +125,95 @@ function Content({
         </Card>
       )}
     </main>
+  );
+}
+
+function TeamSection({
+  player,
+  locked,
+  availableTeams,
+  onChanged,
+}: {
+  player: Player;
+  locked: boolean;
+  availableTeams: string[];
+  onChanged: () => void;
+}) {
+  const [selected, setSelected] = useState(player.team ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const dirty = selected !== (player.team ?? "");
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/me/team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ team: selected }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error ?? "Erreur.");
+        return;
+      }
+      onChanged();
+    } catch {
+      setError("Impossible de contacter le serveur.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (locked) {
+    return (
+      <div className="mb-6 rounded-lg border border-separator bg-cream-alt px-4 py-3">
+        <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-1">
+          Mon équipe
+        </p>
+        <p className="font-semibold text-ink">{player.team || "Aucune équipe"}</p>
+        <p className="text-caramel text-xs mt-1">
+          Verrouillée : les Poules sont terminées.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-6 rounded-lg border border-separator bg-cream-alt px-4 py-3">
+      <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-2">
+        Mon équipe
+      </p>
+      <div className="flex gap-2">
+        <select
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="flex-1 rounded-lg border border-separator bg-white px-3 py-2 text-sm font-medium"
+        >
+          <option value="">— Aucune équipe —</option>
+          {availableTeams.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+        {dirty && (
+          <button
+            onClick={save}
+            disabled={saving}
+            className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-2 text-sm font-bold text-white"
+          >
+            {saving ? "…" : "Changer"}
+          </button>
+        )}
+      </div>
+      {error && <p className="text-bad text-xs mt-1 font-medium">{error}</p>}
+      <p className="text-caramel text-xs mt-1">
+        Pour créer une nouvelle équipe, va voir les admins du tournoi. Modifiable jusqu&apos;à
+        la fin des Poules.
+      </p>
+    </div>
   );
 }
 

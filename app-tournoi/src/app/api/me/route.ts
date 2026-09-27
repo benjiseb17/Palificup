@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
-import { findPlayerById } from "@/lib/players";
+import { findPlayerById, listTeams } from "@/lib/players";
 import { getPlayerView } from "@/lib/playerView";
 import { getPlayerSession } from "@/lib/session";
 import { loadTournamentData } from "@/lib/tournament";
+
+/** Team changes are self-service only through the end of the Poules stage. */
+function teamsLocked(rounds: { bracket: string }[]) {
+  return rounds.some((r) => r.bracket === "A" || r.bracket === "B");
+}
 
 export async function GET() {
   const playerId = await getPlayerSession();
@@ -38,5 +43,10 @@ export async function GET() {
     bQualifiersPerRound
   );
 
-  return NextResponse.json({ player, view });
+  return NextResponse.json({
+    player,
+    view,
+    teamChangeLocked: teamsLocked(rounds),
+    availableTeams: listTeams(players),
+  });
 }
