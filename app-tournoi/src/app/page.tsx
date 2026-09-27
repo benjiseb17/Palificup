@@ -3,7 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+type RosterPlayer = { name: string; team: string };
+
+function normalize(s: string) {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +21,34 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [roster, setRoster] = useState<RosterPlayer[]>([]);
+  const lastFetchedCode = useRef<string>("");
+
+  // Once the tournament code looks complete-ish, fetch the real player list
+  // so the name field can offer autocomplete + a team confirmation instead of
+  // free text (typos, or worse: accidentally typing someone else's name).
+  useEffect(() => {
+    const trimmed = code.trim();
+    if (trimmed.length < 3 || trimmed === lastFetchedCode.current) return;
+    const handle = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/players/lookup?code=${encodeURIComponent(trimmed)}`);
+        if (!res.ok) {
+          setRoster([]);
+          return;
+        }
+        const data = await res.json();
+        lastFetchedCode.current = trimmed;
+        setRoster(Array.isArray(data.players) ? data.players : []);
+      } catch {
+        setRoster([]);
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [code]);
+
+  const matched = roster.find((p) => normalize(p.name) === normalize(name));
+  const showNoMatchHint = roster.length > 0 && name.trim().length > 2 && !matched;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,20 +93,6 @@ export default function LoginPage() {
         </div>
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-semibold text-orange-label mb-1" htmlFor="name">
-              Nom &amp; prénom
-            </label>
-            <input
-              id="name"
-              className="w-full rounded-lg bg-white border border-separator px-4 py-3 text-base text-ink outline-none focus:border-accent"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Thomas Perigaud"
-              autoComplete="name"
-              required
-            />
-          </div>
-          <div>
             <label className="block text-sm font-semibold text-orange-label mb-1" htmlFor="code">
               Code du tournoi
             </label>
@@ -80,6 +104,39 @@ export default function LoginPage() {
               placeholder="Ex: PALIF5"
               required
             />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-orange-label mb-1" htmlFor="name">
+              Nom &amp; prénom
+            </label>
+            <input
+              id="name"
+              list="roster-names"
+              className="w-full rounded-lg bg-white border border-separator px-4 py-3 text-base text-ink outline-none focus:border-accent"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={roster.length > 0 ? "Commence à taper ton nom…" : "Ex: Thomas Perigaud"}
+              autoComplete="off"
+              required
+            />
+            {roster.length > 0 && (
+              <datalist id="roster-names">
+                {roster.map((p) => (
+                  <option key={p.name} value={p.name} />
+                ))}
+              </datalist>
+            )}
+            {matched && (
+              <p className="text-good text-sm font-medium mt-1">
+                ✓ C&apos;est bien toi{matched.team ? ` — équipe ${matched.team}` : ""} ?
+              </p>
+            )}
+            {showNoMatchHint && (
+              <p className="text-caramel text-sm mt-1">
+                Aucun joueur ne correspond exactement — choisis ton nom dans la liste qui
+                s&apos;affiche en tapant.
+              </p>
+            )}
           </div>
           {error && <p className="text-bad text-sm font-medium">{error}</p>}
           <button
