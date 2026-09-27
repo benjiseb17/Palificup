@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import LogoutButton from "@/components/LogoutButton";
 import SiteHeader from "@/components/SiteHeader";
 
 type Player = { id: string; name: string; team: string };
@@ -48,12 +49,15 @@ export default function MaTablePage() {
       <SiteHeader
         subtitle="Ma table"
         right={
-          <Link
-            href="/classement"
-            className="text-sm font-semibold text-orange-label underline underline-offset-2"
-          >
-            🏆 Classement
-          </Link>
+          <span className="flex items-center gap-4">
+            <Link
+              href="/classement"
+              className="text-sm font-semibold text-orange-label underline underline-offset-2"
+            >
+              🏆 Classement
+            </Link>
+            <LogoutButton />
+          </span>
         }
       />
       {!data ? (
