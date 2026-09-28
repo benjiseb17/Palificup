@@ -2,11 +2,951 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LA PALIFICUP — Classement Officiel</title>
-<link rel="canonical" href="https://www.palificup.fr/classement">
-<meta http-equiv="refresh" content="0; url=/classement">
+
+<!-- SEO -->
+<meta name="description" content="Le premier tournoi de Perudo de France. Découvrez le classement officiel — points, victoires et résultats de tous les joueurs.">
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph (partage WhatsApp, Instagram, Facebook) -->
+<meta property="og:title" content="LA PALIFICUP — Classement Officiel">
+<meta property="og:description" content="Le premier tournoi de Perudo de France. Découvrez le classement officiel.">
+<meta property="og:url" content="https://www.palificup.fr/classement">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.palificup.fr/logo.png">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  /* ── RESULT BADGE COLORS ─────────────────────────────── */
+  .btn {
+    padding: 7px 16px; border-radius: 6px; font-size: 13px;
+    font-weight: 600; cursor: pointer; border: none;
+    transition: all .18s; letter-spacing: .3px;
+  }
+  .btn-ghost {
+    background: transparent; color: var(--blue-lt);
+    border: 1px solid var(--separator);
+  }
+  .btn-ghost:hover { background: var(--navy-card); color: var(--white); }
+  .btn-primary { background: var(--accent); color: var(--white); }
+  .btn-primary:hover { background: #2070b0; }
+
+  /* ── STATS BAND ──────────────────────────────────────── */
+  /* Reste visible en haut lors du défilement, juste sous le header (70px) */
+  .stats-band {
+    background: var(--navy-card);
+    border-bottom: 1px solid var(--separator);
+    padding: 12px 24px;
+    display: flex; gap: 32px; align-items: center; flex-wrap: wrap;
+    position: sticky;
+    top: 70px;          /* hauteur du header */
+    z-index: 90;
+  }
+  .stat-item { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .stat-val { font-size: 22px; font-weight: 800; color: var(--blue-lt); line-height: 1; }
+  .stat-val.gold   { color: var(--gold); }
+  .stat-val.silver { color: var(--silver); }
+  .stat-val.bronze { color: var(--bronze); }
+  .stat-lbl { font-size: 10px; color: var(--blue-lt); letter-spacing: 1.5px; text-transform: uppercase; }
+  .stats-divider { width: 1px; height: 36px; background: var(--separator); }
+  .stat-info-btn {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    padding: 0;
+  }
+  .stat-info-btn:hover .stat-lbl { color: var(--white); }
+
+  /* ── TOOLBAR ─────────────────────────────────────────── */
+  /* Reste visible juste sous la bande de stats lors du défilement */
+  .toolbar {
+    padding: 16px 24px 12px;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    background: var(--navy);  /* fond opaque pour masquer le contenu derrière */
+    position: sticky;
+    top: 126px;        /* header (70px) + stats-band (~56px) */
+    z-index: 80;
+  }
+  .search-wrap {
+    flex: 1; min-width: 200px; max-width: 440px;
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim);
+  }
+  .search-input {
+    width: 100%; padding: 9px 12px 9px 34px;
+    background: var(--navy-card); border: 1px solid var(--separator);
+    border-radius: 8px; color: var(--white); font-size: 14px;
+    outline: none; transition: border .18s;
+  }
+  .search-input::placeholder { color: var(--text-dim); }
+  .search-input:focus { border-color: var(--accent); }
+  .results-count { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+
+  /* ── TABLE ───────────────────────────────────────────── */
+  .table-wrap { padding: 0 24px 32px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead tr {
+    background: var(--navy-hdr);
+    border-bottom: 2px solid rgba(232,85,0,.25);
+  }
+  thead th {
+    padding: 10px 12px; text-align: left;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--blue-lt);
+    cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  thead th:hover { color: var(--white); }
+  thead th .sort-arrow { margin-left: 4px; opacity: .4; }
+  thead th.sorted .sort-arrow { opacity: 1; color: var(--gold); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--separator);
+    transition: background .12s;
+    cursor: pointer;
+  }
+  tbody tr:nth-child(odd)  { background: var(--navy); }
+  tbody tr:nth-child(even) { background: var(--navy-alt); }
+  tbody tr:hover { background: var(--navy-card) !important; }
+  tbody tr.top1 { background: rgba(230,172,0,.18) !important; border-left: 4px solid var(--gold); }
+  tbody tr.top2 { background: rgba(144,144,144,.14) !important; border-left: 4px solid var(--silver); }
+  tbody tr.top3 { background: rgba(160,98,42,.14) !important; border-left: 4px solid var(--bronze); }
+
+  td { padding: 9px 12px; vertical-align: middle; }
+
+  .td-rank { width: 60px; text-align: center; }
+  .rank-num {
+    font-size: 18px; font-weight: 900;
+    font-family: 'Arial Black', Arial, sans-serif; line-height: 1;
+  }
+  .rank-1 { color: var(--gold); }
+  .rank-2 { color: var(--silver); }
+  .rank-3 { color: var(--bronze); }
+  .rank-other { color: var(--blue-med); }
+
+  .td-player { min-width: 200px; }
+  .player-cell { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .player-names { line-height: 1.2; }
+  .player-first { font-size: 12px; color: var(--blue-lt); }
+  .player-last  { font-size: 14px; font-weight: 700; color: var(--white); }
+
+  /* tournois column */
+  .td-t { width: 110px; text-align: center; }
+  .tourn-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--separator); color: var(--blue-lt);
+    font-size: 12px; font-weight: 700;
+    border-radius: 12px; padding: 4px 10px;
+  }
+  .tourn-pill span { font-size: 14px; color: var(--white); }
+
+  .td-pts { width: 120px; }
+  .td-wins { width: 60px; text-align: left; white-space: nowrap; vertical-align: middle; }
+  .win-stars {
+    display: inline-block;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .pts-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--separator); color: var(--blue-lt);
+    font-size: 12px; font-weight: 700;
+    border-radius: 12px; padding: 4px 10px;
+  }
+  .pts-num { font-size: 15px; font-weight: 800; color: var(--white); }
+  .pts-lbl { font-size: 10px; color: var(--blue-lt); font-weight: 600; }
+
+  /* ── MODAL BASE ──────────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.75); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--navy-hdr); border: 1px solid var(--accent);
+    border-radius: 14px; padding: 28px 32px;
+    width: min(520px, 95vw); position: relative;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-title {
+    font-size: 16px; font-weight: 800; letter-spacing: 1px;
+    margin-bottom: 20px; color: var(--gold);
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-dim); font-size: 20px; line-height: 1;
+  }
+  .modal-close:hover { color: var(--white); }
+
+  /* ── HISTORY MODAL ───────────────────────────────────── */
+  .history-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+  }
+  .history-avatar {
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .history-player-info { flex: 1; }
+  .history-player-name { font-size: 18px; font-weight: 800; color: var(--white); }
+  .history-player-sub  { font-size: 12px; color: var(--blue-lt); margin-top: 2px; }
+  .history-rank-badge {
+    font-size: 28px; font-weight: 900; font-family: 'Arial Black', Arial, sans-serif;
+    line-height: 1;
+  }
+
+  .history-table {
+    width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 13px;
+  }
+  .history-table thead tr { background: var(--navy); border-bottom: 2px solid var(--accent); }
+  .history-table thead th {
+    padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue-lt);
+  }
+  .history-table tbody tr { border-bottom: 1px solid var(--separator); }
+  .history-table tbody tr:hover { background: var(--navy-card); }
+  .history-table td { padding: 9px 10px; }
+  .pos-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 12px; font-weight: 700;
+  }
+  .pos-1 { background: rgba(255,208,64,.2); color: var(--gold); }
+  .pos-2 { background: rgba(200,200,208,.15); color: var(--silver); }
+  .pos-3 { background: rgba(204,122,58,.2); color: var(--bronze); }
+  .pos-other { background: var(--separator); color: var(--blue-lt); }
+
+  .history-empty {
+    text-align: center; padding: 32px 0;
+    color: var(--text-dim); font-size: 13px;
+  }
+  .history-empty .icon { font-size: 32px; margin-bottom: 8px; }
+
+  .empty-row td {
+    text-align: center; padding: 40px;
+    color: var(--text-dim); font-size: 14px;
+  }
+
+  /* ── SKELETON (chargement) ────────────────────────────── */
+  .skeleton-block {
+    height: 14px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--navy-card) 25%, var(--separator) 50%, var(--navy-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skel-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+  .skel-player-cell { display: flex; align-items: center; gap: 12px; }
+  .skel-player-lines { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+  /* ── BANDEAU HORS-LIGNE ───────────────────────────────── */
+  .offline-banner {
+    display: none;
+    align-items: center; gap: 10px;
+    background: rgba(230,172,0,.12);
+    border: 1px solid rgba(230,172,0,.4);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin: 0 24px 12px;
+    font-size: 13px; color: var(--blue-lt);
+  }
+  .offline-banner.show { display: flex; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: var(--separator); border-radius: 3px; }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Tablette  (≤ 900px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    /* Header */
+    .site-header { padding: 0 16px; height: 62px; }
+    .logo-img, .logo-fallback { height: 44px; width: 44px; }
+    .logo-title { font-size: 16px; }
+    .logo-sub   { font-size: 9px; }
+
+    /* Stats band */
+    .stats-band { padding: 10px 16px; gap: 20px; top: 62px; }
+    .stat-val   { font-size: 18px; }
+
+    /* Toolbar */
+    .toolbar { padding: 12px 16px 10px; top: 108px; }
+    .search-wrap { max-width: 100%; }
+
+    /* Table */
+    .table-wrap { padding: 0 16px 28px; }
+    table { font-size: 13px; }
+    td, th { padding: 8px 10px; }
+    .offline-banner { margin: 0 16px 12px; }
+
+    /* Masquer la colonne Tournois */
+    .td-t, th.td-t { display: none; }
+
+    /* Points */
+    .td-pts { width: 100px; }
+    .pts-num { font-size: 13px; }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Mobile  (≤ 640px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 640px) {
+    #mainNav  { display: none !important; }
+    #navBurger { display: block !important; }
+
+
+    /* ── Header ────────────────────────────────────────── */
+    .site-header {
+      padding: 0 10px;
+      height: 56px;
+    }
+    .logo { gap: 8px; }
+    .logo-img, .logo-fallback { height: 38px; width: 38px; }
+    .logo-title { font-size: 14px; letter-spacing: 1px; }
+    .logo-sub   { display: none; }
+    .btn { padding: 6px 12px; font-size: 12px; }
+
+    /* ── Stats band ────────────────────────────────────── */
+    .stats-band {
+      top: 56px;
+      padding: 8px 10px;
+      gap: 0;
+      justify-content: space-around;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .stats-divider { height: 28px; }
+    .stat-val { font-size: 16px; }
+    .stat-lbl { font-size: 9px; letter-spacing: 1px; }
+
+    /* ── Toolbar ───────────────────────────────────────── */
+    .toolbar {
+      top: 104px;
+      padding: 8px 10px 6px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .search-wrap {
+      flex: 1 1 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .results-count {
+      margin-left: 0;
+      font-size: 11px;
+    }
+
+    /* ── Table ─────────────────────────────────────────── */
+    .table-wrap { padding: 0 6px 20px; }
+    .offline-banner { margin: 0 6px 10px; font-size: 12px; }
+    table { font-size: 13px; }
+    thead th, tbody td { padding: 8px 6px; }
+
+    /* Colonnes cachées sur mobile */
+    .td-t, th.td-t { display: none; } /* Tournois */
+
+    /* Victoires (trophées) — reste visible, juste plus compact */
+    .td-wins { width: 44px; text-align: center; }
+    .win-stars { font-size: 11px; }
+
+    /* Colonne Rang — plus compacte */
+    .td-rank { width: 44px; }
+    .rank-num { font-size: 15px; }
+
+    /* Colonne Joueur — adapte l'avatar */
+    .td-player { min-width: 0; }
+    .player-cell { gap: 8px; }
+    .avatar { width: 30px; height: 30px; font-size: 11px; }
+    .player-first { font-size: 11px; }
+    .player-last  { font-size: 13px; }
+
+    /* Colonne Points */
+    .td-pts { width: auto; }
+    .pts-badge { padding: 3px 7px; font-size: 11px; }
+    .pts-num   { font-size: 13px; }
+
+    /* Modal */
+    .modal { padding: 20px 16px; border-radius: 10px; }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     RESPONSIVE — Très petit mobile  (≤ 380px)
+     ══════════════════════════════════════════════════════ */
+  @media (max-width: 380px) {
+    .logo-title  { font-size: 12px; }
+    .stat-val    { font-size: 14px; }
+    .rank-num    { font-size: 13px; }
+    .player-last { font-size: 12px; }
+    .pts-num     { font-size: 12px; }
+    thead th, tbody td { padding: 6px 4px; }
+  }
+</style>
 </head>
 <body>
-<p>Cette page a déménagé : <a href="/classement">voir le classement</a>.</p>
+
+<!-- NAV MOBILE -->
+<div style="display:none;flex-direction:column;position:fixed;top:70px;left:0;right:0;background:var(--navy-hdr);border-bottom:2px solid var(--separator);padding:12px 16px;gap:4px;z-index:99;" id="navMobile">
+  <a href="/"      style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">🏠 Accueil</a>
+  <a href="/classement" style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
+  <a href="/editions"   style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">📅 Éditions</a>
+</div>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a href="/" style="display:flex;align-items:center;gap:14px;text-decoration:none;">
+    <img src="/logo.png" class="logo-img" alt="Palificup" id="logoImg"
+         onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
+    <div class="logo-fallback" id="logoFallback" style="display:none">🎲</div>
+    <div class="logo-text">
+      <h1 class="logo-title">LA PALIFICUP</h1>
+      <div class="logo-sub">Classement Officiel</div>
+    </div>
+  </a>
+  <nav style="display:flex;gap:4px;align-items:center;" id="mainNav">
+    <a href="/"      style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">🏠 Accueil</a>
+    <a href="/classement" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
+    <a href="/editions"   style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">📅 Éditions</a>
+  </nav>
+  <button onclick="(function(){var n=document.getElementById('navMobile');n.style.display=n.style.display==='flex'?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--blue-lt);" id="navBurger">☰</button>
+  <div class="header-actions">
+  </div>
+</header>
+
+<!-- STATS BAND -->
+<div class="stats-band" id="statsBand"></div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input class="search-input" id="searchInput" placeholder="Rechercher un joueur…" />
+  </div>
+  <span class="results-count" id="resultsCount"></span>
+</div>
+
+<!-- BANDEAU HORS-LIGNE -->
+<div class="offline-banner" id="offlineBanner">
+  ⚠️ Classement affiché en mode hors-ligne (données de secours) — Google Sheets est momentanément inaccessible. Réessayez en rechargeant la page.
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table id="rankTable">
+    <thead>
+      <tr>
+        <th class="td-rank"    data-col="rank">RANG <span class="sort-arrow">▼</span></th>
+        <th class="td-player"  data-col="name">JOUEUR <span class="sort-arrow">↕</span></th>
+        <th class="td-t"       data-col="tournaments">TOURNOIS <span class="sort-arrow">↕</span></th>
+        <th class="td-pts"     data-col="points">POINTS <span class="sort-arrow">↕</span></th>
+        <th class="td-wins"></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <button class="modal-close" id="closeHistory">×</button>
+    <div class="history-header" id="historyHeader"></div>
+    <div id="historyContent"></div>
+  </div>
+</div>
+
+<!-- POINTS INFO MODAL -->
+<div class="modal-overlay" id="pointsInfoModal">
+  <div class="modal">
+    <button class="modal-close" id="closePointsInfo">×</button>
+    <div class="modal-title">Comment sont calculés les points ?</div>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:18px;">
+      Seuls les <strong style="color:var(--white)">3 meilleurs résultats</strong> de chaque joueur comptent dans le total officiel affiché dans le classement. Jouer plus de tournois ne fait jamais baisser ton total, mais ne le fait monter que si un nouveau résultat est meilleur qu'un de tes 3 résultats déjà comptés.
+    </p>
+    <table class="history-table">
+      <thead>
+        <tr><th>Résultat</th><th>Points</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Vainqueur + Repêchage</td><td><strong>170</strong> pts</td></tr>
+        <tr><td>Vainqueur</td><td><strong>150</strong> pts</td></tr>
+        <tr><td>Vainqueur repêchage - Finaliste</td><td><strong>90</strong> pts</td></tr>
+        <tr><td>Finaliste</td><td><strong>70</strong> pts</td></tr>
+        <tr><td>Finaliste repêchage (2e/3e)</td><td><strong>50</strong> pts</td></tr>
+        <tr><td>Demi</td><td><strong>50</strong> pts</td></tr>
+        <tr><td>Demi repêchage</td><td><strong>40</strong> pts</td></tr>
+        <tr><td>Quart</td><td><strong>30</strong> pts</td></tr>
+        <tr><td>Quart repêchage</td><td><strong>10</strong> pts</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// DONNÉES DU CLASSEMENT
+// Pour modifier un joueur manuellement : cherche son nom ci-dessous
+// et change "points" ou "tournaments".
+// Format de chaque joueur : {"rank":X, "name":"Prénom Nom", "points":X, "tournaments":X}
+// =====================================================================
+// =====================================================================
+// SOURCE DE DONNÉES — GOOGLE SHEETS
+// Pour modifier le classement, éditez directement le Google Sheet.
+// L'URL ci-dessous pointe vers la version CSV publiée du Sheet.
+// =====================================================================
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIFDkla1JCBAlwxTaC0SS__Z-zZXOOj-smgkktBnqXnAXSkjlSuX2h9KENafypdA/pub?gid=444927990&single=true&output=csv';
+const HISTORY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIFDkla1JCBAlwxTaC0SS__Z-zZXOOj-smgkktBnqXnAXSkjlSuX2h9KENafypdA/pub?gid=1402194630&single=true&output=csv';
+
+// =====================================================================
+// DONNÉES DE SECOURS (utilisées si Google Sheets est inaccessible,
+// par exemple en ouvrant le fichier en local avec file://)
+// =====================================================================
+const FALLBACK_DATA = [{"rank":1,"name":"Mathilde Beaugrand","points":240,"tournaments":3},{"rank":2,"name":"Léna Garcia","points":210,"tournaments":2},{"rank":3,"name":"Oscar Chemla","points":200,"tournaments":2},{"rank":4,"name":"Balthazar Albaric","points":190,"tournaments":3},{"rank":5,"name":"Renan Mukerjee","points":150,"tournaments":3},{"rank":5,"name":"Nicolas Poirier","points":150,"tournaments":1},{"rank":7,"name":"Adam Cohen","points":140,"tournaments":4},{"rank":8,"name":"Jean de Gourcuff","points":130,"tournaments":3},{"rank":9,"name":"Henry Lachapelle","points":120,"tournaments":2},{"rank":9,"name":"Louis Ducurtil","points":120,"tournaments":3},{"rank":9,"name":"Nicolas Soulignac","points":120,"tournaments":2},{"rank":12,"name":"Théo Benichou","points":110,"tournaments":4},{"rank":12,"name":"Céleste Challier","points":110,"tournaments":3},{"rank":12,"name":"Jeanne Chausselat","points":110,"tournaments":3},{"rank":15,"name":"Nathan Toussaint","points":100,"tournaments":2},{"rank":15,"name":"Baudouin Gabalda","points":100,"tournaments":2},{"rank":15,"name":"Marie Audeoud","points":100,"tournaments":2},{"rank":15,"name":"Rafael de Oliveira","points":100,"tournaments":2},{"rank":15,"name":"Isabelle Carles","points":100,"tournaments":2},{"rank":15,"name":"Maxime Khaski","points":100,"tournaments":4},{"rank":15,"name":"Paul Chausselat","points":100,"tournaments":2},{"rank":22,"name":"Augustin Voruz","points":90,"tournaments":1},{"rank":22,"name":"Jules Goupil","points":90,"tournaments":2},{"rank":22,"name":"Laura Assedou","points":90,"tournaments":2},{"rank":22,"name":"Nicolas Morillot","points":90,"tournaments":1},{"rank":22,"name":"Guillaume Despouys","points":90,"tournaments":2},{"rank":26,"name":"Amélie Noyelle","points":80,"tournaments":2},{"rank":26,"name":"Blandine de Marsac","points":80,"tournaments":3},{"rank":26,"name":"Louise David","points":80,"tournaments":2},{"rank":26,"name":"Paula Jimenez","points":80,"tournaments":2},{"rank":26,"name":"Grégoire Aubineau","points":80,"tournaments":2},{"rank":26,"name":"Inaki Dugas","points":80,"tournaments":2},{"rank":26,"name":"Alexandre Cohen","points":80,"tournaments":2},{"rank":26,"name":"Jules de Meaux","points":80,"tournaments":2},{"rank":26,"name":"Wilson Faure","points":80,"tournaments":2},{"rank":35,"name":"Paul Santamaria","points":70,"tournaments":1},{"rank":35,"name":"Raphaël Levy","points":70,"tournaments":1},{"rank":35,"name":"Benjamin Presberg","points":70,"tournaments":4},{"rank":35,"name":"Gaspard Baret","points":70,"tournaments":1},{"rank":35,"name":"Laure Lafabure","points":70,"tournaments":1},{"rank":35,"name":"Victor Le Boulanger","points":70,"tournaments":3},{"rank":35,"name":"Roy Cohen Solal","points":70,"tournaments":2},{"rank":42,"name":"Alix Balay","points":60,"tournaments":2},{"rank":42,"name":"Emile Simondin","points":60,"tournaments":2},{"rank":42,"name":"Baptiste Despouys","points":60,"tournaments":2},{"rank":42,"name":"Héloïse Goossens","points":60,"tournaments":2},{"rank":42,"name":"Venceslas Toubiana","points":60,"tournaments":2},{"rank":42,"name":"Violette de Poix","points":60,"tournaments":2},{"rank":42,"name":"Mathis Ouali","points":60,"tournaments":2}];
+
+
+async function fetchHistoryFromSheet() {
+  const res = await fetch(HISTORY_CSV_URL);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const csv = await res.text();
+  const rows = csv.split('\n');
+  const history = {};
+  // Colonnes : Joueur | Résultat T1 | Points T1 | Résultat T2 | Points T2 | ... T5
+  rows.slice(1).forEach(row => {
+    if (!row.trim()) return;
+    const cols = [];
+    let current = '', inQuotes = false;
+    for (const ch of row) {
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
+      else { current += ch; }
+    }
+    cols.push(current.trim());
+    const name = cols[0]?.replace(/"/g, '').trim();
+    if (!name) return;
+    const entries = [];
+    // 5 tournois : paires (Résultat, Points) aux colonnes 1-2, 3-4, 5-6, 7-8, 9-10
+    for (let t = 1; t <= 5; t++) {
+      const result = cols[(t-1)*2 + 1]?.replace(/"/g, '').trim();
+      const pts    = parseInt(cols[(t-1)*2 + 2]) || 0;
+      if (result && pts > 0) {
+        entries.push({ t: 'T' + t, r: result, p: pts });
+      }
+    }
+    if (entries.length > 0) history[name] = entries;
+  });
+  return history;
+}
+
+async function fetchPlayersFromSheet() {
+  const res = await fetch(SHEET_CSV_URL);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const csv = await res.text();
+  const rows = csv.split('\n').slice(1); // ignore la ligne d'en-tête
+  const parsed = rows
+    .filter(row => row.trim())
+    .map((row, i) => {
+      // Parser CSV robuste (gère les guillemets et virgules dans les noms)
+      const cols = [];
+      let current = '', inQuotes = false;
+      for (const ch of row) {
+        if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
+        else { current += ch; }
+      }
+      cols.push(current.trim());
+      // Colonnes : A=Rang, B=Joueur, C=Total Officiel (Top 3), D=Total tous, E=Tournois joués
+      return {
+        rank:        parseInt(cols[0]) || i + 1,
+        name:        cols[1]?.replace(/"/g, '').trim() || '',
+        points:      parseInt(cols[2]) || 0,
+        tournaments: parseInt(cols[4]) || 0,
+        _id:         i,
+        _origRank:   parseInt(cols[0]) || i + 1
+      };
+    })
+    .filter(p => p.name); // ignore les lignes vides
+  if (parsed.length === 0) throw new Error('Sheet vide ou mal formaté');
+  return parsed;
+}
+
+// =====================================================================
+// HISTORIQUE DES TOURNOIS
+// Rempli depuis Google Sheets au chargement. Si Google Sheets est injoignable,
+// on charge history-fallback.json (secours hors-ligne uniquement).
+// Chaque entrée : { t: "T1", r: "Résultat", p: pointsGagnés }
+// =====================================================================
+let EXCEL_HISTORY = {};
+// =====================================================================
+// COULEURS DES AVATARS (cercles colorés à côté des noms)
+// 6 couleurs Palificup : bleu, jaune, vert, rouge, orange, violet
+// =====================================================================
+const AVATAR_COLORS = ['#1565C0','#F9A825','#2E7D32','#D32F2F','#E65100','#6A1B9A'];
+const getInitials = name => { const p = name.trim().split(' '); return p.length >= 2 ? (p[0][0]+(p[p.length-1][0])).toUpperCase() : name.slice(0,2).toUpperCase(); };
+const getAvatarColor = idx => AVATAR_COLORS[idx % AVATAR_COLORS.length];
+
+// =====================================================================
+// VARIABLES INTERNES
+// =====================================================================
+let players = []; // chargé dynamiquement depuis Google Sheets
+let sortCol = 'rank', sortDir = 1; // colonne de tri par défaut : rang
+let searchQuery = '';              // texte de recherche en cours
+
+// ── RANK RECALCULATION ────────────────────────────────────────────────────────
+// Recalcule les rangs après une modification : trie par points décroissants,
+// en cas d'égalité, celui qui a le moins de tournois est devant.
+function recalcRanks() {
+  const sorted = [...players].sort((a,b) => b.points - a.points || a.tournaments - b.tournaments || a.name.localeCompare(b.name));
+  let rank = 1;
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && (sorted[i].points < sorted[i-1].points || sorted[i].tournaments > sorted[i-1].tournaments)) rank = i + 1;
+    sorted[i].rank = rank;
+  }
+  const rankMap = new Map(sorted.map(p => [p._id, p.rank]));
+  players = players.map(p => ({ ...p, rank: rankMap.get(p._id) }));
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const sorted = [...players].sort((a,b) => a.rank - b.rank || a.name.localeCompare(b.name));
+  const top3 = sorted.slice(0,3);
+  const totalPts = players.reduce((s,p) => s+p.points, 0);
+  const totalT   = players.reduce((s,p) => s+p.tournaments, 0);
+  const band = document.getElementById('statsBand');
+  const medal = ['gold','silver','bronze'];
+  band.innerHTML = `
+    ${top3.map((p,i) => `
+      <div class="stat-item">
+        <div class="stat-val ${medal[i]}">${p.name.split(' ').pop().toUpperCase()}</div>
+        <div class="stat-lbl">${['🥇 1er','🥈 2e','🥉 3e'][i]} · ${p.points} pts</div>
+      </div>
+      <div class="stats-divider"></div>
+    `).join('')}
+    <div class="stat-item">
+      <div class="stat-val">${players.length}</div>
+      <div class="stat-lbl">Joueurs</div>
+    </div>
+    <div class="stats-divider"></div>
+    <button class="stat-item stat-info-btn" onclick="openPointsInfo()">
+      <div class="stat-val">ℹ️</div>
+      <div class="stat-lbl">Détail des points</div>
+    </button>
+  `;
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────────────────────
+// getFiltered() : applique la recherche et le tri, retourne la liste filtrée.
+// renderTable() : génère le HTML de chaque ligne du tableau.
+function getFiltered() {
+  let list = [...players];
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    list = list.filter(p => p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(q));
+  }
+  list.sort((a,b) => {
+    let va = a[sortCol], vb = b[sortCol];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    return sortDir * (va < vb ? -1 : va > vb ? 1 : 0);
+  });
+  return list;
+}
+
+function renderTable() {
+  const list = getFiltered();
+  const tbody = document.getElementById('tableBody');
+  document.getElementById('resultsCount').textContent = `${list.length} joueur${list.length>1?'s':''} affiché${list.length>1?'s':''}`;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Aucun joueur trouvé</td></tr>`;
+    return;
+  }
+
+  const maxPts = Math.max(...players.map(p=>p.points));
+  const playerIdx = new Map(players.map((p,i) => [p._id, i]));
+
+  tbody.innerHTML = list.map(p => {
+    const idx = playerIdx.get(p._id) || 0;
+    const rankClass = p.rank === 1 ? 'rank-1' : p.rank === 2 ? 'rank-2' : p.rank === 3 ? 'rank-3' : 'rank-other';
+    const rowClass  = p.rank === 1 ? 'top1' : p.rank === 2 ? 'top2' : p.rank === 3 ? 'top3' : '';
+    const col       = getAvatarColor(idx);
+    const initials  = getInitials(p.name);
+    const parts     = p.name.trim().split(' ');
+    const firstName = parts[0];
+    const lastName  = parts.slice(1).join(' ').toUpperCase();
+    const barW      = Math.round((p.points / maxPts) * 100);
+    const histCount = getPlayerHistory(p._id).length;
+    const wins = getPlayerHistory(p._id).filter(r => isVictory(r.r || r.resultat)).length;
+    const starsHtml = wins > 0 ? `<span class="win-stars" title="${wins} victoire${wins>1?'s':''}">${'🏆'.repeat(wins)}</span>` : '';
+
+    return `<tr class="${rowClass}" data-id="${p._id}" onclick="openHistory(${p._id})">
+      <td class="td-rank"><span class="rank-num ${rankClass}">${p.rank}</span></td>
+      <td class="td-player">
+        <div class="player-cell">
+          <div class="avatar" style="background:${col}">${initials}</div>
+          <div class="player-names">
+            <div class="player-first">${firstName}</div>
+            <div class="player-last">${lastName || firstName.toUpperCase()}</div>
+          </div>
+        </div>
+      </td>
+      <td class="td-t">
+        <span class="tourn-pill">
+          <span>${p.tournaments}</span> tournoi${p.tournaments > 1 ? 's' : ''}
+        </span>
+      </td>
+      <td class="td-pts">
+        <div class="pts-badge">
+          <span class="pts-num">${p.points}</span>
+          <span class="pts-lbl">PTS</span>
+        </div>
+      </td>
+      <td class="td-wins">${starsHtml}</td>
+    </tr>`;
+  }).join('');
+}
+
+function refresh() {
+  recalcRanks();
+  updateStats();
+  renderTable();
+  updateSortHeaders();
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────────
+function updateSortHeaders() {
+  document.querySelectorAll('thead th[data-col]').forEach(th => {
+    const col = th.dataset.col;
+    th.classList.toggle('sorted', col === sortCol);
+    const arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = (col === sortCol) ? (sortDir === 1 ? '▲' : '▼') : '↕';
+  });
+}
+document.querySelectorAll('thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = 1; }
+    renderTable(); updateSortHeaders();
+  });
+});
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  renderTable();
+});
+
+// ── VICTOIRE ──────────────────────────────────────────────────────────────────
+// Un résultat ne compte comme victoire (tournoi remporté) que s'il contient
+// "vainqueur" SANS être un parcours de finaliste passé par le repêchage
+// (ex: "Vainqueur repêchage - Finaliste" = a atteint la finale, ne l'a pas gagnée).
+function isVictory(r) {
+  if (!r) return false;
+  const up = r.toLowerCase();
+  return up.includes('vainqueur') && !up.includes('finaliste');
+}
+
+// ── RESULT BADGE STYLE ───────────────────────────────────────────────────────
+// Détermine la couleur du badge selon le résultat :
+//   victoire     → or   | "finaliste" (sans repêchage) → argent
+//   "demi"       → bronze | tout le reste → bleu
+// Si tu ajoutes de nouveaux résultats, adapte ces règles ici.
+function resultBadgeClass(r) {
+  if (!r) return 'pos-other';
+  const up = r.toLowerCase();
+  if (isVictory(r)) return 'pos-1';
+  if (up.includes('finaliste') && !up.includes('repê') && !up.includes('repe')) return 'pos-2';
+  if (up.includes('demi') && !up.includes('repê') && !up.includes('repe')) return 'pos-3';
+  return 'pos-other';
+}
+
+// ── HISTORY MODAL ─────────────────────────────────────────────────────────────
+// S'ouvre quand on clique sur une ligne du tableau.
+// Affiche le résumé du joueur + le tableau de ses résultats par tournoi.
+function openHistory(id) {
+  const p = players.find(x => x._id === id);
+  if (!p) return;
+
+  const idx = players.indexOf(p);
+  const col = getAvatarColor(idx);
+  const rankClass = p.rank === 1 ? 'rank-1' : p.rank === 2 ? 'rank-2' : p.rank === 3 ? 'rank-3' : 'rank-other';
+  const parts = p.name.trim().split(' ');
+  const firstName = parts[0];
+  const lastName  = parts.slice(1).join(' ').toUpperCase() || firstName.toUpperCase();
+
+  document.getElementById('historyHeader').innerHTML = `
+    <div class="history-avatar" style="background:${col}">${getInitials(p.name)}</div>
+    <div class="history-player-info">
+      <div class="history-player-name">${firstName} ${lastName}</div>
+      <div class="history-player-sub">${p.points} pts · ${p.tournaments} tournoi${p.tournaments>1?'s':''}</div>
+    </div>
+    <div class="history-rank-badge ${rankClass}">#${p.rank}</div>
+  `;
+
+  renderHistoryTable(id);
+  document.getElementById('historyModal').classList.add('open');
+}
+
+function getPlayerHistory(id) {
+  const p = players.find(x => x._id === id);
+  if (!p) return [];
+  return EXCEL_HISTORY[p.name] || [];
+}
+
+function renderHistoryTable(id) {
+  const history = getPlayerHistory(id);
+  const container = document.getElementById('historyContent');
+
+  if (!history.length) {
+    container.innerHTML = `
+      <div class="history-empty">
+        <div class="icon">🎲</div>
+        <div>Aucun historique de tournoi disponible</div>
+      </div>`;
+    return;
+  }
+
+  const totalPts = history.reduce((s,r) => s + (r.p || r.points || 0), 0);
+  const wins = history.filter(r => isVictory(r.r || r.resultat)).length;
+
+  container.innerHTML = `
+    <div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="stat-item">
+        <div class="stat-val gold">${totalPts}</div>
+        <div class="stat-lbl">Total points</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">${history.length}</div>
+        <div class="stat-lbl">Tournois joués</div>
+      </div>
+      ${wins ? `<div class="stat-item">
+        <div class="stat-val gold">🏆 ${wins}</div>
+        <div class="stat-lbl">Victoire${wins>1?'s':''}</div>
+      </div>` : ''}
+    </div>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Tournoi</th>
+          <th>Résultat</th>
+          <th>Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${history.map(r => {
+          const resultat = r.r || r.resultat || '—';
+          const pts      = r.p || r.points || 0;
+          const tournoi  = r.t || r.tournament || '—';
+          const badgeClass = resultBadgeClass(resultat);
+          return `<tr>
+            <td style="font-weight:700;color:var(--gold)">${tournoi}</td>
+            <td><span class="pos-badge ${badgeClass}">${resultat}</span></td>
+            <td><strong>${pts}</strong> pts</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function closeHistory() {
+  document.getElementById('historyModal').classList.remove('open');
+}
+document.getElementById('closeHistory').onclick = closeHistory;
+document.getElementById('historyModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('historyModal')) closeHistory();
+});
+
+// ── POINTS INFO MODAL ─────────────────────────────────────────────────────────
+// Explique le barème de points et la règle du "top 3 résultats".
+function openPointsInfo() {
+  document.getElementById('pointsInfoModal').classList.add('open');
+}
+function closePointsInfo() {
+  document.getElementById('pointsInfoModal').classList.remove('open');
+}
+document.getElementById('closePointsInfo').onclick = closePointsInfo;
+document.getElementById('pointsInfoModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pointsInfoModal')) closePointsInfo();
+});
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+// La touche Échap ferme les fenêtres ouvertes.
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeHistory(); closePointsInfo(); }
+});
+
+// ── SKELETON (état de chargement) ───────────────────────────────────────────
+// Lignes fantômes affichées pendant le chargement, pour éviter qu'un tableau
+// vide donne l'impression d'une page cassée.
+function renderSkeleton(rows = 8) {
+  const cell = w => `<div class="skeleton-block" style="width:${w}"></div>`;
+  document.getElementById('tableBody').innerHTML = Array.from({ length: rows }).map(() => `
+    <tr>
+      <td class="td-rank">${cell('20px')}</td>
+      <td class="td-player">
+        <div class="skel-player-cell">
+          <div class="skeleton-block skel-avatar"></div>
+          <div class="skel-player-lines">${cell('40%')}${cell('65%')}</div>
+        </div>
+      </td>
+      <td class="td-t">${cell('60px')}</td>
+      <td class="td-pts">${cell('50px')}</td>
+      <td class="td-wins"></td>
+    </tr>`).join('');
+}
+
+// Réessaie fn() plusieurs fois avant d'abandonner : une requête Google Sheets
+// isolée qui échoue (réseau, latence) ne doit pas faire basculer tout le site
+// sur les données de secours périmées.
+async function withRetry(fn, attempts = 3, delayMs = 1200) {
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn(); }
+    catch (e) {
+      if (i === attempts - 1) throw e;
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+// Charge les données depuis Google Sheets puis lance l'affichage.
+(async () => {
+  renderSkeleton();
+  try {
+    const [sheetPlayers, sheetHistory] = await withRetry(() => Promise.all([
+      fetchPlayersFromSheet(),
+      fetchHistoryFromSheet()
+    ]));
+    players = sheetPlayers;
+    EXCEL_HISTORY = sheetHistory;
+    console.log('✅ Classement chargé depuis Google Sheets (' + players.length + ' joueurs)');
+    console.log('✅ Historique chargé (' + Object.keys(EXCEL_HISTORY).length + ' joueurs avec historique)');
+  } catch (e) {
+    console.warn('⚠️ Google Sheets inaccessible, utilisation des données locales :', e.message);
+    players = FALLBACK_DATA.map((p, i) => ({ ...p, _id: i, _origRank: p.rank }));
+    document.getElementById('offlineBanner').classList.add('show');
+    try {
+      const res = await fetch('/history-fallback.json');
+      EXCEL_HISTORY = await res.json();
+    } catch (e2) {
+      console.warn('⚠️ history-fallback.json inaccessible :', e2.message);
+    }
+  }
+  refresh();
+})();
+</script>
 </body>
 </html>
