@@ -18,40 +18,28 @@ export function clampTableTarget(target: number): number {
 
 /**
  * Plans how many players go at each table for a group of `total` players,
- * aiming for `target` players per table (the minimum number of tables):
- * - Fill as many tables as possible with exactly `target` players.
- * - If the leftover is 3 or more, it becomes its own (smaller) table.
- * - If the leftover is only 1 or 2 (too few for a table), spread them one
- *   by one onto the other tables — never beyond MAX_TABLE_SIZE.
- * - If every table is already full at MAX_TABLE_SIZE, borrow players from
- *   the last table to make the leftover a playable table of 3.
+ * aiming for `target` players per table.
+ *
+ * Picks the minimum number of tables `k` that keeps every table within
+ * [MIN_TABLE_SIZE, MAX_TABLE_SIZE] while respecting the chosen `target` as
+ * closely as possible, then spreads `total` across those `k` tables as
+ * evenly as possible (sizes never differ by more than 1) — the same result
+ * as dealing 3 players to every table, then a 4th to as many as possible,
+ * then a 5th, rather than filling some tables to the cap and shrinking
+ * whatever is left over to the minimum.
  */
 export function planTableSizes(total: number, target: number): number[] {
   if (total <= 0) return [];
+  if (total < MIN_TABLE_SIZE) return [total]; // too few to do better than one small table
+
   const t = clampTableTarget(target);
-  const full = Math.floor(total / t);
-  const remainder = total - full * t;
-  const sizes = Array<number>(full).fill(t);
-  if (remainder === 0) return sizes;
-  if (remainder >= MIN_TABLE_SIZE || full === 0) return [...sizes, remainder];
+  const minTables = Math.ceil(total / MAX_TABLE_SIZE); // no table may exceed the absolute max
+  const maxTables = Math.floor(total / MIN_TABLE_SIZE); // no table may drop below the absolute min
+  const k = Math.min(maxTables, Math.max(minTables, Math.ceil(total / t)));
 
-  let toPlace = remainder;
-  for (let i = 0; toPlace > 0 && sizes.some((s) => s < MAX_TABLE_SIZE); i++) {
-    const idx = i % sizes.length;
-    if (sizes[idx] < MAX_TABLE_SIZE) {
-      sizes[idx] += 1;
-      toPlace -= 1;
-    }
-  }
-  if (toPlace === 0) return sizes;
-
-  const borrow = MIN_TABLE_SIZE - toPlace;
-  const last = sizes.length - 1;
-  if (sizes[last] - borrow >= MIN_TABLE_SIZE) {
-    sizes[last] -= borrow;
-    return [...sizes, MIN_TABLE_SIZE];
-  }
-  return [...sizes, toPlace];
+  const base = Math.floor(total / k);
+  const extra = total - base * k; // this many tables get one extra player
+  return Array.from({ length: k }, (_, i) => (i < extra ? base + 1 : base));
 }
 
 /** Deals entries round-robin into tables of the given capacities. */
