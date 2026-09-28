@@ -256,15 +256,10 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
         {data.bracketA.status !== "waiting-poules" && data.bracketA.status !== "not-generated" && (
           <Section title="Tableau A">
             <TableList tables={data.bracketA.tables} />
-            <QualifiersPerRound
-              label="Qualifiés par tour (Tableau A)"
-              value={data.config.a_qualifiers_per_round ?? "1"}
-              onSave={(v) => call("/api/admin/config", { a_qualifiers_per_round: v })}
-              busy={busy !== null}
-            />
             <BracketAction
               status={data.bracketA.status}
-              onAdvance={() => call("/api/admin/advance", { bracket: "A" })}
+              defaultQualifiers={data.config.a_qualifiers_per_round ?? "1"}
+              onAdvance={(q) => call("/api/admin/advance", { bracket: "A", qualifiersPerRound: q })}
               busy={busy !== null}
             />
           </Section>
@@ -275,15 +270,10 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           data.bracketB.status !== "not-generated" && (
             <Section title="Tableau B (repêchage)">
               <TableList tables={data.bracketB.tables} />
-              <QualifiersPerRound
-                label="Qualifiés par tour (Tableau B)"
-                value={data.config.b_qualifiers_per_round ?? "1"}
-                onSave={(v) => call("/api/admin/config", { b_qualifiers_per_round: v })}
-                busy={busy !== null}
-              />
               <BracketAction
                 status={data.bracketB.status}
-                onAdvance={() => call("/api/admin/advance", { bracket: "B" })}
+                defaultQualifiers={data.config.b_qualifiers_per_round ?? "1"}
+                onAdvance={(q) => call("/api/admin/advance", { bracket: "B", qualifiersPerRound: q })}
                 busy={busy !== null}
               />
             </Section>
@@ -483,66 +473,55 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
   );
 }
 
+/**
+ * The qualifiers-per-round input lives right next to the "Générer le tour
+ * suivant" button for the round actually about to be generated, instead of
+ * a separate standing setting — easy to leave stale between stages (e.g.
+ * forgetting to switch back from 1 after using 2 for Quart -> Demi).
+ */
 function BracketAction({
   status,
+  defaultQualifiers,
   onAdvance,
   busy,
 }: {
   status: string;
-  onAdvance: () => void;
+  defaultQualifiers: string;
+  onAdvance: (qualifiers: string) => void;
   busy: boolean;
 }) {
+  const [qualifiers, setQualifiers] = useState(defaultQualifiers);
+
   if (status === "in-progress") {
     return <p className="text-caramel text-sm mt-2">En attente des résultats de ce tour.</p>;
   }
   if (status === "ready-to-advance") {
     return (
-      <button
-        onClick={onAdvance}
-        disabled={busy}
-        className="mt-3 rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-3 font-bold text-white"
-      >
-        Générer le tour suivant
-      </button>
+      <div className="mt-3 flex items-end gap-2">
+        <div className="w-56">
+          <label className="block text-sm font-semibold text-orange-label mb-1">
+            Qualifiés de ce tour vers le suivant
+          </label>
+          <input
+            className="w-full rounded-lg bg-white border border-separator px-3 py-2"
+            value={qualifiers}
+            onChange={(e) => setQualifiers(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={() => onAdvance(qualifiers)}
+          disabled={busy}
+          className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-3 font-bold text-white"
+        >
+          Générer le tour suivant
+        </button>
+      </div>
     );
   }
   if (status === "done") {
     return <p className="text-good text-sm font-semibold mt-2">Terminé — prêt pour la Grande Finale.</p>;
   }
   return null;
-}
-
-function QualifiersPerRound({
-  label,
-  value,
-  onSave,
-  busy,
-}: {
-  label: string;
-  value: string;
-  onSave: (value: string) => void;
-  busy: boolean;
-}) {
-  const [local, setLocal] = useState(value);
-  return (
-    <div className="mt-3 flex items-end gap-2">
-      <div className="w-56">
-        <label className="block text-sm font-semibold text-orange-label mb-1">{label}</label>
-        <input
-          className="w-full rounded-lg bg-white border border-separator px-3 py-2"
-          value={local}
-          onChange={(e) => setLocal(e.target.value)}
-        />
-      </div>
-      <button
-        onClick={() => onSave(local)}
-        disabled={busy}
-        className="rounded-lg bg-cream-card hover:bg-separator disabled:opacity-50 px-3 py-2 text-sm font-semibold text-orange-label"
-      >
-        Appliquer au prochain tour
-      </button>
-    </div>
-  );
 }
 
 function tableLabel(t: { stage: string; table_number: number }) {

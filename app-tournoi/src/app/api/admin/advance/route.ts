@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  MAX_TABLE_SIZE,
   getBracketState,
   groupIntoTables,
   parseRoundId,
   planNextBracketRound,
 } from "@/lib/bracket";
+import { setConfig } from "@/lib/config";
 import { createRounds, createSeats, getRounds, getSeats } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
 import { loadTournamentData, targetForRound } from "@/lib/tournament";
@@ -17,6 +19,22 @@ export async function POST(req: NextRequest) {
   const bracket = body?.bracket === "A" || body?.bracket === "B" ? body.bracket : null;
   if (!bracket) {
     return NextResponse.json({ error: "bracket invalide." }, { status: 400 });
+  }
+
+  // The admin can set exactly how many qualify from THIS round right when
+  // triggering it, instead of relying on a separate setting that lingers
+  // and can easily be left over from a previous stage (e.g. forgetting to
+  // switch back from 1 after using 2 for Quart -> Demi).
+  const rawOverride = body?.qualifiersPerRound;
+  const qualifiersOverride =
+    typeof rawOverride === "string" || typeof rawOverride === "number"
+      ? Math.min(Math.max(1, Math.round(Number(rawOverride))), MAX_TABLE_SIZE - 1)
+      : null;
+  if (qualifiersOverride !== null) {
+    await setConfig(
+      bracket === "A" ? "a_qualifiers_per_round" : "b_qualifiers_per_round",
+      String(qualifiersOverride)
+    );
   }
 
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
@@ -41,7 +59,8 @@ export async function POST(req: NextRequest) {
         ? finalSeats - bRepechageCount
         : finalSeats
       : bRepechageCount;
-  const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
+  const qualifiersPerRound =
+    qualifiersOverride ?? (bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound);
   const state = getBracketState(bracketTables, budget, qualifiersPerRound);
   if (state.status !== "ready-to-advance") {
     return NextResponse.json(
