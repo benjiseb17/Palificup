@@ -12,13 +12,13 @@
 <!-- Open Graph (partage WhatsApp, Instagram, Facebook) -->
 <meta property="og:title" content="LA PALIFICUP — Classement Officiel">
 <meta property="og:description" content="Le premier tournoi de Perudo de France. Découvrez le classement officiel.">
-<meta property="og:url" content="https://www.palificup.fr">
+<meta property="og:url" content="https://www.palificup.fr/classement">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://www.palificup.fr/logo.png">
 
 <!-- Favicon -->
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="stylesheet" href="styles.css">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="stylesheet" href="/styles.css">
 <style>
   .header-actions { display: flex; gap: 8px; align-items: center; }
   /* ── RESULT BADGE COLORS ─────────────────────────────── */
@@ -397,15 +397,15 @@
 
 <!-- NAV MOBILE -->
 <div style="display:none;flex-direction:column;position:fixed;top:70px;left:0;right:0;background:var(--navy-hdr);border-bottom:2px solid var(--separator);padding:12px 16px;gap:4px;z-index:99;" id="navMobile">
-  <a href="index.html"      style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">🏠 Accueil</a>
-  <a href="classement.html" style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
-  <a href="editions.html"   style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">📅 Éditions</a>
+  <a href="/"      style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">🏠 Accueil</a>
+  <a href="/classement" style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
+  <a href="/editions"   style="padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;">📅 Éditions</a>
 </div>
 
 <!-- HEADER -->
 <header class="site-header">
-  <a href="index.html" style="display:flex;align-items:center;gap:14px;text-decoration:none;">
-    <img src="logo.png" class="logo-img" alt="Palificup" id="logoImg"
+  <a href="/" style="display:flex;align-items:center;gap:14px;text-decoration:none;">
+    <img src="/logo.png" class="logo-img" alt="Palificup" id="logoImg"
          onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
     <div class="logo-fallback" id="logoFallback" style="display:none">🎲</div>
     <div class="logo-text">
@@ -414,9 +414,9 @@
     </div>
   </a>
   <nav style="display:flex;gap:4px;align-items:center;" id="mainNav">
-    <a href="index.html"      style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">🏠 Accueil</a>
-    <a href="classement.html" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
-    <a href="editions.html"   style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">📅 Éditions</a>
+    <a href="/"      style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">🏠 Accueil</a>
+    <a href="/classement" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">🏆 Classement</a>
+    <a href="/editions"   style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--blue-lt);text-decoration:none;border:1px solid transparent;" onmouseover="this.style.background='var(--navy-card)'" onmouseout="this.style.background='transparent'">📅 Éditions</a>
   </nav>
   <button onclick="(function(){var n=document.getElementById('navMobile');n.style.display=n.style.display==='flex'?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--blue-lt);" id="navBurger">☰</button>
   <div class="header-actions">
@@ -939,7 +939,7 @@ async function withRetry(fn, attempts = 3, delayMs = 1200) {
     players = FALLBACK_DATA.map((p, i) => ({ ...p, _id: i, _origRank: p.rank }));
     document.getElementById('offlineBanner').classList.add('show');
     try {
-      const res = await fetch('history-fallback.json');
+      const res = await fetch('/history-fallback.json');
       EXCEL_HISTORY = await res.json();
     } catch (e2) {
       console.warn('⚠️ history-fallback.json inaccessible :', e2.message);

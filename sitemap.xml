@@ -7,14 +7,14 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.palificup.fr/classement.html</loc>
-    <lastmod>2026-04-01</lastmod>
+    <loc>https://www.palificup.fr/classement</loc>
+    <lastmod>2026-09-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.palificup.fr/editions.html</loc>
-    <lastmod>2026-04-01</lastmod>
+    <loc>https://www.palificup.fr/editions</loc>
+    <lastmod>2026-09-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
