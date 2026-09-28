@@ -238,7 +238,8 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           <Section title="Phase de Poules">
             <TableList tables={data.poules.tables} />
             <p className="text-caramel text-xs mt-2">
-              Le tour suivant se génère automatiquement dès que toutes les tables ont rendu leur résultat.
+              Rien ne se lance automatiquement : une fois toutes les poules terminées, clique
+              ci-dessous pour générer le Tableau A (et B).
             </p>
             {data.poules.done && data.bracketA.status === "not-generated" && (
               <button

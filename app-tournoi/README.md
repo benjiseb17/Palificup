@@ -1,9 +1,11 @@
 # Palificup Tournoi
 
 App Next.js pour suivre le tournoi de Perudo Palificup en direct sur mobile : chaque
-joueur voit sa table du moment, saisit le résultat, et progresse automatiquement au
-tour suivant. Toutes les données (joueurs, tables, résultats) vivent dans un Google
-Sheet — pas de base de données séparée.
+joueur voit sa table du moment et saisit le résultat ; l'admin déclenche ensuite
+chaque tour suivant depuis `/admin` (Poules → Tableau A/B → tours suivants → Grande
+Finale), ce qui laisse le temps d'ajuster le format entre deux tours si besoin. Toutes
+les données (joueurs, tables, résultats) vivent dans un Google Sheet — pas de base de
+données séparée.
 
 ## 1. Créer le Google Sheet
 

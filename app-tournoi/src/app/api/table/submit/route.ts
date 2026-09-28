@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { autoAdvanceTournament } from "@/lib/autoAdvance";
 import { getRounds, getSeats, setFinishRank } from "@/lib/rounds";
 import { getPlayerSession } from "@/lib/session";
 import { invalidateTabs } from "@/lib/sheets";
@@ -71,7 +70,10 @@ export async function POST(req: NextRequest) {
     })
   );
 
-  await autoAdvanceTournament();
+  // The next round is NOT generated automatically anymore — the admin
+  // triggers each stage explicitly from /admin (poules -> A/B, next round
+  // within a bracket, Grande Finale), so they can review results and adjust
+  // settings like "qualifiés par tour" between stages before advancing.
 
   return NextResponse.json({ ok: true });
 }

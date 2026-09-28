@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { autoAdvanceTournament } from "@/lib/autoAdvance";
 import { getRounds, getSeats, setFinishRank } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
 import { invalidateTabs } from "@/lib/sheets";
@@ -53,7 +52,8 @@ export async function POST(req: NextRequest) {
     })
   );
 
-  await autoAdvanceTournament();
+  // See src/app/api/table/submit/route.ts: stage generation is manual now,
+  // triggered from the admin dashboard's own buttons.
 
   return NextResponse.json({ ok: true });
 }
