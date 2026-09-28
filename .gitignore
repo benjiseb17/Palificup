@@ -1,0 +1,6 @@
+# Dossier de dev local de l'app de tournoi (dépôt Git séparé, non lié à
+# GitHub) — la copie "officielle" publiée est app-tournoi/, jamais ce dossier.
+/palificup-tournoi/
+
+# Fichiers macOS
+.DS_Store

@@ -4,7 +4,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Palificup Tournoi",
   description: "Suis ta table en direct pendant le tournoi de Perudo Palificup.",
-  icons: { icon: "/logo.png" },
+  // favicon.ico / icon.png / apple-icon.png in this folder are auto-detected
+  // by Next.js — no need to declare them here.
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
