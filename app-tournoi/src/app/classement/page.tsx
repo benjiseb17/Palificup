@@ -29,9 +29,14 @@ export default function ClassementPage() {
       <SiteHeader
         subtitle="Classement officiel"
         right={
-          <Link href="/" className="text-sm font-semibold text-orange-label underline underline-offset-2">
-            Ma table
-          </Link>
+          <span className="flex items-center gap-4">
+            <Link href="/regles" className="text-sm font-semibold text-orange-label underline underline-offset-2">
+              📖 Règles
+            </Link>
+            <Link href="/" className="text-sm font-semibold text-orange-label underline underline-offset-2">
+              Ma table
+            </Link>
+          </span>
         }
       />
       <main className="flex flex-1 flex-col px-6 py-8 max-w-lg w-full mx-auto">

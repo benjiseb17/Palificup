@@ -211,7 +211,10 @@ export default function LoginPage() {
             {loading ? "Connexion…" : "C'est parti"}
           </button>
         </form>
-        <p className="text-center mt-8">
+        <p className="text-center mt-8 flex items-center justify-center gap-4">
+          <Link href="/regles" className="text-sm text-orange-label underline underline-offset-2">
+            📖 Les règles du jeu
+          </Link>
           <Link href="/classement" className="text-sm text-orange-label underline underline-offset-2">
             Voir le classement en direct
           </Link>

@@ -55,6 +55,12 @@ export default function MaTablePage() {
         right={
           <span className="flex items-center gap-4">
             <Link
+              href="/regles"
+              className="text-sm font-semibold text-orange-label underline underline-offset-2"
+            >
+              📖 Règles
+            </Link>
+            <Link
               href="/classement"
               className="text-sm font-semibold text-orange-label underline underline-offset-2"
             >
@@ -245,10 +251,10 @@ function TableView({
 
       <RoundRulesCard rules={view.rules} />
 
-      <p className="text-caramel mb-3">
+      <p className="text-caramel text-xs mb-3">
         {view.status === "waiting-table-results"
           ? "Résultat enregistré par l'organisation. En attente que les autres tables de ce tour terminent."
-          : "Adversaires à ta table. L'organisation viendra rentrer le résultat une fois la partie terminée."}
+          : "Allez, donnez votre score aux organisateurs une fois la partie finie !"}
       </p>
       <ul className="flex flex-col gap-2">
         {view.seatmates
