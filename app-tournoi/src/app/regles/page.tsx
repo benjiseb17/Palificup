@@ -6,7 +6,20 @@ const NAV = [
   { id: "surencherir", label: "📈 Surenchérir" },
   { id: "choix", label: "🤔 Le choix" },
   { id: "special", label: "⭐ Règles spéciales" },
+  { id: "reglet", label: "📏 Réglet des annonces" },
 ];
+
+/**
+ * The full ordered ladder of announcements, cheapest to strongest: for each
+ * dice count, faces 2-6 in order, then a jump to the next paco threshold.
+ * Count 1 stands alone before "1 Paco"; every pair of counts after that
+ * (2-3, 4-5, 6-7, …) sits below the next paco milestone.
+ */
+const ANNOUNCE_LADDER = Array.from({ length: 8 }, (_, row) => {
+  const counts = row === 0 ? [1] : [2 * row, 2 * row + 1];
+  const announces = counts.flatMap((c) => [2, 3, 4, 5, 6].map((f) => `${c}/${f}`));
+  return { pacos: row + 1, announces };
+});
 
 export default function ReglesPage() {
   return (
@@ -63,9 +76,10 @@ export default function ReglesPage() {
           </Example>
 
           <Rule>
-            Un joueur peut aussi annoncer en <Term>Paco</Term>. Les paco sont spéciaux : il faut
-            annoncer au moins un nombre de paco égal à la moitié de la proposition précédente
-            (toujours arrondie à l&apos;entier supérieur).
+            Un joueur peut aussi annoncer en <Term>Paco</Term> — c&apos;est-à-dire sur la face 1.
+            Les paco sont spéciaux : il faut annoncer au moins un nombre de paco égal à la moitié
+            de la proposition précédente, plus un (règle du <Quote>/2 +1</Quote>, toujours
+            arrondie à l&apos;entier supérieur).
           </Rule>
           <Example>
             Louis surenchérit sur l&apos;annonce de Benjamin en disant <Quote>3 pacos</Quote>.
@@ -134,15 +148,43 @@ export default function ReglesPage() {
             peuvent plus changer la valeur annoncée — seulement le nombre de dés.
           </Rule>
           <Example>
-            Nicolas vient de perdre son 4e dé : il est désormais palifico, et c&apos;est à lui de
+            Paul vient de perdre son 4e dé : il est désormais palifico, et c&apos;est à lui de
             commencer. Il annonce <Quote>2 dés de valeur 3</Quote> — ici, les 1 ne comptent plus
             comme des 3 : seuls les dés réellement sur la face 3 comptent, et les joueurs suivants
-            doivent surenchérir uniquement sur des 3. De même, quand Nicolas devra lui-même
+            doivent surenchérir uniquement sur des 3. De même, quand Paul devra lui-même
             surenchérir sur le joueur précédent, les 1 ne compteront plus comme jokers pour lui non
-            plus. En revanche, si Nicolas décide de dire casal ou perudo sur l&apos;annonce
+            plus. En revanche, si Paul décide de dire casal ou perudo sur l&apos;annonce
             précédente, on recompte alors les dés en tenant compte des éventuels paco présents sur
             la table.
           </Example>
+        </Section>
+
+        <Section id="reglet" icon="📏" title="Réglet des annonces">
+          <p className="text-caramel">
+            L&apos;ordre croissant de toutes les annonces possibles, du plus faible au plus fort,
+            et le seuil à partir duquel il faut passer en paco. La notation{" "}
+            <Quote>N / V</Quote> veut dire <Quote>N dés de valeur V</Quote>.
+          </p>
+          <div className="flex flex-col gap-3">
+            {ANNOUNCE_LADDER.map((row) => (
+              <div key={row.pacos} className="flex flex-wrap items-center gap-1.5">
+                {row.announces.map((a) => (
+                  <span
+                    key={a}
+                    className="inline-block rounded bg-cream-row border border-separator px-1.5 py-0.5 text-xs font-mono font-semibold text-ink"
+                  >
+                    {a}
+                  </span>
+                ))}
+                <span className="text-caramel mx-1" aria-hidden>
+                  →
+                </span>
+                <span className="inline-block rounded-full bg-gold px-2.5 py-0.5 text-xs font-black text-white">
+                  {row.pacos} paco{row.pacos > 1 ? "s" : ""}
+                </span>
+              </div>
+            ))}
+          </div>
         </Section>
 
         <p className="text-center text-caramel text-sm mt-4 mb-8">
