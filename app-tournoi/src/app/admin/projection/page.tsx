@@ -244,25 +244,16 @@ function Content({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <p className="text-caramel text-sm">
-          {phase === "shuffling" ? (
-            <span className="font-bold text-accent">🎲 Tirage au sort en cours…</span>
-          ) : (
-            <>
-              {stages} — {doneCount}/{displayTables.length} table
-              {displayTables.length > 1 ? "s" : ""} rendue{doneCount > 1 ? "s" : ""}
-            </>
-          )}
-        </p>
-        <button
-          onClick={launchDraw}
-          disabled={phase === "shuffling" || tables.length === 0}
-          className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-2 text-sm font-bold text-white"
-        >
-          🎲 Lancer le tirage au sort
-        </button>
-      </div>
+      <p className="text-caramel text-sm mb-4">
+        {phase === "shuffling" ? (
+          <span className="font-bold text-accent">🎲 Tirage au sort en cours…</span>
+        ) : (
+          <>
+            {stages} — {doneCount}/{displayTables.length} table
+            {displayTables.length > 1 ? "s" : ""} rendue{doneCount > 1 ? "s" : ""}
+          </>
+        )}
+      </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {cards.map(({ table: t, names }) => (
           <div
