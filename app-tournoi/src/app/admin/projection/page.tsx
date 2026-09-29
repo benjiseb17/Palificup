@@ -147,7 +147,7 @@ function StartTournament({
         disabled={busy || status.playerCount < 4}
         className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-6 py-4 text-lg font-bold text-white"
       >
-        {busy ? "…" : "🚀 Lancer le tournoi"}
+        {busy ? "…" : "🎲 Lancer le tournoi"}
       </button>
       {status.playerCount < 4 && (
         <p className="text-bad text-sm font-medium">

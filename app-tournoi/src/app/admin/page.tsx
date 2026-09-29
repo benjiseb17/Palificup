@@ -219,7 +219,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                 disabled={busy !== null || data.playerCount < 4}
                 className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-5 py-3 font-bold text-white"
               >
-                🚀 Lancer le tournoi
+                🎲 Lancer le tournoi
               </button>
               {data.demoMode && (
                 <button
