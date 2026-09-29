@@ -4,3 +4,6 @@
 
 # Fichiers macOS
 .DS_Store
+
+# Config locale de l'outil de dev (lancement du serveur de dev)
+/.claude/

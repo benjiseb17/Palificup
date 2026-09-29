@@ -94,6 +94,9 @@ npm run dev
 
 - `http://localhost:3000` — connexion joueur (nom + code du tournoi).
 - `http://localhost:3000/admin` — dashboard admin (mot de passe = `ADMIN_PASSWORD`).
+- `http://localhost:3000/admin/projection` — vue à projeter sur un écran commun (5 tables par
+  rangée) : uniquement les tables du tour actuellement en cours, pour que chacun retrouve sa
+  table sans regarder son téléphone.
 - `http://localhost:3000/classement` — classement individuel + par équipe, public.
 
 ## 5. Déroulé d'un tournoi

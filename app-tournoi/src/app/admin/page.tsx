@@ -184,6 +184,9 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
         subtitle={`Admin — ${data.playerCount} joueurs`}
         right={
           <span className="flex items-center gap-4">
+            <Link href="/admin/projection" className="text-sm font-semibold text-orange-label underline underline-offset-2">
+              📽️ Projection
+            </Link>
             <Link href="/admin/tables" className="text-sm font-semibold text-orange-label underline underline-offset-2">
               🛠️ Toutes les tables
             </Link>

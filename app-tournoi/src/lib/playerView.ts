@@ -5,6 +5,7 @@ import {
   rankedSeats,
   type RRow,
   type SRow,
+  type TableState,
 } from "./bracket";
 import { FLOOR_POINTS, pointsForEliminationAt } from "./scoring";
 import type { Player } from "./types";
@@ -16,6 +17,11 @@ function depthOf(roundId: string): number {
   return p.gen;
 }
 
+export type RoundRules =
+  | { kind: "poule"; qualifiers: number; repechageEnabled: boolean }
+  | { kind: "bracket"; qualifiers: number; reachesFinal: boolean }
+  | { kind: "final" };
+
 export type PlayerView =
   | { status: "not-started" }
   | {
@@ -23,6 +29,7 @@ export type PlayerView =
       round: RRow;
       stage: string;
       seatmates: { player: Player; finishRank: string | null }[];
+      rules: RoundRules;
     }
   | {
       status: "waiting-next-round";
@@ -63,6 +70,16 @@ export function getPlayerView(
 
   const tables = groupIntoTables(rounds, seats);
   const table = tables.get(latest.round_id)!;
+  const rules = computeRoundRules(
+    round,
+    tables,
+    finalSeats,
+    repechageEnabled,
+    pouleQualifiers,
+    bRepechageCount,
+    aQualifiersPerRound,
+    bQualifiersPerRound
+  );
 
   if (latest.finish_rank === "") {
     const seatmates = table.seats.map((s) => ({
@@ -74,6 +91,7 @@ export function getPlayerView(
       round,
       stage: round.stage,
       seatmates,
+      rules,
     };
   }
 
@@ -103,6 +121,7 @@ export function getPlayerView(
         round,
         stage: round.stage,
         seatmates,
+        rules,
       };
     }
     // Repechage disabled and this player didn't win their poule: game over.
@@ -144,6 +163,56 @@ export function getPlayerView(
     round,
     stage: round.stage,
     seatmates,
+    rules,
+  };
+}
+
+/**
+ * What happens after this round, from the perspective of someone sitting at
+ * this table right now. `qualifiersPerRound` for A/B is only the currently
+ * configured value — the admin picks it (possibly differently) at the moment
+ * they actually generate the next round — so `reachesFinal` is an estimate
+ * based on today's setting, not a guarantee.
+ */
+function computeRoundRules(
+  round: RRow,
+  tables: Map<string, TableState>,
+  finalSeats: number,
+  repechageEnabled: boolean,
+  pouleQualifiers: number,
+  bRepechageCount: number,
+  aQualifiersPerRound: number,
+  bQualifiersPerRound: number
+): RoundRules {
+  const parsed = parseRoundId(round.round_id);
+  if (parsed.bracket === "POULE") {
+    return { kind: "poule", qualifiers: pouleQualifiers, repechageEnabled };
+  }
+  if (parsed.bracket === "FINAL") {
+    return { kind: "final" };
+  }
+
+  const bracket = parsed.bracket;
+  const genTables = [...tables.values()].filter(
+    (t) =>
+      parseRoundId(t.round.round_id).gen === parsed.gen &&
+      parseRoundId(t.round.round_id).bracket === bracket
+  );
+  const budget =
+    bracket === "A"
+      ? repechageEnabled
+        ? finalSeats - bRepechageCount
+        : finalSeats
+      : bRepechageCount;
+  const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
+  const estimatedQualifiers = genTables.reduce(
+    (sum, t) => sum + Math.min(qualifiersPerRound, t.seats.length),
+    0
+  );
+  return {
+    kind: "bracket",
+    qualifiers: qualifiersPerRound,
+    reachesFinal: estimatedQualifiers <= budget,
   };
 }
 

@@ -15,6 +15,10 @@ type MeResponse = {
   availableTeams: string[];
 };
 type Seatmate = { player: Player; finishRank: string | null };
+type RoundRules =
+  | { kind: "poule"; qualifiers: number; repechageEnabled: boolean }
+  | { kind: "bracket"; qualifiers: number; reachesFinal: boolean }
+  | { kind: "final" };
 type ApiView =
   | { status: "not-started" }
   | {
@@ -22,6 +26,7 @@ type ApiView =
       round: { round_id: string; stage: string; table_number: string };
       stage: string;
       seatmates: Seatmate[];
+      rules: RoundRules;
     }
   | { status: "waiting-next-round"; lastStage: string }
   | { status: "eliminated"; lastStage: string; points: number }
@@ -236,7 +241,9 @@ function TableView({
       <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-1">
         {view.stage}
       </p>
-      <h2 className="text-lg font-extrabold mb-4 text-ink">Table {view.round.table_number}</h2>
+      <h2 className="text-lg font-extrabold mb-3 text-ink">Table {view.round.table_number}</h2>
+
+      <RoundRulesCard rules={view.rules} />
 
       <p className="text-caramel mb-3">
         {view.status === "waiting-table-results"
@@ -263,6 +270,54 @@ function TableView({
 
       <PlayerHistoryModal name={historyName} onClose={() => setHistoryName(null)} />
     </Card>
+  );
+}
+
+/**
+ * Explains what's at stake at this table: how many qualify, whether the
+ * rest are out for good or get a second chance, and whether clearing this
+ * table sends you straight to the Grande Finale. For A/B rounds this is an
+ * estimate from today's qualifiers setting — the admin can still change it
+ * when they actually generate the next round.
+ */
+function RoundRulesCard({ rules }: { rules: RoundRules }) {
+  if (rules.kind === "final") {
+    return (
+      <p className="text-xs text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-3 py-2">
+        🏆 Grande Finale : le vainqueur de cette table remporte le tournoi.
+      </p>
+    );
+  }
+
+  const n = rules.qualifiers;
+  // "Le 1er de la table monte..." vs "Les 2 premiers de la table montent..."
+  const subject = n === 1 ? "Le 1er de la table" : `Les ${n} premiers de la table`;
+
+  if (rules.kind === "poule") {
+    return (
+      <p className="text-xs text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-3 py-2">
+        {subject} {n === 1 ? "monte" : "montent"} directement au Tableau A.{" "}
+        {rules.repechageEnabled
+          ? "Les autres rejoignent le Tableau B (repêchage) — personne n'est éliminé après les Poules."
+          : "Les autres sont éliminés."}
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-xs text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-3 py-2">
+      {subject}{" "}
+      {rules.reachesFinal
+        ? n === 1
+          ? "rejoint directement la 🏁 Grande Finale"
+          : "rejoignent directement la 🏁 Grande Finale"
+        : n === 1
+          ? "continue au tour suivant"
+          : "continuent au tour suivant"}
+      . Les autres sont éliminés définitivement.
+      {!rules.reachesFinal &&
+        " Il reste donc au moins un tour après celui-ci avant la Grande Finale."}
+    </p>
   );
 }
 
