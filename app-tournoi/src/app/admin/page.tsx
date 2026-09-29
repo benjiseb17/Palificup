@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import SiteHeader from "@/components/SiteHeader";
-import { planTableSizes } from "@/lib/bracket";
+import { poulePreview } from "@/lib/bracket";
 
 type TableSeat = { player_id: string; name: string; finish_rank: string };
 type TableSummary = {
@@ -531,16 +531,6 @@ function tableLabel(t: { stage: string; table_number: number }) {
   return t.stage === "Poules" ? `Poule ${t.table_number}` : `Table ${t.table_number}`;
 }
 
-function poulePreview(playerCount: number, target: number) {
-  const sizes = planTableSizes(playerCount, target);
-  const bySize = new Map<number, number>();
-  sizes.forEach((s) => bySize.set(s, (bySize.get(s) ?? 0) + 1));
-  const detail = [...bySize.entries()]
-    .sort((a, b) => b[0] - a[0])
-    .map(([size, count]) => `${count} de ${size}`)
-    .join(" + ");
-  return `${sizes.length} poules (${detail})`;
-}
 
 function TableList({ tables }: { tables: TableSummary[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());

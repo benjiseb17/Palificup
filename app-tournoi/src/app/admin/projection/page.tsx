@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import AdminGate from "@/components/AdminGate";
 import SiteHeader from "@/components/SiteHeader";
+import { poulePreview } from "@/lib/bracket";
 
 type ProjSeat = { player_id: string; name: string };
 type ProjTable = {
@@ -14,6 +15,11 @@ type ProjTable = {
   table_number: number;
   complete: boolean;
   seats: ProjSeat[];
+};
+type StatusResponse = {
+  playerCount: number;
+  tournamentStarted: boolean;
+  tableTargets: { poules: number };
 };
 
 const fetcher = (url: string) =>
@@ -45,7 +51,13 @@ export default function AdminProjectionPage() {
     fetcher,
     { refreshInterval: 6000 }
   );
+  const { data: status, mutate: mutateStatus } = useSWR<StatusResponse>(
+    "/api/admin/status",
+    fetcher,
+    { refreshInterval: 6000 }
+  );
   const unauthorized = (error as { status?: number } | undefined)?.status === 401;
+  const [autoReveal, setAutoReveal] = useState(false);
 
   return (
     <>
@@ -64,15 +76,86 @@ export default function AdminProjectionPage() {
             }
           />
           <main className="flex flex-1 flex-col px-4 py-6 w-full">
-            {!data ? (
+            {!data || !status ? (
               <p className="text-caramel">Chargement…</p>
+            ) : !status.tournamentStarted ? (
+              <StartTournament
+                status={status}
+                onStarted={() => {
+                  setAutoReveal(true);
+                  mutate();
+                  mutateStatus();
+                }}
+              />
             ) : (
-              <Content tables={data.tables} />
+              <Content
+                tables={data.tables}
+                autoReveal={autoReveal}
+                onAutoRevealed={() => setAutoReveal(false)}
+              />
             )}
           </main>
         </>
       )}
     </>
+  );
+}
+
+/** Shown before the tournament exists yet — same action as the admin
+ * dashboard's "Lancer le tournoi", so the whole reveal can happen from the
+ * projector screen without switching pages. */
+function StartTournament({
+  status,
+  onStarted,
+}: {
+  status: StatusResponse;
+  onStarted: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  async function start() {
+    setBusy(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/admin/start", { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) {
+        setErrorMsg(json.error ?? "Erreur.");
+        return;
+      }
+      onStarted();
+    } catch {
+      setErrorMsg("Impossible de contacter le serveur.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 py-20 text-center">
+      <p className="text-lg font-semibold text-ink">
+        {status.playerCount} joueurs inscrits
+        {status.playerCount >= 4 && (
+          <span className="mt-1 block text-sm font-normal text-caramel">
+            {poulePreview(status.playerCount, status.tableTargets.poules)}
+          </span>
+        )}
+      </p>
+      <button
+        onClick={start}
+        disabled={busy || status.playerCount < 4}
+        className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-6 py-4 text-lg font-bold text-white"
+      >
+        {busy ? "…" : "🚀 Lancer le tournoi"}
+      </button>
+      {status.playerCount < 4 && (
+        <p className="text-bad text-sm font-medium">
+          Il faut au moins 4 joueurs pour lancer le tournoi.
+        </p>
+      )}
+      {errorMsg && <p className="text-bad text-sm font-medium">{errorMsg}</p>}
+    </div>
   );
 }
 
@@ -82,7 +165,15 @@ export default function AdminProjectionPage() {
  * random names into every slot a few times, slowing down, then land on the
  * true draw on the last tick.
  */
-function Content({ tables }: { tables: ProjTable[] }) {
+function Content({
+  tables,
+  autoReveal,
+  onAutoRevealed,
+}: {
+  tables: ProjTable[];
+  autoReveal: boolean;
+  onAutoRevealed: () => void;
+}) {
   const [phase, setPhase] = useState<"idle" | "shuffling">("idle");
   const [frozenTables, setFrozenTables] = useState<ProjTable[] | null>(null);
   const [shuffledNames, setShuffledNames] = useState<string[] | null>(null);
@@ -117,6 +208,19 @@ function Content({ tables }: { tables: ProjTable[] }) {
     };
     timeoutRef.current = setTimeout(step, SHUFFLE_DELAYS[0]);
   }
+
+  // Right after "Lancer le tournoi" generates the Poules, reveal them the
+  // same dramatic way instead of just popping the grid in silently. Deferred
+  // a tick so the state updates happen outside the effect body itself.
+  useEffect(() => {
+    if (!(autoReveal && phase === "idle" && tables.length > 0)) return;
+    const t = setTimeout(() => {
+      launchDraw();
+      onAutoRevealed();
+    }, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoReveal, tables, phase]);
 
   const displayTables = frozenTables ?? tables;
   if (displayTables.length === 0) {

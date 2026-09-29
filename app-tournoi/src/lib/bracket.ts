@@ -42,6 +42,18 @@ export function planTableSizes(total: number, target: number): number[] {
   return Array.from({ length: k }, (_, i) => (i < extra ? base + 1 : base));
 }
 
+/** Human-readable preview of how the Poules would split, e.g. "20 poules (20 de 5)". */
+export function poulePreview(playerCount: number, target: number): string {
+  const sizes = planTableSizes(playerCount, target);
+  const bySize = new Map<number, number>();
+  sizes.forEach((s) => bySize.set(s, (bySize.get(s) ?? 0) + 1));
+  const detail = [...bySize.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([size, count]) => `${count} de ${size}`)
+    .join(" + ");
+  return `${sizes.length} poules (${detail})`;
+}
+
 /** Deals entries round-robin into tables of the given capacities. */
 function dealIntoTables<T>(ordered: T[], sizes: number[]): T[][] {
   const tables: T[][] = sizes.map(() => []);
