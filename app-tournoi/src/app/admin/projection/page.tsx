@@ -7,13 +7,14 @@ import AdminGate from "@/components/AdminGate";
 import SiteHeader from "@/components/SiteHeader";
 import { poulePreview } from "@/lib/bracket";
 
-type ProjSeat = { player_id: string; name: string };
+type ProjSeat = { player_id: string; name: string; finish_rank: string };
 type ProjTable = {
   round_id: string;
   bracket: string;
   stage: string;
   table_number: number;
   complete: boolean;
+  qualifiers: number;
   seats: ProjSeat[];
 };
 type StatusResponse = {
@@ -230,17 +231,19 @@ function Content({
   const stages = [...new Set(displayTables.map((t) => t.stage))].join(" · ");
   const doneCount = displayTables.filter((t) => t.complete).length;
 
-  const cards = displayTables.reduce<{ table: ProjTable; names: string[] }[]>(
-    (acc, t) => {
-      const seatCount = t.seats.length;
-      const cursor = acc.reduce((sum, c) => sum + c.names.length, 0);
-      const names = shuffledNames
-        ? shuffledNames.slice(cursor, cursor + seatCount)
-        : t.seats.map((s) => s.name);
-      return [...acc, { table: t, names }];
-    },
-    []
-  );
+  const cards = displayTables.reduce<
+    { table: ProjTable; entries: { name: string; qualified: boolean }[] }[]
+  >((acc, t) => {
+    const seatCount = t.seats.length;
+    const cursor = acc.reduce((sum, c) => sum + c.entries.length, 0);
+    const entries = shuffledNames
+      ? shuffledNames.slice(cursor, cursor + seatCount).map((name) => ({ name, qualified: false }))
+      : t.seats.map((s) => ({
+          name: s.name,
+          qualified: t.complete && s.finish_rank !== "" && Number(s.finish_rank) <= t.qualifiers,
+        }));
+    return [...acc, { table: t, entries }];
+  }, []);
 
   return (
     <>
@@ -255,7 +258,7 @@ function Content({
         )}
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {cards.map(({ table: t, names }) => (
+        {cards.map(({ table: t, entries }) => (
           <div
             key={t.round_id}
             className={`rounded-xl border p-3 transition-colors ${
@@ -271,15 +274,18 @@ function Content({
             </p>
             <p className="font-extrabold text-ink mb-2">Table {t.table_number}</p>
             <ul className="flex flex-col gap-0.5">
-              {names.map((name, idx) => (
+              {entries.map(({ name, qualified }, idx) => (
                 <li
                   key={idx}
-                  className="text-sm leading-snug text-ink"
+                  className={`text-sm leading-snug ${
+                    qualified ? "font-extrabold text-gold" : "text-ink"
+                  }`}
                 >
                   <span
                     key={tick}
                     className="inline-block animate-[slot-flip_0.22s_ease-out]"
                   >
+                    {qualified ? "⭐ " : ""}
                     {name}
                   </span>
                 </li>
