@@ -22,7 +22,6 @@ type ApiView =
       round: { round_id: string; stage: string; table_number: string };
       stage: string;
       seatmates: Seatmate[];
-      canSubmit: boolean;
     }
   | { status: "waiting-next-round"; lastStage: string }
   | { status: "eliminated"; lastStage: string; points: number }
@@ -93,7 +92,7 @@ function Content({ data, mutate }: { data: MeResponse; mutate: () => void }) {
       )}
 
       {(view.status === "playing" || view.status === "waiting-table-results") && (
-        <TableView view={view} onSubmitted={() => mutate()} />
+        <TableView view={view} />
       )}
 
       {view.status === "waiting-next-round" && (
@@ -221,55 +220,16 @@ function TeamSection({
   );
 }
 
+/**
+ * Read-only: only the admin enters table results now (from /admin/tables).
+ * Players just watch their table and, once the result is in, their rank.
+ */
 function TableView({
   view,
-  onSubmitted,
 }: {
   view: Extract<ApiView, { status: "playing" | "waiting-table-results" }>;
-  onSubmitted: () => void;
 }) {
-  const seatCount = view.seatmates.length;
-  const [ranks, setRanks] = useState<Record<string, string>>(() =>
-    Object.fromEntries(view.seatmates.map((s) => [s.player.id, ""]))
-  );
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const chosen = Object.values(ranks).filter((v) => v !== "");
-  const isComplete = chosen.length === seatCount;
-  const hasDuplicate = new Set(chosen).size !== chosen.length;
   const [historyName, setHistoryName] = useState<string | null>(null);
-
-  function setRank(playerId: string, value: string) {
-    setRanks((prev) => ({ ...prev, [playerId]: value }));
-  }
-
-  async function submit() {
-    if (!isComplete || hasDuplicate) return;
-    const order = Object.entries(ranks)
-      .sort((a, b) => Number(a[1]) - Number(b[1]))
-      .map(([playerId]) => playerId);
-
-    setSubmitting(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/table/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ round_id: view.round.round_id, order }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setError(json.error ?? "Erreur.");
-        return;
-      }
-      onSubmitted();
-    } catch {
-      setError("Impossible de contacter le serveur.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   return (
     <Card>
@@ -278,79 +238,28 @@ function TableView({
       </p>
       <h2 className="text-lg font-extrabold mb-4 text-ink">Table {view.round.table_number}</h2>
 
-      {view.status === "waiting-table-results" ? (
-        <>
-          <p className="text-caramel mb-3">
-            Résultat enregistré. En attente que les autres tables de ce tour terminent.
-          </p>
-          <ul className="flex flex-col gap-2">
-            {view.seatmates
-              .slice()
-              .sort((a, b) => Number(a.finishRank ?? 99) - Number(b.finishRank ?? 99))
-              .map((s) => (
-                <SeatmateRow
-                  key={s.player.id}
-                  name={s.player.name}
-                  onOpenHistory={setHistoryName}
-                  right={
-                    <span className="text-caramel text-sm font-semibold">
-                      {s.finishRank ? `#${s.finishRank}` : "…"}
-                    </span>
-                  }
-                />
-              ))}
-          </ul>
-        </>
-      ) : (
-        <>
-          <p className="text-caramel mb-3">
-            Adversaires à ta table. Une fois la partie finie, indique la position de chacun
-            (1 = vainqueur, {seatCount} = dernier éliminé), puis valide.
-          </p>
-          <ul className="flex flex-col gap-2 mb-4">
-            {view.seatmates.map((s) => {
-              const value = ranks[s.player.id];
-              const duplicate = value !== "" && chosen.filter((v) => v === value).length > 1;
-              return (
-                <SeatmateRow
-                  key={s.player.id}
-                  name={s.player.name}
-                  onOpenHistory={setHistoryName}
-                  right={
-                    <select
-                      value={value}
-                      onChange={(e) => setRank(s.player.id, e.target.value)}
-                      className={`rounded-lg border px-3 py-2 font-bold text-center bg-white ${
-                        duplicate ? "border-bad text-bad" : "border-separator text-orange-label"
-                      }`}
-                    >
-                      <option value="">—</option>
-                      {Array.from({ length: seatCount }, (_, i) => i + 1).map((n) => (
-                        <option key={n} value={n}>
-                          {n === 1 ? "1 · 🏆" : n}
-                        </option>
-                      ))}
-                    </select>
-                  }
-                />
-              );
-            })}
-          </ul>
-          {hasDuplicate && (
-            <p className="text-bad text-sm mb-3 font-medium">
-              Deux joueurs ne peuvent pas avoir la même position.
-            </p>
-          )}
-          {error && <p className="text-bad text-sm mb-3 font-medium">{error}</p>}
-          <button
-            onClick={submit}
-            disabled={submitting || !isComplete || hasDuplicate}
-            className="w-full rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 py-3 font-bold text-white tracking-wide"
-          >
-            {submitting ? "Envoi…" : "Valider le résultat"}
-          </button>
-        </>
-      )}
+      <p className="text-caramel mb-3">
+        {view.status === "waiting-table-results"
+          ? "Résultat enregistré par l'organisation. En attente que les autres tables de ce tour terminent."
+          : "Adversaires à ta table. L'organisation viendra rentrer le résultat une fois la partie terminée."}
+      </p>
+      <ul className="flex flex-col gap-2">
+        {view.seatmates
+          .slice()
+          .sort((a, b) => Number(a.finishRank ?? 99) - Number(b.finishRank ?? 99))
+          .map((s) => (
+            <SeatmateRow
+              key={s.player.id}
+              name={s.player.name}
+              onOpenHistory={setHistoryName}
+              right={
+                <span className="text-caramel text-sm font-semibold">
+                  {s.finishRank ? `#${s.finishRank}` : "…"}
+                </span>
+              }
+            />
+          ))}
+      </ul>
 
       <PlayerHistoryModal name={historyName} onClose={() => setHistoryName(null)} />
     </Card>

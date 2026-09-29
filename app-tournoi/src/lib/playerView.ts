@@ -23,7 +23,6 @@ export type PlayerView =
       round: RRow;
       stage: string;
       seatmates: { player: Player; finishRank: string | null }[];
-      canSubmit: boolean;
     }
   | {
       status: "waiting-next-round";
@@ -75,7 +74,6 @@ export function getPlayerView(
       round,
       stage: round.stage,
       seatmates,
-      canSubmit: true,
     };
   }
 
@@ -105,7 +103,6 @@ export function getPlayerView(
         round,
         stage: round.stage,
         seatmates,
-        canSubmit: false,
       };
     }
     // Repechage disabled and this player didn't win their poule: game over.
@@ -147,7 +144,6 @@ export function getPlayerView(
     round,
     stage: round.stage,
     seatmates,
-    canSubmit: false,
   };
 }
 

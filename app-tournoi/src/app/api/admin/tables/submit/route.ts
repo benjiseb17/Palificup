@@ -4,8 +4,10 @@ import { isAdmin } from "@/lib/session";
 import { invalidateTabs } from "@/lib/sheets";
 
 /**
- * Same as /api/table/submit but for the admin: no "already advanced" lock,
- * so a mistake can always be corrected even after the next round exists.
+ * The only way a table result gets entered — players can't submit their own
+ * anymore, only the admin (via /admin/tables or the dashboard). No "already
+ * advanced" lock, so a mistake can always be corrected even after the next
+ * round exists.
  */
 export async function POST(req: NextRequest) {
   if (!(await isAdmin())) {
@@ -19,8 +21,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
   }
 
-  // See src/app/api/table/submit/route.ts: force a fresh read so a table just
-  // created on another serverless instance is never wrongly seen as stale/empty.
+  // Force a fresh read so a table just created on another serverless
+  // instance is never wrongly seen as stale/empty.
   invalidateTabs(["Rounds", "Seats"]);
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
   const round = rounds.find((r) => r.round_id === round_id);
@@ -52,8 +54,8 @@ export async function POST(req: NextRequest) {
     })
   );
 
-  // See src/app/api/table/submit/route.ts: stage generation is manual now,
-  // triggered from the admin dashboard's own buttons.
+  // Stage generation is manual, triggered from the admin dashboard's own
+  // "Générer le tour suivant" buttons — nothing happens automatically here.
 
   return NextResponse.json({ ok: true });
 }

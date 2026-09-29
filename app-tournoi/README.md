@@ -1,7 +1,8 @@
 # Palificup Tournoi
 
 App Next.js pour suivre le tournoi de Perudo Palificup en direct sur mobile : chaque
-joueur voit sa table du moment et saisit le résultat ; l'admin déclenche ensuite
+joueur voit sa table du moment (adversaires, résultat une fois connu) en lecture
+seule — seul l'admin saisit les résultats (depuis `/admin/tables`) et déclenche
 chaque tour suivant depuis `/admin` (Poules → Tableau A/B → tours suivants → Grande
 Finale), ce qui laisse le temps d'ajuster le format entre deux tours si besoin. Toutes
 les données (joueurs, tables, résultats) vivent dans un Google Sheet — pas de base de
@@ -101,15 +102,16 @@ npm run dev
    la **taille de table cible** (5 par défaut), puis "Enregistrer".
 2. Vérifie que tous les joueurs présents sont dans l'onglet `Players` du Sheet.
 3. Clique sur "Lancer le tournoi" → génère les Poules.
-4. Les joueurs se connectent sur `/` avec leur nom + le code, voient leur table sur
-   `/ma-table`, et un joueur de chaque table saisit l'ordre d'élimination une fois la
-   partie terminée.
+4. Les joueurs se connectent sur `/` avec leur nom + le code et voient leur table sur
+   `/ma-table` (adversaires, puis résultat une fois qu'il est saisi) — en lecture
+   seule. C'est l'admin qui saisit l'ordre d'élimination de chaque table depuis
+   `/admin/tables`.
 5. Quand toutes les poules ont rendu leur résultat, l'admin clique "Générer Tableau A
    + Tableau B" (les 2 premiers de chaque poule montent en tableau principal, les
    autres partent en repêchage).
 6. Pour chaque tableau (A et B), une fois toutes les tables d'un tour terminées,
-   l'admin clique "Générer le tour suivant" — répète jusqu'à ce que les deux tableaux
-   affichent "Terminé".
+   l'admin renseigne le nombre de qualifiés pour ce tour et clique "Générer le tour
+   suivant" — répète jusqu'à ce que les deux tableaux affichent "Terminé".
 7. L'admin clique "Générer la Grande Finale" (les finalistes du tableau A + le
    vainqueur du tableau B repêchage).
 8. Une fois la finale saisie, "Clôturer le tournoi".
