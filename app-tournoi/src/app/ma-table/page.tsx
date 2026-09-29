@@ -253,9 +253,9 @@ function TableView({
               name={s.player.name}
               onOpenHistory={setHistoryName}
               right={
-                <span className="text-caramel text-sm font-semibold">
-                  {s.finishRank ? `#${s.finishRank}` : "…"}
-                </span>
+                s.finishRank ? (
+                  <span className="text-caramel text-sm font-semibold">#{s.finishRank}</span>
+                ) : null
               }
             />
           ))}
