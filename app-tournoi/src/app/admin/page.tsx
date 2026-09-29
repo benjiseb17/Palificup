@@ -26,6 +26,14 @@ type TableTargets = {
   demiB: number;
   finaleB: number;
 };
+type QualifierTargets = {
+  quartA: number;
+  demiA: number;
+  finaleA: number;
+  quartB: number;
+  demiB: number;
+  finaleB: number;
+};
 
 const STAGE_FIELDS: { key: keyof TableTargets; configKey: string; label: string; bracket?: "A" | "B" }[] = [
   { key: "poules", configKey: "table_size_poules", label: "Poules" },
@@ -36,6 +44,14 @@ const STAGE_FIELDS: { key: keyof TableTargets; configKey: string; label: string;
   { key: "demiB", configKey: "table_size_demi_b", label: "Demi B", bracket: "B" },
   { key: "finaleB", configKey: "table_size_finale_b", label: "Finale B", bracket: "B" },
 ];
+const QUALIFIER_FIELDS: { key: keyof QualifierTargets; configKey: string; label: string; bracket: "A" | "B" }[] = [
+  { key: "quartA", configKey: "qualifiers_quart_a", label: "Quart A", bracket: "A" },
+  { key: "demiA", configKey: "qualifiers_demi_a", label: "Demi A", bracket: "A" },
+  { key: "finaleA", configKey: "qualifiers_finale_a", label: "Finale A", bracket: "A" },
+  { key: "quartB", configKey: "qualifiers_quart_b", label: "Quart B", bracket: "B" },
+  { key: "demiB", configKey: "qualifiers_demi_b", label: "Demi B", bracket: "B" },
+  { key: "finaleB", configKey: "qualifiers_finale_b", label: "Finale B", bracket: "B" },
+];
 type StatusResponse = {
   config: {
     tournament_code?: string;
@@ -43,14 +59,13 @@ type StatusResponse = {
     table_target_size?: string;
     poule_qualifiers?: string;
     b_repechage_count?: string;
-    a_qualifiers_per_round?: string;
-    b_qualifiers_per_round?: string;
   };
   playerCount: number;
   tournamentStarted: boolean;
   demoMode: boolean;
   repechageEnabled: boolean;
   tableTargets: TableTargets;
+  qualifierTargets: QualifierTargets;
   poules: { tables: TableSummary[]; done: boolean };
   bracketA: BracketSummary;
   bracketB: BracketSummary;
@@ -150,6 +165,11 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
   const [code, setCode] = useState(data.config.tournament_code ?? "");
   const [stageSizes, setStageSizes] = useState<Record<string, string>>(() =>
     Object.fromEntries(STAGE_FIELDS.map((f) => [f.configKey, String(data.tableTargets[f.key])]))
+  );
+  const [qualifierSizes, setQualifierSizes] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      QUALIFIER_FIELDS.map((f) => [f.configKey, String(data.qualifierTargets[f.key])])
+    )
   );
   const [repechage, setRepechage] = useState(data.repechageEnabled);
   const [pouleQualifiers, setPouleQualifiers] = useState(data.config.poule_qualifiers ?? "1");
@@ -261,8 +281,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             <TableList tables={data.bracketA.tables} />
             <BracketAction
               status={data.bracketA.status}
-              defaultQualifiers={data.config.a_qualifiers_per_round ?? "1"}
-              onAdvance={(q) => call("/api/admin/advance", { bracket: "A", qualifiersPerRound: q })}
+              onAdvance={() => call("/api/admin/advance", { bracket: "A" })}
               busy={busy !== null}
             />
           </Section>
@@ -275,8 +294,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
               <TableList tables={data.bracketB.tables} />
               <BracketAction
                 status={data.bracketB.status}
-                defaultQualifiers={data.config.b_qualifiers_per_round ?? "1"}
-                onAdvance={(q) => call("/api/admin/advance", { bracket: "B", qualifiersPerRound: q })}
+                onAdvance={() => call("/api/admin/advance", { bracket: "B" })}
                 busy={busy !== null}
               />
             </Section>
@@ -434,6 +452,35 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             reste en Tableau B, un seul repêché rejoint la finale).
           </p>
 
+          <p className="text-sm font-semibold text-orange-label mt-4 mb-1">
+            Qualifiés par tour, à chaque étape
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {QUALIFIER_FIELDS.filter((f) => repechage || f.bracket !== "B").map((f) => (
+              <div key={f.configKey}>
+                <label className="block text-xs font-semibold text-caramel mb-1">{f.label}</label>
+                <select
+                  className="w-full rounded-lg bg-white border border-separator px-2 py-2 text-center font-semibold"
+                  value={qualifierSizes[f.configKey]}
+                  onChange={(e) =>
+                    setQualifierSizes((prev) => ({ ...prev, [f.configKey]: e.target.value }))
+                  }
+                >
+                  {[1, 2, 3, 4].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+          <p className="text-caramel text-xs mt-1">
+            Combien de joueurs par table continuent au tour suivant à cette étape — ex : 2 en
+            Quart pour garder du monde, puis 1 (le vainqueur) à partir de la Demi. Se déclenche
+            automatiquement dès que tu cliques « Générer le tour suivant ».
+          </p>
+
           <label className="flex items-center gap-2 mt-4 text-sm font-semibold text-orange-label">
             <input
               type="checkbox"
@@ -460,6 +507,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                 poule_qualifiers: pouleQualifiers,
                 b_repechage_count: bRepechageCount,
                 ...stageSizes,
+                ...qualifierSizes,
               })
             }
             disabled={busy !== null}
@@ -477,48 +525,31 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
 }
 
 /**
- * The qualifiers-per-round input lives right next to the "Générer le tour
- * suivant" button for the round actually about to be generated, instead of
- * a separate standing setting — easy to leave stale between stages (e.g.
- * forgetting to switch back from 1 after using 2 for Quart -> Demi).
+ * Qualifiés par tour is configured upfront in Configuration avancée (per
+ * stage — Quart, Demi, Finale) instead of typed in next to this button, so
+ * it can't be left stale between stages.
  */
 function BracketAction({
   status,
-  defaultQualifiers,
   onAdvance,
   busy,
 }: {
   status: string;
-  defaultQualifiers: string;
-  onAdvance: (qualifiers: string) => void;
+  onAdvance: () => void;
   busy: boolean;
 }) {
-  const [qualifiers, setQualifiers] = useState(defaultQualifiers);
-
   if (status === "in-progress") {
     return <p className="text-caramel text-sm mt-2">En attente des résultats de ce tour.</p>;
   }
   if (status === "ready-to-advance") {
     return (
-      <div className="mt-3 flex items-end gap-2">
-        <div className="w-56">
-          <label className="block text-sm font-semibold text-orange-label mb-1">
-            Qualifiés de ce tour vers le suivant
-          </label>
-          <input
-            className="w-full rounded-lg bg-white border border-separator px-3 py-2"
-            value={qualifiers}
-            onChange={(e) => setQualifiers(e.target.value)}
-          />
-        </div>
-        <button
-          onClick={() => onAdvance(qualifiers)}
-          disabled={busy}
-          className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-3 font-bold text-white"
-        >
-          Générer le tour suivant
-        </button>
-      </div>
+      <button
+        onClick={onAdvance}
+        disabled={busy}
+        className="mt-3 rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-3 font-bold text-white"
+      >
+        Générer le tour suivant
+      </button>
     );
   }
   if (status === "done") {

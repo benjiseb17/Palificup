@@ -8,7 +8,7 @@ import {
   type TableState,
 } from "@/lib/bracket";
 import { isAdmin } from "@/lib/session";
-import { loadTournamentData } from "@/lib/tournament";
+import { loadTournamentData, qualifiersForRound } from "@/lib/tournament";
 
 export async function GET() {
   if (!(await isAdmin())) {
@@ -23,8 +23,7 @@ export async function GET() {
     finalSeats,
     repechageEnabled,
     bRepechageCount,
-    aQualifiersPerRound,
-    bQualifiersPerRound,
+    qualifierTargets,
     tableTargets,
   } = await loadTournamentData();
   const nameById = new Map(players.map((p) => [p.id, p.name]));
@@ -38,12 +37,21 @@ export async function GET() {
   const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
   const finalTable = [...tables.values()].find((t) => t.round.bracket === "FINAL");
 
+  const genOf = (list: TableState[]) =>
+    list.length > 0 ? Math.max(...list.map((t) => parseRoundId(t.round.round_id).gen)) : 1;
+
   const pouleDone = pouleTables.length > 0 && pouleTables.every(isTableComplete);
   const aState =
-    aTables.length > 0 ? getBracketState(aTables, aBudget, aQualifiersPerRound) : null;
+    aTables.length > 0
+      ? getBracketState(aTables, aBudget, qualifiersForRound(qualifierTargets, "A", genOf(aTables)))
+      : null;
   const bState =
     repechageEnabled && bTables.length > 0
-      ? getBracketState(bTables, bRepechageCount, bQualifiersPerRound)
+      ? getBracketState(
+          bTables,
+          bRepechageCount,
+          qualifiersForRound(qualifierTargets, "B", genOf(bTables))
+        )
       : null;
 
   const summarize = (list: TableState[]) =>
@@ -70,6 +78,7 @@ export async function GET() {
     demoMode: process.env.DEMO_MODE === "1",
     repechageEnabled,
     tableTargets,
+    qualifierTargets,
     poules: { tables: summarize(pouleTables), done: pouleDone },
     bracketA: aState
       ? { status: aState.status, tables: summarize(aTables) }

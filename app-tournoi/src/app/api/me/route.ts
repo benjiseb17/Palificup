@@ -27,8 +27,7 @@ export async function GET() {
     repechageEnabled,
     pouleQualifiers,
     bRepechageCount,
-    aQualifiersPerRound,
-    bQualifiersPerRound,
+    qualifierTargets,
   } = await loadTournamentData();
   const view = getPlayerView(
     playerId,
@@ -39,8 +38,7 @@ export async function GET() {
     repechageEnabled,
     pouleQualifiers,
     bRepechageCount,
-    aQualifiersPerRound,
-    bQualifiersPerRound
+    qualifierTargets
   );
 
   return NextResponse.json({

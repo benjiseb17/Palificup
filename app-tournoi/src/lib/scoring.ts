@@ -1,4 +1,5 @@
 import { parseRoundId, rankedSeats, type RRow, type SRow, groupIntoTables } from "./bracket";
+import { qualifiersForRound, type QualifierTargets } from "./tournament";
 import type { Player } from "./types";
 
 const A_LADDER_FROM_END = [50, 30]; // distance 0 (cutoff-round loss), 1 (round before)
@@ -37,8 +38,7 @@ export function computeClassement(
   seats: SRow[],
   repechageEnabled: boolean,
   pouleQualifiers: number,
-  aQualifiersPerRound: number,
-  bQualifiersPerRound: number
+  qualifierTargets: QualifierTargets
 ): ClassementEntry[] {
   const tables = groupIntoTables(rounds, seats);
   const finalTable = [...tables.values()].find(
@@ -96,7 +96,7 @@ export function computeClassement(
     if (!t.seats.every((s) => s.finish_rank !== "")) continue;
     const ranked = rankedSeats(t);
     const distanceFromEnd = maxGenByBracket[bracket] - parsed.gen;
-    const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
+    const qualifiersPerRound = qualifiersForRound(qualifierTargets, bracket, parsed.gen);
     ranked.forEach((seat, idx) => {
       if (finalPlayerIds.has(seat.player_id)) return; // already scored via the Grand Final
       const rank = idx + 1;

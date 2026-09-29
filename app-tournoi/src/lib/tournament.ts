@@ -13,6 +13,15 @@ export type TableTargets = {
   finaleB: number;
 };
 
+export type QualifierTargets = {
+  quartA: number;
+  demiA: number;
+  finaleA: number;
+  quartB: number;
+  demiB: number;
+  finaleB: number;
+};
+
 function resolveTableTargets(config: Partial<ConfigMap>): TableTargets {
   const fallback = config.table_target_size || String(MAX_TABLE_SIZE);
   const pick = (raw: string | undefined) => clampTableTarget(Number(raw || fallback));
@@ -27,8 +36,34 @@ function resolveTableTargets(config: Partial<ConfigMap>): TableTargets {
   };
 }
 
+function clampQualifiers(raw: string | undefined): number {
+  const n = Number(raw || "1");
+  return Math.min(Math.max(1, Number.isFinite(n) ? Math.round(n) : 1), MAX_TABLE_SIZE - 1);
+}
+
+function resolveQualifierTargets(config: Partial<ConfigMap>): QualifierTargets {
+  return {
+    quartA: clampQualifiers(config.qualifiers_quart_a),
+    demiA: clampQualifiers(config.qualifiers_demi_a),
+    finaleA: clampQualifiers(config.qualifiers_finale_a),
+    quartB: clampQualifiers(config.qualifiers_quart_b),
+    demiB: clampQualifiers(config.qualifiers_demi_b),
+    finaleB: clampQualifiers(config.qualifiers_finale_b),
+  };
+}
+
 /** Table size target for a given bracket round (gen 1 = Quart, 2 = Demi, 3+ = Finale). */
 export function targetForRound(targets: TableTargets, bracket: "A" | "B", gen: number): number {
+  if (bracket === "A") return gen <= 1 ? targets.quartA : gen === 2 ? targets.demiA : targets.finaleA;
+  return gen <= 1 ? targets.quartB : gen === 2 ? targets.demiB : targets.finaleB;
+}
+
+/** Configured qualifiers-per-table for a given bracket round (gen 1 = Quart, 2 = Demi, 3+ = Finale). */
+export function qualifiersForRound(
+  targets: QualifierTargets,
+  bracket: "A" | "B",
+  gen: number
+): number {
   if (bracket === "A") return gen <= 1 ? targets.quartA : gen === 2 ? targets.demiA : targets.finaleA;
   return gen <= 1 ? targets.quartB : gen === 2 ? targets.demiB : targets.finaleB;
 }
@@ -42,15 +77,9 @@ export async function loadTournamentData() {
   ]);
   const finalSeats = MAX_TABLE_SIZE;
   const tableTargets = resolveTableTargets(config);
+  const qualifierTargets = resolveQualifierTargets(config);
   const repechageEnabled = config.repechage_enabled !== "false";
-
-  const clampQualifiers = (raw: string | undefined) => {
-    const n = Number(raw || "1");
-    return Math.min(Math.max(1, Number.isFinite(n) ? Math.round(n) : 1), MAX_TABLE_SIZE - 1);
-  };
   const pouleQualifiers = clampQualifiers(config.poule_qualifiers);
-  const aQualifiersPerRound = clampQualifiers(config.a_qualifiers_per_round);
-  const bQualifiersPerRound = clampQualifiers(config.b_qualifiers_per_round);
 
   const rawBRepechage = Number(config.b_repechage_count || "1");
   const bRepechageCount = Math.min(
@@ -65,10 +94,9 @@ export async function loadTournamentData() {
     config,
     finalSeats,
     tableTargets,
+    qualifierTargets,
     repechageEnabled,
     pouleQualifiers,
     bRepechageCount,
-    aQualifiersPerRound,
-    bQualifiersPerRound,
   };
 }

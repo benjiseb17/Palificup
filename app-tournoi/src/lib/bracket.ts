@@ -120,15 +120,36 @@ export function stageLabel(bracket: "POULE" | "A" | "B" | "FINAL", gen: number):
   return `${stageName} ${bracket}`;
 }
 
-/** Groups entries into tables aiming for `target` seats, spreading same-origin players apart. */
+/**
+ * Groups entries into tables aiming for `target` seats — a genuine random
+ * draw, while still spreading same-origin players apart (so two people who
+ * just played each other don't immediately face off again).
+ *
+ * Every origin table always contributes the same fixed number of entries in
+ * the same fixed rank order (e.g. winner, then runner-up). Dealing them
+ * round-robin after only sorting by origin — never actually shuffling —
+ * meant that whenever the new table count was a multiple of that number,
+ * every winner landed in the same set of tables and every runner-up in the
+ * others (all the 1st-place finishers facing each other, all the 2nd-place
+ * finishers facing each other). Shuffling both which origin comes first and
+ * the order of its own entries breaks that pattern while keeping same-origin
+ * entries adjacent, so the round-robin dealing below still spreads them
+ * apart.
+ */
 function distributeIntoTables(
   entries: { playerId: string; originRoundId: string }[],
   target: number
 ): string[][] {
   if (entries.length === 0) return [];
-  const sorted = [...entries].sort((a, b) =>
-    a.originRoundId.localeCompare(b.originRoundId)
-  );
+  const byOrigin = new Map<string, typeof entries>();
+  entries.forEach((e) => {
+    const list = byOrigin.get(e.originRoundId);
+    if (list) list.push(e);
+    else byOrigin.set(e.originRoundId, [e]);
+  });
+  const sorted = shuffle([...byOrigin.values()])
+    .map((group) => shuffle(group))
+    .flat();
   const sizes = planTableSizes(sorted.length, target);
   return dealIntoTables(sorted, sizes).map((table) => table.map((e) => e.playerId));
 }
@@ -247,7 +268,9 @@ export function planFromPoules(
       round_id,
       bracket: "B",
       stage: stageLabel("B", 1),
-      table_number: String(idx + 1),
+      // Table numbers run continuously across both brackets: A first, then
+      // B picks up where A left off, instead of each restarting at 1.
+      table_number: String(aTables.length + idx + 1),
       status: "open",
     });
     playerIds.forEach((pid) => {
@@ -304,7 +327,8 @@ export function planNextBracketRound(
   bracket: "A" | "B",
   currentTables: TableState[],
   target: number,
-  qualifiersPerRound: number
+  qualifiersPerRound: number,
+  startTableNumber: number = 1
 ): { rounds: RoundRow[]; seats: SeatRow[] } {
   const gen = Math.max(
     ...currentTables.map((t) => parseRoundId(t.round.round_id).gen)
@@ -333,7 +357,7 @@ export function planNextBracketRound(
       round_id,
       bracket,
       stage: stageLabel(bracket, nextGen),
-      table_number: String(idx + 1),
+      table_number: String(startTableNumber + idx),
       status: "open",
     });
     playerIds.forEach((pid) => {

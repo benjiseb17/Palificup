@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
-import { getBracketState, groupIntoTables, planFinal } from "@/lib/bracket";
+import { getBracketState, groupIntoTables, parseRoundId, planFinal, type TableState } from "@/lib/bracket";
 import { createRounds, createSeats, getRounds, getSeats } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
-import { loadTournamentData } from "@/lib/tournament";
+import { loadTournamentData, qualifiersForRound } from "@/lib/tournament";
+
+function genOf(list: TableState[]): number {
+  return list.length > 0 ? Math.max(...list.map((t) => parseRoundId(t.round.round_id).gen)) : 1;
+}
 
 export async function POST() {
   if (!(await isAdmin())) {
@@ -10,13 +14,8 @@ export async function POST() {
   }
 
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
-  const {
-    finalSeats,
-    repechageEnabled,
-    bRepechageCount,
-    aQualifiersPerRound,
-    bQualifiersPerRound,
-  } = await loadTournamentData();
+  const { finalSeats, repechageEnabled, bRepechageCount, qualifierTargets } =
+    await loadTournamentData();
   const aBudget = repechageEnabled ? finalSeats - bRepechageCount : finalSeats;
   const tables = groupIntoTables(rounds, seats);
 
@@ -27,9 +26,13 @@ export async function POST() {
 
   const aTables = [...tables.values()].filter((t) => t.round.bracket === "A");
   const bTables = [...tables.values()].filter((t) => t.round.bracket === "B");
-  const aState = getBracketState(aTables, aBudget, aQualifiersPerRound);
+  const aState = getBracketState(
+    aTables,
+    aBudget,
+    qualifiersForRound(qualifierTargets, "A", genOf(aTables))
+  );
   const bState = repechageEnabled
-    ? getBracketState(bTables, bRepechageCount, bQualifiersPerRound)
+    ? getBracketState(bTables, bRepechageCount, qualifiersForRound(qualifierTargets, "B", genOf(bTables)))
     : null;
 
   const bReady = repechageEnabled ? bState?.status === "done" : true;

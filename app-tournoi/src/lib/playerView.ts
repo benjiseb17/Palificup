@@ -8,6 +8,7 @@ import {
   type TableState,
 } from "./bracket";
 import { FLOOR_POINTS, pointsForEliminationAt } from "./scoring";
+import { qualifiersForRound, type QualifierTargets } from "./tournament";
 import type { Player } from "./types";
 
 function depthOf(roundId: string): number {
@@ -55,8 +56,7 @@ export function getPlayerView(
   repechageEnabled: boolean,
   pouleQualifiers: number,
   bRepechageCount: number,
-  aQualifiersPerRound: number,
-  bQualifiersPerRound: number
+  qualifierTargets: QualifierTargets
 ): PlayerView {
   const bySeatId = new Map(players.map((p) => [p.id, p]));
   const mySeats = seats.filter((s) => s.player_id === playerId);
@@ -77,8 +77,7 @@ export function getPlayerView(
     repechageEnabled,
     pouleQualifiers,
     bRepechageCount,
-    aQualifiersPerRound,
-    bQualifiersPerRound
+    qualifierTargets
   );
 
   if (latest.finish_rank === "") {
@@ -139,7 +138,7 @@ export function getPlayerView(
         ? finalSeats - bRepechageCount
         : finalSeats
       : bRepechageCount;
-  const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
+  const qualifiersPerRound = qualifiersForRound(qualifierTargets, bracket, parsed.gen);
   const state = getBracketState(genTables, budget, qualifiersPerRound);
 
   if (state.status === "ready-to-advance" || state.status === "done") {
@@ -169,10 +168,9 @@ export function getPlayerView(
 
 /**
  * What happens after this round, from the perspective of someone sitting at
- * this table right now. `qualifiersPerRound` for A/B is only the currently
- * configured value — the admin picks it (possibly differently) at the moment
- * they actually generate the next round — so `reachesFinal` is an estimate
- * based on today's setting, not a guarantee.
+ * this table right now. Qualifiers-per-round is the value configured
+ * upfront in Configuration avancée for this specific stage (Quart, Demi,
+ * Finale...), so `reachesFinal` reflects the actual plan, not a guess.
  */
 function computeRoundRules(
   round: RRow,
@@ -181,8 +179,7 @@ function computeRoundRules(
   repechageEnabled: boolean,
   pouleQualifiers: number,
   bRepechageCount: number,
-  aQualifiersPerRound: number,
-  bQualifiersPerRound: number
+  qualifierTargets: QualifierTargets
 ): RoundRules {
   const parsed = parseRoundId(round.round_id);
   if (parsed.bracket === "POULE") {
@@ -204,7 +201,7 @@ function computeRoundRules(
         ? finalSeats - bRepechageCount
         : finalSeats
       : bRepechageCount;
-  const qualifiersPerRound = bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound;
+  const qualifiersPerRound = qualifiersForRound(qualifierTargets, bracket, parsed.gen);
   const estimatedQualifiers = genTables.reduce(
     (sum, t) => sum + Math.min(qualifiersPerRound, t.seats.length),
     0

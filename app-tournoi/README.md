@@ -101,8 +101,10 @@ npm run dev
 
 ## 5. Déroulé d'un tournoi
 
-1. Sur `/admin`, renseigne le **code du tournoi** (celui que les joueurs taperont) et
-   la **taille de table cible** (5 par défaut), puis "Enregistrer".
+1. Sur `/admin`, dans « Configuration avancée », renseigne le **code du tournoi**, la
+   **taille de table** et le **nombre de qualifiés par tour** à chaque étape (Quart,
+   Demi, Finale — pour A et B), puis "Enregistrer". Tout se règle en amont, avant de
+   lancer le tournoi.
 2. Vérifie que tous les joueurs présents sont dans l'onglet `Players` du Sheet.
 3. Clique sur "Lancer le tournoi" → génère les Poules.
 4. Les joueurs se connectent sur `/` avec leur nom + le code et voient leur table sur
@@ -113,8 +115,9 @@ npm run dev
    + Tableau B" (les 2 premiers de chaque poule montent en tableau principal, les
    autres partent en repêchage).
 6. Pour chaque tableau (A et B), une fois toutes les tables d'un tour terminées,
-   l'admin renseigne le nombre de qualifiés pour ce tour et clique "Générer le tour
-   suivant" — répète jusqu'à ce que les deux tableaux affichent "Terminé".
+   l'admin clique "Générer le tour suivant" (le nombre de qualifiés de cette étape
+   vient de la configuration) — répète jusqu'à ce que les deux tableaux affichent
+   "Terminé".
 7. L'admin clique "Générer la Grande Finale" (les finalistes du tableau A + le
    vainqueur du tableau B repêchage).
 8. Une fois la finale saisie, "Clôturer le tournoi".

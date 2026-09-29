@@ -282,9 +282,10 @@ function TableView({
 /**
  * Explains what's at stake at this table: how many qualify, whether the
  * rest are out for good or get a second chance, and whether clearing this
- * table sends you straight to the Grande Finale. For A/B rounds this is an
- * estimate from today's qualifiers setting — the admin can still change it
- * when they actually generate the next round.
+ * table sends you straight to the Grande Finale. For A/B rounds the
+ * qualifiers count is whatever the admin configured for this stage upfront
+ * (Configuration avancée), which can still be edited there before this
+ * round is actually generated.
  */
 function RoundRulesCard({ rules }: { rules: RoundRules }) {
   if (rules.kind === "final") {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { groupIntoTables, isTableComplete, parseRoundId, type TableState } from "@/lib/bracket";
 import { isAdmin } from "@/lib/session";
-import { loadTournamentData } from "@/lib/tournament";
+import { loadTournamentData, qualifiersForRound } from "@/lib/tournament";
 
 /**
  * Only the tables of the stage currently being played — the point is to
@@ -33,20 +33,17 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const { players, rounds, seats, pouleQualifiers, aQualifiersPerRound, bQualifiersPerRound } =
-    await loadTournamentData();
+  const { players, rounds, seats, pouleQualifiers, qualifierTargets } = await loadTournamentData();
   const nameById = new Map(players.map((p) => [p.id, p.name]));
   const tables = [...groupIntoTables(rounds, seats).values()];
   const current = currentStageTables(tables);
 
-  const qualifiersFor = (bracket: string) =>
+  const qualifiersFor = (bracket: string, gen: number) =>
     bracket === "POULE"
       ? pouleQualifiers
-      : bracket === "A"
-        ? aQualifiersPerRound
-        : bracket === "B"
-          ? bQualifiersPerRound
-          : 0;
+      : bracket === "A" || bracket === "B"
+        ? qualifiersForRound(qualifierTargets, bracket, gen)
+        : 0;
 
   const order = { POULE: 0, A: 1, B: 2, FINAL: 3 } as const;
   const list = current
@@ -56,7 +53,7 @@ export async function GET() {
       stage: t.round.stage,
       table_number: Number(t.round.table_number) || 0,
       complete: isTableComplete(t),
-      qualifiers: qualifiersFor(t.round.bracket),
+      qualifiers: qualifiersFor(t.round.bracket, parseRoundId(t.round.round_id).gen),
       seats: [...t.seats]
         .sort((a, b) => (nameById.get(a.player_id) ?? "").localeCompare(nameById.get(b.player_id) ?? ""))
         .map((s) => ({

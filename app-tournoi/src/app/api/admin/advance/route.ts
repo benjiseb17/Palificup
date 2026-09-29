@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  MAX_TABLE_SIZE,
-  getBracketState,
-  groupIntoTables,
-  parseRoundId,
-  planNextBracketRound,
-} from "@/lib/bracket";
-import { setConfig } from "@/lib/config";
+import { getBracketState, groupIntoTables, parseRoundId, planNextBracketRound } from "@/lib/bracket";
 import { createRounds, createSeats, getRounds, getSeats } from "@/lib/rounds";
 import { isAdmin } from "@/lib/session";
-import { loadTournamentData, targetForRound } from "@/lib/tournament";
+import { loadTournamentData, qualifiersForRound, targetForRound } from "@/lib/tournament";
 
 export async function POST(req: NextRequest) {
   if (!(await isAdmin())) {
@@ -21,31 +14,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "bracket invalide." }, { status: 400 });
   }
 
-  // The admin can set exactly how many qualify from THIS round right when
-  // triggering it, instead of relying on a separate setting that lingers
-  // and can easily be left over from a previous stage (e.g. forgetting to
-  // switch back from 1 after using 2 for Quart -> Demi).
-  const rawOverride = body?.qualifiersPerRound;
-  const qualifiersOverride =
-    typeof rawOverride === "string" || typeof rawOverride === "number"
-      ? Math.min(Math.max(1, Math.round(Number(rawOverride))), MAX_TABLE_SIZE - 1)
-      : null;
-  if (qualifiersOverride !== null) {
-    await setConfig(
-      bracket === "A" ? "a_qualifiers_per_round" : "b_qualifiers_per_round",
-      String(qualifiersOverride)
-    );
-  }
-
   const [rounds, seats] = await Promise.all([getRounds(), getSeats()]);
-  const {
-    finalSeats,
-    tableTargets,
-    repechageEnabled,
-    bRepechageCount,
-    aQualifiersPerRound,
-    bQualifiersPerRound,
-  } = await loadTournamentData();
+  const { finalSeats, tableTargets, qualifierTargets, repechageEnabled, bRepechageCount } =
+    await loadTournamentData();
   const tables = groupIntoTables(rounds, seats);
   const bracketTables = [...tables.values()].filter((t) => t.round.bracket === bracket);
 
@@ -53,14 +24,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Tableau ${bracket} pas encore généré.` }, { status: 400 });
   }
 
+  const currentGen = Math.max(
+    ...bracketTables.map((t) => parseRoundId(t.round.round_id).gen)
+  );
   const budget =
     bracket === "A"
       ? repechageEnabled
         ? finalSeats - bRepechageCount
         : finalSeats
       : bRepechageCount;
-  const qualifiersPerRound =
-    qualifiersOverride ?? (bracket === "A" ? aQualifiersPerRound : bQualifiersPerRound);
+  const qualifiersPerRound = qualifiersForRound(qualifierTargets, bracket, currentGen);
   const state = getBracketState(bracketTables, budget, qualifiersPerRound);
   if (state.status !== "ready-to-advance") {
     return NextResponse.json(
@@ -70,11 +43,22 @@ export async function POST(req: NextRequest) {
   }
 
   const nextGen = parseRoundId(state.tables[0].round.round_id).gen + 1;
+
+  // Table numbers run continuously across both brackets, Tableau A first
+  // then Tableau B: when B reaches a gen A is already at, its numbers
+  // continue right after A's for that same round.
+  const otherBracket = bracket === "A" ? "B" : "A";
+  const otherGenTableCount = [...tables.values()].filter(
+    (t) => t.round.bracket === otherBracket && parseRoundId(t.round.round_id).gen === nextGen
+  ).length;
+  const startTableNumber = bracket === "B" ? otherGenTableCount + 1 : 1;
+
   const { rounds: newRounds, seats: newSeats } = planNextBracketRound(
     bracket,
     state.tables,
     targetForRound(tableTargets, bracket, nextGen),
-    qualifiersPerRound
+    qualifiersPerRound,
+    startTableNumber
   );
   await createRounds(newRounds);
   await createSeats(newSeats);

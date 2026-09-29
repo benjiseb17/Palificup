@@ -11,8 +11,6 @@ export type ConfigMap = {
   repechage_enabled: "true" | "false";
   poule_qualifiers: string;
   b_repechage_count: string;
-  a_qualifiers_per_round: string;
-  b_qualifiers_per_round: string;
   table_size_poules: string;
   table_size_quart_a: string;
   table_size_demi_a: string;
@@ -20,6 +18,12 @@ export type ConfigMap = {
   table_size_quart_b: string;
   table_size_demi_b: string;
   table_size_finale_b: string;
+  qualifiers_quart_a: string;
+  qualifiers_demi_a: string;
+  qualifiers_finale_a: string;
+  qualifiers_quart_b: string;
+  qualifiers_demi_b: string;
+  qualifiers_finale_b: string;
 };
 
 export const STAGE_SIZE_KEYS = [
@@ -30,6 +34,15 @@ export const STAGE_SIZE_KEYS = [
   "table_size_quart_b",
   "table_size_demi_b",
   "table_size_finale_b",
+] as const;
+
+export const QUALIFIER_KEYS = [
+  "qualifiers_quart_a",
+  "qualifiers_demi_a",
+  "qualifiers_finale_a",
+  "qualifiers_quart_b",
+  "qualifiers_demi_b",
+  "qualifiers_finale_b",
 ] as const;
 
 export async function getConfig(): Promise<Partial<ConfigMap>> {
