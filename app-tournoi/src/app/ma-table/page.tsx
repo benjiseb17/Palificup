@@ -289,7 +289,7 @@ function TableView({
 function RoundRulesCard({ rules }: { rules: RoundRules }) {
   if (rules.kind === "final") {
     return (
-      <p className="text-xs text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-3 py-2">
+      <p className="text-base font-medium text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-4 py-3">
         🏆 Grande Finale : le vainqueur de cette table remporte le tournoi.
       </p>
     );
@@ -301,7 +301,7 @@ function RoundRulesCard({ rules }: { rules: RoundRules }) {
 
   if (rules.kind === "poule") {
     return (
-      <p className="text-xs text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-3 py-2">
+      <p className="text-base font-medium text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-4 py-3">
         {subject} {n === 1 ? "monte" : "montent"} directement au Tableau A.{" "}
         {rules.repechageEnabled
           ? "Les autres rejoignent le Tableau B (repêchage) — personne n'est éliminé après les Poules."
@@ -311,7 +311,7 @@ function RoundRulesCard({ rules }: { rules: RoundRules }) {
   }
 
   return (
-    <p className="text-xs text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-3 py-2">
+    <p className="text-base font-medium text-caramel mb-3 rounded-lg bg-cream-row border border-separator px-4 py-3">
       {subject}{" "}
       {rules.reachesFinal
         ? n === 1
