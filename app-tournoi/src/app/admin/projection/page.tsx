@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import AdminGate from "@/components/AdminGate";
 import SiteHeader from "@/components/SiteHeader";
@@ -24,6 +25,19 @@ const fetcher = (url: string) =>
     }
     return r.json();
   });
+
+// Deceleration curve for the shuffle: fast at first, slowing down like a
+// wheel coming to a stop, before the final tick reveals the real draw.
+const SHUFFLE_DELAYS = [70, 80, 90, 100, 120, 140, 170, 200, 240, 290, 350, 420];
+
+function shuffled<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export default function AdminProjectionPage() {
   const { data, error, mutate } = useSWR<{ tables: ProjTable[] }>(
@@ -62,26 +76,99 @@ export default function AdminProjectionPage() {
   );
 }
 
+/**
+ * The real table assignments never change during the animation — they're
+ * already decided server-side. This just dramatizes the reveal: shuffle
+ * random names into every slot a few times, slowing down, then land on the
+ * true draw on the last tick.
+ */
 function Content({ tables }: { tables: ProjTable[] }) {
-  if (tables.length === 0) {
+  const [phase, setPhase] = useState<"idle" | "shuffling">("idle");
+  const [frozenTables, setFrozenTables] = useState<ProjTable[] | null>(null);
+  const [shuffledNames, setShuffledNames] = useState<string[] | null>(null);
+  const [tick, setTick] = useState(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  }, []);
+
+  function launchDraw() {
+    if (phase !== "idle" || tables.length === 0) return;
+    const snapshot = tables;
+    const allNames = snapshot.flatMap((t) => t.seats.map((s) => s.name));
+    setFrozenTables(snapshot);
+    setPhase("shuffling");
+
+    let i = 0;
+    const step = () => {
+      const isLast = i === SHUFFLE_DELAYS.length - 1;
+      setShuffledNames(isLast ? null : shuffled(allNames));
+      setTick((t) => t + 1);
+      if (!isLast) {
+        i++;
+        timeoutRef.current = setTimeout(step, SHUFFLE_DELAYS[i]);
+      } else {
+        timeoutRef.current = setTimeout(() => {
+          setPhase("idle");
+          setFrozenTables(null);
+        }, 700);
+      }
+    };
+    timeoutRef.current = setTimeout(step, SHUFFLE_DELAYS[0]);
+  }
+
+  const displayTables = frozenTables ?? tables;
+  if (displayTables.length === 0) {
     return <p className="text-caramel">Aucune table en cours.</p>;
   }
 
-  const stages = [...new Set(tables.map((t) => t.stage))].join(" · ");
-  const doneCount = tables.filter((t) => t.complete).length;
+  const stages = [...new Set(displayTables.map((t) => t.stage))].join(" · ");
+  const doneCount = displayTables.filter((t) => t.complete).length;
+
+  const cards = displayTables.reduce<{ table: ProjTable; names: string[] }[]>(
+    (acc, t) => {
+      const seatCount = t.seats.length;
+      const cursor = acc.reduce((sum, c) => sum + c.names.length, 0);
+      const names = shuffledNames
+        ? shuffledNames.slice(cursor, cursor + seatCount)
+        : t.seats.map((s) => s.name);
+      return [...acc, { table: t, names }];
+    },
+    []
+  );
 
   return (
     <>
-      <p className="text-caramel text-sm mb-4">
-        {stages} — {doneCount}/{tables.length} table{tables.length > 1 ? "s" : ""} rendue
-        {doneCount > 1 ? "s" : ""}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <p className="text-caramel text-sm">
+          {phase === "shuffling" ? (
+            <span className="font-bold text-accent">🎲 Tirage au sort en cours…</span>
+          ) : (
+            <>
+              {stages} — {doneCount}/{displayTables.length} table
+              {displayTables.length > 1 ? "s" : ""} rendue{doneCount > 1 ? "s" : ""}
+            </>
+          )}
+        </p>
+        <button
+          onClick={launchDraw}
+          disabled={phase === "shuffling" || tables.length === 0}
+          className="rounded-lg bg-accent hover:bg-[#c94400] disabled:opacity-50 px-4 py-2 text-sm font-bold text-white"
+        >
+          🎲 Lancer le tirage au sort
+        </button>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {tables.map((t) => (
+        {cards.map(({ table: t, names }) => (
           <div
             key={t.round_id}
-            className={`rounded-xl border p-3 ${
-              t.complete ? "border-good bg-good/10" : "border-separator bg-cream-alt"
+            className={`rounded-xl border p-3 transition-colors ${
+              phase === "shuffling"
+                ? "border-accent bg-cream-alt"
+                : t.complete
+                  ? "border-good bg-good/10"
+                  : "border-separator bg-cream-alt"
             }`}
           >
             <p className="text-[11px] font-bold uppercase tracking-widest text-orange-label mb-0.5">
@@ -89,9 +176,17 @@ function Content({ tables }: { tables: ProjTable[] }) {
             </p>
             <p className="font-extrabold text-ink mb-2">Table {t.table_number}</p>
             <ul className="flex flex-col gap-0.5">
-              {t.seats.map((s) => (
-                <li key={s.player_id} className="text-sm leading-snug text-ink">
-                  {s.name}
+              {names.map((name, idx) => (
+                <li
+                  key={idx}
+                  className="text-sm leading-snug text-ink"
+                >
+                  <span
+                    key={tick}
+                    className="inline-block animate-[slot-flip_0.22s_ease-out]"
+                  >
+                    {name}
+                  </span>
                 </li>
               ))}
             </ul>

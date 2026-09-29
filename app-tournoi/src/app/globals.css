@@ -31,3 +31,23 @@ body {
   background: var(--color-cream);
   color: var(--color-ink);
 }
+
+/* Un nom qui "atterrit" dans son créneau pendant le tirage au sort animé
+   (voir /admin/projection) — rejoué à chaque tick en changeant la key.
+   L'opacité ne descend jamais à 0 : comme tous les noms de l'écran rejouent
+   l'anim exactement au même instant, un creux à 0 donnerait un flash blanc
+   général au lieu d'un effet "compteur à palettes" (split-flap). */
+@keyframes slot-flip {
+  0% {
+    opacity: 0.25;
+    transform: translateY(-8px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(1px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
