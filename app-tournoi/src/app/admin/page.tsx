@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import SiteHeader from "@/components/SiteHeader";
-import { MAX_TABLE_SIZE, planTableSizes, poulePreview } from "@/lib/bracket";
+import { MAX_TABLE_SIZE, MIN_TABLE_SIZE, planTableSizes, poulePreview } from "@/lib/bracket";
+
+const TABLE_SIZE_OPTIONS = Array.from(
+  { length: MAX_TABLE_SIZE - MIN_TABLE_SIZE + 1 },
+  (_, i) => MIN_TABLE_SIZE + i
+);
+const QUALIFIER_OPTIONS = Array.from({ length: MAX_TABLE_SIZE - 1 }, (_, i) => i + 1);
 
 type TableSeat = { player_id: string; name: string; finish_rank: string };
 type TableSummary = {
@@ -454,7 +460,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                     setStageSizes((prev) => ({ ...prev, [f.configKey]: e.target.value }))
                   }
                 >
-                  {[3, 4, 5].map((n) => (
+                  {TABLE_SIZE_OPTIONS.map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
@@ -512,7 +518,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
                     setQualifierSizes((prev) => ({ ...prev, [f.configKey]: e.target.value }))
                   }
                 >
-                  {[1, 2, 3, 4].map((n) => (
+                  {QUALIFIER_OPTIONS.map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
@@ -697,6 +703,7 @@ function previewBracket(
   budget: number,
   bracketLabel: "A" | "B"
 ): { stages: StagePreviewRow[]; finalists: number; converged: boolean } {
+  if (initialEntries <= 0) return { stages: [], finalists: 0, converged: true };
   const stages: StagePreviewRow[] = [];
   const names = ["Quart", "Demi", "Finale"];
   let entries = initialEntries;

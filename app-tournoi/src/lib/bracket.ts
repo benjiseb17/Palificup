@@ -7,8 +7,8 @@ export type SRow = SheetRecord<SeatRow>;
 export type TableState = { round: RRow; seats: SRow[] };
 
 /** Règles fixes d'une table de Perudo, indépendantes de la taille cible choisie. */
-export const MIN_TABLE_SIZE = 3;
-export const MAX_TABLE_SIZE = 5;
+export const MIN_TABLE_SIZE = 2;
+export const MAX_TABLE_SIZE = 7;
 
 /** Clamps a configured target size into the playable [MIN, MAX] range. */
 export function clampTableTarget(target: number): number {

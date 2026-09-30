@@ -44,9 +44,14 @@ export default function AdminTablesPage() {
           <SiteHeader
             subtitle="Toutes les tables"
             right={
-              <Link href="/admin" className="text-sm font-semibold text-orange-label underline underline-offset-2">
-                ← Dashboard
-              </Link>
+              <span className="flex items-center gap-4">
+                <Link href="/classement" className="text-sm font-semibold text-orange-label underline underline-offset-2">
+                  🏆 Classement
+                </Link>
+                <Link href="/admin" className="text-sm font-semibold text-orange-label underline underline-offset-2">
+                  ← Dashboard
+                </Link>
+              </span>
             }
           />
           <main className="flex flex-1 flex-col px-6 py-8 max-w-3xl w-full mx-auto">
@@ -64,20 +69,24 @@ export default function AdminTablesPage() {
 
 type StatusFilter = "all" | "pending" | "done";
 
+function tableLabel(t: { stage: string; table_number: string }) {
+  return t.stage === "Poules" ? `Poule ${t.table_number}` : `Table ${t.table_number}`;
+}
+
+/**
+ * Grouped by stage with a pill per table — same layout as the dashboard's
+ * read-only "Phase de Poules" view — but clicking a pill here expands the
+ * full editable TableCard (seat list, "Saisir le résultat", the select
+ * inputs), not just a read-only detail.
+ */
 function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void }) {
   const [query, setQuery] = useState("");
-  const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
-  // Play order, not alphabetical: tables arrive sorted by round then table
-  // number, so the first time each stage name appears is already the right
-  // order (Poules, Quart A, Quart B, Demi A, ...).
-  const stages = useMemo(() => [...new Set(tables.map((t) => t.stage))], [tables]);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return tables.filter((t) => {
-      if (stageFilter && t.stage !== stageFilter) return false;
       if (statusFilter === "pending" && t.complete) return false;
       if (statusFilter === "done" && !t.complete) return false;
       if (!q) return true;
@@ -87,9 +96,28 @@ function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void
         t.seats.some((s) => s.name.toLowerCase().includes(q))
       );
     });
-  }, [tables, query, stageFilter, statusFilter]);
+  }, [tables, query, statusFilter]);
 
   const doneCount = tables.filter((t) => t.complete).length;
+
+  // Play order, not alphabetical: tables arrive sorted by round then table
+  // number, so grouping by first-seen stage keeps Poules, Quart A, Quart B,
+  // Demi A... in the right order.
+  const groups: { stage: string; tables: TableInfo[] }[] = [];
+  for (const t of filtered) {
+    const group = groups.find((g) => g.stage === t.stage);
+    if (group) group.tables.push(t);
+    else groups.push({ stage: t.stage, tables: [t] });
+  }
+
+  function toggle(round_id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(round_id)) next.delete(round_id);
+      else next.add(round_id);
+      return next;
+    });
+  }
 
   return (
     <>
@@ -105,16 +133,6 @@ function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-2">
-        <FilterPill active={stageFilter === null} onClick={() => setStageFilter(null)}>
-          Toutes les étapes ({tables.length})
-        </FilterPill>
-        {stages.map((s) => (
-          <FilterPill key={s} active={stageFilter === s} onClick={() => setStageFilter(s)}>
-            {s} ({tables.filter((t) => t.stage === s).length})
-          </FilterPill>
-        ))}
-      </div>
       <div className="flex flex-wrap gap-2 mb-5">
         <FilterPill active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>
           Toutes
@@ -128,10 +146,47 @@ function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void
       </div>
 
       <div className="flex flex-col gap-3">
-        {filtered.map((t) => (
-          <TableCard key={t.round_id} table={t} onSaved={refresh} />
-        ))}
-        {filtered.length === 0 && (
+        {groups.map((g) => {
+          const done = g.tables.filter((t) => t.complete).length;
+          const finished = done === g.tables.length;
+          return (
+            <div key={g.stage} className="rounded-lg border border-separator bg-white/70 p-3">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h3 className="font-extrabold text-ink">{g.stage}</h3>
+                <span
+                  className={`text-xs font-semibold rounded-full px-2 py-0.5 ${
+                    finished ? "bg-good/15 text-good" : "bg-cream-card text-orange-label"
+                  }`}
+                >
+                  {finished
+                    ? `Terminé · ${g.tables.length} table${g.tables.length > 1 ? "s" : ""}`
+                    : `${done}/${g.tables.length} tables rendues`}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {g.tables.map((t) => (
+                  <button
+                    key={t.round_id}
+                    onClick={() => toggle(t.round_id)}
+                    className={`text-xs font-semibold rounded px-2 py-1 ${
+                      t.complete ? "bg-good/15 text-good" : "bg-cream-card text-orange-label"
+                    } ${expanded.has(t.round_id) ? "ring-2 ring-accent" : ""}`}
+                  >
+                    {tableLabel(t)}
+                  </button>
+                ))}
+              </div>
+              {g.tables
+                .filter((t) => expanded.has(t.round_id))
+                .map((t) => (
+                  <div key={t.round_id} className="mt-2">
+                    <TableCard table={t} onSaved={refresh} />
+                  </div>
+                ))}
+            </div>
+          );
+        })}
+        {groups.length === 0 && (
           <p className="text-caramel">Aucune table ne correspond à ces filtres.</p>
         )}
       </div>
