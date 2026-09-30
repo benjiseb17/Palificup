@@ -62,19 +62,32 @@ export default function AdminTablesPage() {
   );
 }
 
+type StatusFilter = "all" | "pending" | "done";
+
 function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void }) {
   const [query, setQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  // Play order, not alphabetical: tables arrive sorted by round then table
+  // number, so the first time each stage name appears is already the right
+  // order (Poules, Quart A, Quart B, Demi A, ...).
+  const stages = useMemo(() => [...new Set(tables.map((t) => t.stage))], [tables]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return tables;
-    return tables.filter(
-      (t) =>
+    return tables.filter((t) => {
+      if (stageFilter && t.stage !== stageFilter) return false;
+      if (statusFilter === "pending" && t.complete) return false;
+      if (statusFilter === "done" && !t.complete) return false;
+      if (!q) return true;
+      return (
         t.round_id.toLowerCase().includes(q) ||
         t.stage.toLowerCase().includes(q) ||
         t.seats.some((s) => s.name.toLowerCase().includes(q))
-    );
-  }, [tables, query]);
+      );
+    });
+  }, [tables, query, stageFilter, statusFilter]);
 
   const doneCount = tables.filter((t) => t.complete).length;
 
@@ -84,7 +97,7 @@ function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Chercher une étape (ex: Quart A) ou un joueur…"
+          placeholder="Chercher un joueur…"
           className="w-full rounded-lg bg-white border border-separator px-4 py-3 outline-none focus:border-accent"
         />
         <p className="text-caramel text-sm mt-2">
@@ -92,15 +105,58 @@ function Content({ tables, refresh }: { tables: TableInfo[]; refresh: () => void
         </p>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-2">
+        <FilterPill active={stageFilter === null} onClick={() => setStageFilter(null)}>
+          Toutes les étapes ({tables.length})
+        </FilterPill>
+        {stages.map((s) => (
+          <FilterPill key={s} active={stageFilter === s} onClick={() => setStageFilter(s)}>
+            {s} ({tables.filter((t) => t.stage === s).length})
+          </FilterPill>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2 mb-5">
+        <FilterPill active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>
+          Toutes
+        </FilterPill>
+        <FilterPill active={statusFilter === "pending"} onClick={() => setStatusFilter("pending")}>
+          En attente
+        </FilterPill>
+        <FilterPill active={statusFilter === "done"} onClick={() => setStatusFilter("done")}>
+          Complètes
+        </FilterPill>
+      </div>
+
       <div className="flex flex-col gap-3">
         {filtered.map((t) => (
           <TableCard key={t.round_id} table={t} onSaved={refresh} />
         ))}
         {filtered.length === 0 && (
-          <p className="text-caramel">Aucune table ne correspond à &laquo; {query} &raquo;.</p>
+          <p className="text-caramel">Aucune table ne correspond à ces filtres.</p>
         )}
       </div>
     </>
+  );
+}
+
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
+        active ? "bg-accent text-white" : "bg-cream-card text-orange-label hover:bg-separator"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
