@@ -15,6 +15,8 @@ type IndividualEntry = {
 type TeamEntry = { rank: number; team: string; points: number };
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const adminCheckFetcher = (url: string) =>
+  fetch(url).then((r) => (r.ok ? true : Promise.reject(new Error("not-admin"))));
 
 export default function ClassementPage() {
   const [tab, setTab] = useState<"individuel" | "equipe">("individuel");
@@ -23,6 +25,13 @@ export default function ClassementPage() {
     fetcher,
     { refreshInterval: 15000 }
   );
+  // Whoever is admin might also be a registered player in their own
+  // tournament — "Ma table" would then bounce through "/" into THEIR OWN
+  // player view instead of back to the admin they came from. Detect an
+  // admin session and point back to the dashboard instead in that case.
+  const { data: isAdminViewer } = useSWR("/api/admin/whoami", adminCheckFetcher, {
+    shouldRetryOnError: false,
+  });
 
   return (
     <>
@@ -33,9 +42,15 @@ export default function ClassementPage() {
             <Link href="/regles" className="text-sm font-semibold text-orange-label underline underline-offset-2">
               📖 Règles
             </Link>
-            <Link href="/" className="text-sm font-semibold text-orange-label underline underline-offset-2">
-              Ma table
-            </Link>
+            {isAdminViewer ? (
+              <Link href="/admin" className="text-sm font-semibold text-orange-label underline underline-offset-2">
+                ← Dashboard
+              </Link>
+            ) : (
+              <Link href="/" className="text-sm font-semibold text-orange-label underline underline-offset-2">
+                Ma table
+              </Link>
+            )}
           </span>
         }
       />
