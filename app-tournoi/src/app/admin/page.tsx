@@ -268,7 +268,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           </span>
         }
       />
-      <main className="flex flex-1 flex-col px-6 py-8 max-w-2xl w-full mx-auto gap-6">
+      <main className="flex flex-1 flex-col px-6 py-8 max-w-5xl w-full mx-auto gap-6">
         {message && <p className="text-sm text-caramel font-medium">{message}</p>}
 
         {!data.tournamentStarted ? (
@@ -437,7 +437,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           <summary className="font-extrabold text-ink cursor-pointer select-none">
             ⚙️ Configuration avancée
           </summary>
-          <div className="mt-4">
+          <div className="mt-4 max-w-xs">
             <label className="block text-sm font-semibold text-orange-label mb-1">Code du tournoi</label>
             <input
               className="w-full rounded-lg bg-white border border-separator px-3 py-2"
@@ -449,7 +449,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           <p className="text-sm font-semibold text-orange-label mt-4 mb-1">
             Joueurs par table, à chaque étape
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {STAGE_FIELDS.filter((f) => repechage || f.bracket !== "B").map((f) => (
               <div key={f.configKey}>
                 <label className="block text-xs font-semibold text-caramel mb-1">{f.label}</label>
@@ -507,7 +507,7 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
           <p className="text-sm font-semibold text-orange-label mt-4 mb-1">
             Qualifiés par tour, à chaque étape
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
             {QUALIFIER_FIELDS.filter((f) => repechage || f.bracket !== "B").map((f) => (
               <div key={f.configKey}>
                 <label className="block text-xs font-semibold text-caramel mb-1">{f.label}</label>
