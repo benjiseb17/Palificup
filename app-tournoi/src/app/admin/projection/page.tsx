@@ -245,6 +245,17 @@ function Content({
     return [...acc, { table: t, entries }];
   }, []);
 
+  // Tableau A and Tableau B are two different brackets running in parallel —
+  // each gets its own row(s) and a clear heading, instead of their tables
+  // flowing together into the same grid rows (confusing once few tables are
+  // left, e.g. 2 from each bracket landing side by side on one line).
+  const bracketOrder = [...new Set(cards.map((c) => c.table.bracket))];
+  const showBracketHeaders = bracketOrder.length > 1;
+  const groups = bracketOrder.map((bracket) => ({
+    bracket,
+    cards: cards.filter((c) => c.table.bracket === bracket),
+  }));
+
   return (
     <>
       <p className="text-caramel text-sm mb-4">
@@ -257,40 +268,54 @@ function Content({
           </>
         )}
       </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {cards.map(({ table: t, entries }) => (
-          <div
-            key={t.round_id}
-            className={`rounded-xl border p-3 transition-colors ${
-              phase === "shuffling"
-                ? "border-accent bg-cream-alt"
-                : t.complete
-                  ? "border-good bg-good/10"
-                  : "border-separator bg-cream-alt"
-            }`}
-          >
-            <p className="text-[11px] font-bold uppercase tracking-widest text-orange-label mb-0.5">
-              {t.stage}
-            </p>
-            <p className="font-extrabold text-ink mb-2">Table {t.table_number}</p>
-            <ul className="flex flex-col gap-0.5">
-              {entries.map(({ name, qualified }, idx) => (
-                <li
-                  key={idx}
-                  className={`text-sm leading-snug ${
-                    qualified ? "font-extrabold text-gold" : "text-ink"
+      <div className="flex flex-col gap-6">
+        {groups.map(({ bracket, cards: groupCards }) => (
+          <div key={bracket}>
+            {showBracketHeaders && (
+              <div className="flex items-center gap-3 mb-3">
+                <h2 className="whitespace-nowrap text-sm font-black uppercase tracking-widest text-accent">
+                  {bracket === "A" ? "Tableau A" : "Tableau B (repêchage)"}
+                </h2>
+                <div className="h-[3px] flex-1 rounded bg-accent/30" />
+              </div>
+            )}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {groupCards.map(({ table: t, entries }) => (
+                <div
+                  key={t.round_id}
+                  className={`rounded-xl border p-3 transition-colors ${
+                    phase === "shuffling"
+                      ? "border-accent bg-cream-alt"
+                      : t.complete
+                        ? "border-good bg-good/10"
+                        : "border-separator bg-cream-alt"
                   }`}
                 >
-                  <span
-                    key={tick}
-                    className="inline-block animate-[slot-flip_0.22s_ease-out]"
-                  >
-                    {qualified ? "⭐ " : ""}
-                    {name}
-                  </span>
-                </li>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-orange-label mb-0.5">
+                    {t.stage}
+                  </p>
+                  <p className="font-extrabold text-ink mb-2">Table {t.table_number}</p>
+                  <ul className="flex flex-col gap-0.5">
+                    {entries.map(({ name, qualified }, idx) => (
+                      <li
+                        key={idx}
+                        className={`text-sm leading-snug ${
+                          qualified ? "font-extrabold text-gold" : "text-ink"
+                        }`}
+                      >
+                        <span
+                          key={tick}
+                          className="inline-block animate-[slot-flip_0.22s_ease-out]"
+                        >
+                          {qualified ? "⭐ " : ""}
+                          {name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         ))}
       </div>
