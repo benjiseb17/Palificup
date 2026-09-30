@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import SiteHeader from "@/components/SiteHeader";
-import { poulePreview } from "@/lib/bracket";
+import { MAX_TABLE_SIZE, planTableSizes, poulePreview } from "@/lib/bracket";
 
 type TableSeat = { player_id: string; name: string; finish_rank: string };
 type TableSummary = {
@@ -174,6 +174,52 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
   const [repechage, setRepechage] = useState(data.repechageEnabled);
   const [pouleQualifiers, setPouleQualifiers] = useState(data.config.poule_qualifiers ?? "1");
   const [bRepechageCount, setBRepechageCount] = useState(data.config.b_repechage_count ?? "1");
+
+  // Live "how many players reach each stage" preview, recomputed from the
+  // form fields above as the admin adjusts them — before anything is saved.
+  const num = (raw: string, fallback: number) => {
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : fallback;
+  };
+  const pouleQualifiersNum = num(pouleQualifiers, 1);
+  const pouleSizes = planTableSizes(data.playerCount, num(stageSizes.table_size_poules, MAX_TABLE_SIZE));
+  const toTableauA = pouleSizes.reduce((sum, s) => sum + Math.min(pouleQualifiersNum, s), 0);
+  const toTableauB = repechage ? data.playerCount - toTableauA : 0;
+  const bRepechageCountNum = Math.min(num(bRepechageCount, 1), MAX_TABLE_SIZE - 1);
+  const aBudget = repechage ? MAX_TABLE_SIZE - bRepechageCountNum : MAX_TABLE_SIZE;
+  const aPreview = previewBracket(
+    toTableauA,
+    {
+      quart: num(stageSizes.table_size_quart_a, MAX_TABLE_SIZE),
+      demi: num(stageSizes.table_size_demi_a, MAX_TABLE_SIZE),
+      finale: num(stageSizes.table_size_finale_a, MAX_TABLE_SIZE),
+    },
+    {
+      quart: num(qualifierSizes.qualifiers_quart_a, 1),
+      demi: num(qualifierSizes.qualifiers_demi_a, 1),
+      finale: num(qualifierSizes.qualifiers_finale_a, 1),
+    },
+    aBudget,
+    "A"
+  );
+  const bPreview = repechage
+    ? previewBracket(
+        toTableauB,
+        {
+          quart: num(stageSizes.table_size_quart_b, MAX_TABLE_SIZE),
+          demi: num(stageSizes.table_size_demi_b, MAX_TABLE_SIZE),
+          finale: num(stageSizes.table_size_finale_b, MAX_TABLE_SIZE),
+        },
+        {
+          quart: num(qualifierSizes.qualifiers_quart_b, 1),
+          demi: num(qualifierSizes.qualifiers_demi_b, 1),
+          finale: num(qualifierSizes.qualifiers_finale_b, 1),
+        },
+        bRepechageCountNum,
+        "B"
+      )
+    : null;
+  const grandFinaleCount = aPreview.finalists + (bPreview?.finalists ?? 0);
 
   async function call(url: string, body?: unknown) {
     setBusy(url);
@@ -481,6 +527,16 @@ function Dashboard({ data, refresh }: { data: StatusResponse; refresh: () => voi
             automatiquement dès que tu cliques « Générer le tour suivant ».
           </p>
 
+          <BracketPreviewPanel
+            playerCount={data.playerCount}
+            toTableauA={toTableauA}
+            toTableauB={toTableauB}
+            repechage={repechage}
+            aPreview={aPreview}
+            bPreview={bPreview}
+            grandFinaleCount={grandFinaleCount}
+          />
+
           <label className="flex items-center gap-2 mt-4 text-sm font-semibold text-orange-label">
             <input
               type="checkbox"
@@ -560,6 +616,108 @@ function BracketAction({
 
 function tableLabel(t: { stage: string; table_number: number }) {
   return t.stage === "Poules" ? `Poule ${t.table_number}` : `Table ${t.table_number}`;
+}
+
+/** Live "how many players reach each stage" preview — recomputed from the form
+ * fields above as the admin adjusts them, before anything is even saved. */
+function BracketPreviewPanel({
+  playerCount,
+  toTableauA,
+  toTableauB,
+  repechage,
+  aPreview,
+  bPreview,
+  grandFinaleCount,
+}: {
+  playerCount: number;
+  toTableauA: number;
+  toTableauB: number;
+  repechage: boolean;
+  aPreview: { stages: StagePreviewRow[]; finalists: number; converged: boolean };
+  bPreview: { stages: StagePreviewRow[]; finalists: number; converged: boolean } | null;
+  grandFinaleCount: number;
+}) {
+  return (
+    <div className="mt-3 rounded-lg bg-cream-row border border-separator p-3">
+      <p className="text-xs font-bold uppercase tracking-widest text-orange-label mb-2">
+        📊 Aperçu du nombre de joueurs par étape
+      </p>
+      <ul className="flex flex-col gap-1 text-sm">
+        <li>
+          <strong className="text-ink">Poules</strong> : {playerCount} joueurs → {toTableauA} vers
+          le Tableau A
+          {repechage ? ` · ${toTableauB} vers le Tableau B` : " · les autres éliminés"}
+        </li>
+        {aPreview.stages.map((s) => (
+          <li key={s.label} className="pl-3">
+            <strong className="text-ink">{s.label}</strong> : {s.entries} joueurs ({s.tables}{" "}
+            table{s.tables > 1 ? "s" : ""}) → {s.qualified} qualifié{s.qualified > 1 ? "s" : ""}
+          </li>
+        ))}
+        {!aPreview.converged && (
+          <li className="pl-3 text-bad font-medium">
+            ⚠️ Ces réglages ne réduisent jamais assez le Tableau A pour atteindre la Grande
+            Finale — augmente la taille des tables ou baisse les qualifiés.
+          </li>
+        )}
+        {bPreview &&
+          bPreview.stages.map((s) => (
+            <li key={s.label} className="pl-3">
+              <strong className="text-ink">{s.label}</strong> : {s.entries} joueurs ({s.tables}{" "}
+              table{s.tables > 1 ? "s" : ""}) → {s.qualified} qualifié{s.qualified > 1 ? "s" : ""}
+            </li>
+          ))}
+        {bPreview && !bPreview.converged && (
+          <li className="pl-3 text-bad font-medium">
+            ⚠️ Ces réglages ne réduisent jamais assez le Tableau B pour atteindre la Grande
+            Finale — augmente la taille des tables ou baisse les qualifiés.
+          </li>
+        )}
+        <li>
+          <strong className="text-ink">🏆 Grande Finale</strong> : {grandFinaleCount} joueurs
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+type StagePreviewRow = { label: string; entries: number; tables: number; qualified: number };
+
+/**
+ * Simulates one bracket (A or B) the same way the real generator would —
+ * Quart, then Demi, then Finale (and, if the numbers still don't fit the
+ * Grande Finale budget after that, repeats Finale's own size/qualifiers for
+ * further rounds, exactly like `targetForRound`/`qualifiersForRound` do for
+ * gen >= 3) — stopping as soon as a round's qualifiers fit the budget.
+ */
+function previewBracket(
+  initialEntries: number,
+  sizes: { quart: number; demi: number; finale: number },
+  qualifiers: { quart: number; demi: number; finale: number },
+  budget: number,
+  bracketLabel: "A" | "B"
+): { stages: StagePreviewRow[]; finalists: number; converged: boolean } {
+  const stages: StagePreviewRow[] = [];
+  const names = ["Quart", "Demi", "Finale"];
+  let entries = initialEntries;
+  let gen = 1;
+  while (entries > 0 && gen <= 12) {
+    const target = gen <= 1 ? sizes.quart : gen === 2 ? sizes.demi : sizes.finale;
+    const qual = gen <= 1 ? qualifiers.quart : gen === 2 ? qualifiers.demi : qualifiers.finale;
+    const tableSizes = planTableSizes(entries, target);
+    const qualified = tableSizes.reduce((sum, s) => sum + Math.min(qual, s), 0);
+    stages.push({
+      label: `${names[gen - 1] ?? `Tour ${gen}`} ${bracketLabel}`,
+      entries,
+      tables: tableSizes.length,
+      qualified,
+    });
+    if (qualified <= budget) return { stages, finalists: qualified, converged: true };
+    if (qualified >= entries) return { stages, finalists: qualified, converged: false }; // no reduction: would loop forever
+    entries = qualified;
+    gen++;
+  }
+  return { stages, finalists: entries, converged: false };
 }
 
 
